@@ -1,5 +1,8 @@
 package com.duitang.service.base;
 
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.pool2.BasePooledObjectFactory;
@@ -26,6 +29,8 @@ public class PooledClient<T> {
 	protected Meter qps;
 	protected Histogram dur;
 	protected ConcurrentHashMap<T, Long> workTs;
+	protected Map<String, Meter> method_qps;
+	protected Map<String, Histogram> method_dur;
 
 	class WrapperServiceFactory extends BasePooledObjectFactory<T> {
 
@@ -54,6 +59,10 @@ public class PooledClient<T> {
 
 		public String getServiceName() {
 			return fac.getServiceName();
+		}
+
+		public Class getServiceType() {
+			return fac.getServiceType();
 		}
 
 	}
@@ -95,10 +104,23 @@ public class PooledClient<T> {
 		qps = MetricCenter.metrics.meter(MetricCenter.metrics.name(fac.getServiceName(), "qps"));
 		dur = MetricCenter.metrics.histogram(fac.getServiceName() + ":" + "response_time");
 		workTs = new ConcurrentHashMap<T, Long>();
+		method_qps = new HashMap<String, Meter>();
+		method_dur = new HashMap<String, Histogram>();
+		initDetailMeters(fac.getServiceType(), method_qps, method_dur);
 	}
 
 	public void close() {
 		pool.close();
+	}
+
+	@SuppressWarnings("static-access")
+	protected void initDetailMeters(Class clazz, Map<String, Meter> qps, Map<String, Histogram> dur) {
+		String nm;
+		for (Method m : clazz.getMethods()) {
+			nm = m.getName();
+			qps.put(nm, MetricCenter.metrics.meter(MetricCenter.metrics.name(m.getName(), "qps")));
+			dur.put(nm, MetricCenter.metrics.histogram(m.getName() + ":" + "response_time"));
+		}
 	}
 
 	public T getClient() {
@@ -143,6 +165,17 @@ public class PooledClient<T> {
 			}
 		} catch (Exception e) {
 			err.error("release client", e);
+		}
+	}
+
+	public void methodMetric(String name, long dur) {
+		Meter m = method_qps.get(name);
+		if (m != null) {
+			m.mark();
+		}
+		Histogram hist = method_dur.get(name);
+		if (hist != null) {
+			hist.update(dur);
 		}
 	}
 
