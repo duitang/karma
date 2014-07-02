@@ -8,4 +8,6 @@ public interface ServiceFactory<T> {
 
 	String getServiceName();
 
+	Class getServiceType();
+
 }
