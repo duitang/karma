@@ -1,8 +1,6 @@
 package com.duitang.service.l2;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import junit.framework.Assert;
@@ -47,9 +45,7 @@ public class L2ServiceTest {
 		Assert.assertTrue(cli.cat_delstring(""));
 		Map m = new HashMap();
 		m.put("hello", "world");
-		ArrayList<CharSequence> lst = new ArrayList<CharSequence>();
-		lst.add("1");
-		lst.add("2");
+		String lst = "1\n2\n";
 		Assert.assertEquals(m.toString(), cli.cat_mgetstring(lst).toString());
 		Assert.assertFalse(cli.session_getsession("").isEmpty());
 		Assert.assertEquals("helloworld", cli.session_get("").toString());
@@ -89,7 +85,7 @@ class MockL2Service implements L2Service {
 	}
 
 	@Override
-	public Map<CharSequence, CharSequence> cat_mgetstring(List<CharSequence> keys) throws AvroRemoteException {
+	public Map<CharSequence, CharSequence> cat_mgetstring(CharSequence keys) throws AvroRemoteException {
 		Map<CharSequence, CharSequence> mret = new HashMap<CharSequence, CharSequence>();
 		mret.put("hello", "world");
 		return mret;

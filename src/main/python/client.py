@@ -1,5 +1,6 @@
 import sys
 import httplib
+import array
 
 import avro.ipc as ipc
 import avro.protocol as protocol
@@ -25,13 +26,12 @@ if __name__ == '__main__':
     params = {"key": "helloworld"}
     print "cat_getstring Result: " , requestor.request('cat_getstring', params)
 
-    params = {"key": "aa", "value": "bb", "ttl": 10000}
+    params = {"key": u"aa", "value": u"bb", "ttl": 10000}
     print "cat_setstring Result: " , requestor.request('cat_setstring', params)
-    params = {"key": "cc", "value": "dd", "ttl": 10000}
+    params = {"key": u"cc", "value": u"dd", "ttl": 10000}
     print "cat_setstring Result: " , requestor.request('cat_setstring', params)
 
-    from com.duitang.service.l2 import Keys
-    params = Keys(["aa", "cc"])
+    params = array.array('c', ['a','c'])
     print "cat_mgetstring Result: " , requestor.request('cat_mgetstring', params)
 
     # cleanup

@@ -27,7 +27,7 @@
          "response": "boolean"
      },
      "cat_mgetstring": {
-         "request": [{"name": "keys",  "type": { "type" : "array", "items" : "string" }}],
+         "request": [{"name": "keys",  "type": "string" }],
          "response": {"type": "map",   "values": "string"}   
      },
      "session_getsession": {
