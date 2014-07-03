@@ -1,9 +1,6 @@
 {"namespace": "com.duitang.service.base",
  "protocol": "Dummy",
  "messages": {
-     "dummy_dummy": {
-         "request": [],
-         "response": []
-     }
+     "dummy_dummy": {"request": [], "response": "null"}
  }
 }

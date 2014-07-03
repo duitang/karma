@@ -132,11 +132,11 @@ public class PooledClientTest {
 					try {
 						Dummy cli = null;
 						boolean err = false;
-						for (int i = 0; i < 1000; i++) {
+						for (int i = 0; i < 1; i++) {
 							cli = thepool.getClient();
 							try {
 								cli.dummy_dummy();
-							} catch (AvroRemoteException e) {
+							} catch (Exception e) {
 								err = true;
 							}
 							if (cli == null || err) {
@@ -176,7 +176,7 @@ public class PooledClientTest {
 class DummyService1 implements Dummy {
 
 	@Override
-	public Object dummy_dummy() throws AvroRemoteException {
+	public Void dummy_dummy() throws AvroRemoteException {
 		boolean errorOnUse = Math.random() > 0.5;
 		if (errorOnUse) {
 			throw new AvroRemoteException("fuck u!");

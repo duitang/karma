@@ -10,7 +10,7 @@ public class ServerBootstrap {
 	protected HttpServer server;
 
 	public void startUp(Class serviceType, Object service, int port) throws IOException {
-		server = new HttpServer(new SpecificResponder(serviceType, service), 9090);
+		server = new HttpServer(new SpecificResponder(serviceType, service), port);
 		server.start();
 	}
 
