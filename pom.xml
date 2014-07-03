@@ -82,6 +82,7 @@
                             <goal>idl-protocol</goal>
                         </goals>
                         <configuration>
+                            <stringType>String</stringType>
                             <sourceDirectory>${project.basedir}/src/main/resources/</sourceDirectory>
                             <outputDirectory>${project.basedir}/src/main/java/</outputDirectory>
                             <testSourceDirectory>${project.basedir}/src/test/resources/</testSourceDirectory>

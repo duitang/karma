@@ -60,40 +60,40 @@ public class L2ServiceTest {
 class MockL2Service implements L2Service {
 
 	@Override
-	public boolean cat_setstring(CharSequence key, CharSequence value, int ttl) throws AvroRemoteException {
+	public boolean cat_setstring(String key, String value, int ttl) throws AvroRemoteException {
 		return true;
 	}
 
 	@Override
-	public boolean cat_addstring(CharSequence key, CharSequence value, int ttl) throws AvroRemoteException {
+	public boolean cat_addstring(String key, String value, int ttl) throws AvroRemoteException {
 		return true;
 	}
 
 	@Override
-	public long cat_incr(CharSequence key, long delta) throws AvroRemoteException {
+	public long cat_incr(String key, long delta) throws AvroRemoteException {
 		return 100 + delta;
 	}
 
 	@Override
-	public CharSequence cat_getstring(CharSequence key) throws AvroRemoteException {
+	public String cat_getstring(String key) throws AvroRemoteException {
 		return "helloworld";
 	}
 
 	@Override
-	public boolean cat_delstring(CharSequence key) throws AvroRemoteException {
+	public boolean cat_delstring(String key) throws AvroRemoteException {
 		return true;
 	}
 
 	@Override
-	public Map<CharSequence, CharSequence> cat_mgetstring(CharSequence keys) throws AvroRemoteException {
-		Map<CharSequence, CharSequence> mret = new HashMap<CharSequence, CharSequence>();
+	public Map<String, String> cat_mgetstring(String keys) throws AvroRemoteException {
+		Map<String, String> mret = new HashMap<String, String>();
 		mret.put("hello", "world");
 		return mret;
 	}
 
 	@Override
-	public Map<CharSequence, Object> session_getsession(CharSequence sessionid) throws AvroRemoteException {
-		Map<CharSequence, Object> ret = new HashMap<CharSequence, Object>();
+	public Map<String, Object> session_getsession(String sessionid) throws AvroRemoteException {
+		Map<String, Object> ret = new HashMap<String, Object>();
 		ret.put("hello", "world");
 		ret.put("0", 0);
 		ret.put("1", 1L);
@@ -103,22 +103,22 @@ class MockL2Service implements L2Service {
 	}
 
 	@Override
-	public CharSequence session_get(CharSequence sessionid) throws AvroRemoteException {
+	public String session_get(String sessionid) throws AvroRemoteException {
 		return "helloworld";
 	}
 
 	@Override
-	public boolean session_set(CharSequence sessionid, CharSequence value) throws AvroRemoteException {
+	public boolean session_set(String sessionid, String value) throws AvroRemoteException {
 		return true;
 	}
 
 	@Override
-	public long session_expire(CharSequence sessionid, int expiryage) throws AvroRemoteException {
+	public long session_expire(String sessionid, int expiryage) throws AvroRemoteException {
 		return 100;
 	}
 
 	@Override
-	public long session_delete(CharSequence sessionid) throws AvroRemoteException {
+	public long session_delete(String sessionid) throws AvroRemoteException {
 		return 100;
 	}
 
