@@ -1,10 +1,5 @@
 {"namespace": "com.duitang.service.l2",
  "protocol": "L2Service",
- "types": [{
-		    "type" : "record",
-		    "name" : "Keys",
-		    "fields" : [{ "name" : "keys",  "type" : { "type" : "array", "items" : "string" } }]
-  		  }],
  "messages": {
      "cat_setstring": {
          "request": [{"name": "key",   "type": "string"},
@@ -32,7 +27,7 @@
          "response": "boolean"
      },
      "cat_mgetstring": {
-         "request": [{"name": "keys",  "type": "Keys"}],
+         "request": [{"name": "keys",  "type": { "type" : "array", "items" : "string" }}],
          "response": {"type": "map",   "values": "string"}   
      },
      "session_getsession": {
