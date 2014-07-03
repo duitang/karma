@@ -4,6 +4,9 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.sf.cglib.proxy.Mixin;
 
@@ -16,11 +19,11 @@ public abstract class AbstractClientFactory<T> implements ServiceFactory<T> {
 
 	protected Logger err = Logger.getLogger("error");
 
-	protected String protocol;
+	// protected String protocol;
 	protected String url;
-	protected String host;
-	protected int port;
-	protected URL serviceURL;
+	protected List<URL> serviceURL;
+	protected AtomicInteger hashid = new AtomicInteger(0);
+	protected int sz;
 
 	public String getUrl() {
 		return url;
@@ -28,41 +31,23 @@ public abstract class AbstractClientFactory<T> implements ServiceFactory<T> {
 
 	public void setUrl(String url) {
 		this.url = url;
-		if (url.contains("://")) {
-			String[] items = url.split("://");
-			this.protocol = items[0];
-			url = items[1];
+		String[] urlitems = url.split(";");
+		this.serviceURL = new ArrayList<URL>();
+		for (String u : urlitems) {
+			try {
+				this.serviceURL.add(new URL(u));
+			} catch (MalformedURLException e) {
+				throw new RuntimeException("set url: " + u, e);
+			}
 		}
-		this.host = url.split(":")[0];
-		this.port = Integer.valueOf(url.split(":")[1]);
-		try {
-			this.serviceURL = new URL(this.url);
-		} catch (MalformedURLException e) {
-			throw new RuntimeException("set url: " + url, e);
-		}
-	}
-
-	public String getHost() {
-		return host;
-	}
-
-	public void setHost(String host) {
-		this.host = host;
-	}
-
-	public int getPort() {
-		return port;
-	}
-
-	public void setPort(int port) {
-		this.port = port;
+		this.sz = this.serviceURL.size();
 	}
 
 	@Override
 	public T create() {
 		T ret = null;
 		try {
-			HttpTransceiver client = new HttpTransceiver(serviceURL);
+			HttpTransceiver client = new HttpTransceiver(serviceURL.get(hashid.incrementAndGet() % sz));
 			ret = (T) SpecificRequestor.getClient(getServiceType(), client);
 			ret = enhanceIt(ret, client);
 		} catch (IOException e) {
