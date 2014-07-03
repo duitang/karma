@@ -31,7 +31,7 @@ if __name__ == '__main__':
     params = {"key": u"cc", "value": u"dd", "ttl": 10000}
     print "cat_setstring Result: " , requestor.request('cat_setstring', params)
 
-    params = array.array('c', ['a','c'])
+    params = {"keys": "\n".join(["aa","cc"])}
     print "cat_mgetstring Result: " , requestor.request('cat_mgetstring', params)
 
     # cleanup
