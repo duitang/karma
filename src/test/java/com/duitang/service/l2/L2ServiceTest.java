@@ -52,6 +52,7 @@ public class L2ServiceTest {
 		Assert.assertTrue(cli.session_set("", ""));
 		Assert.assertEquals(100, cli.session_expire("", 100));
 		Assert.assertEquals(100, cli.session_delete(""));
+		Assert.assertEquals("helloworld", cli.session_genId());
 		client.retClient(cli);
 	}
 
@@ -120,6 +121,11 @@ class MockL2Service implements L2Service {
 	@Override
 	public long session_delete(String sessionid) throws AvroRemoteException {
 		return 100;
+	}
+
+	@Override
+	public String session_genId() throws AvroRemoteException {
+		return "helloworld";
 	}
 
 }

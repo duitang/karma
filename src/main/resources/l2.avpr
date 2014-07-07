@@ -52,6 +52,10 @@
      "session_delete": {
          "request": [{"name": "sessionid",   "type": "string"}],
          "response": "long"
+     },
+     "session_genId": {
+         "request": [],
+         "response": "string"
      }
  }
 }
