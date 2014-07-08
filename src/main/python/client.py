@@ -1,6 +1,7 @@
 import sys
 import httplib
 import array
+import time
 
 import avro.ipc as ipc
 import avro.protocol as protocol
@@ -34,5 +35,15 @@ if __name__ == '__main__':
     params = {"keys": "\n".join(["aa","cc"])}
     print "cat_mgetstring Result: " , requestor.request('cat_mgetstring', params)
 
+    lz = []
+    ts = time.time() * 1000
+    params = {"key": "v4:napi:billion-32-0:edd7630ed6332b9a603ed580fe71412e"}
+    for i in xrange(100):
+       ss = requestor.request('cat_getstring', params)
+       print ss
+       lz.append(len(ss if ss else ''))
+    ts = time.time() * 1000 - ts
+    print set(lz)
+    print "time:", ts, "ms"
     # cleanup
     client.close()

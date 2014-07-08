@@ -17,6 +17,7 @@ public class PooledClient<T> {
 
 	final static int DEFAULT_CAPACITY = 100;
 	final static int DEFAULT_IDLE = Double.valueOf(DEFAULT_CAPACITY * 0.7).intValue();
+	final static int MIN_IDLE = Double.valueOf(DEFAULT_CAPACITY * 0.1).intValue();
 
 	final static Logger err = Logger.getLogger("error");
 	protected GenericObjectPool<T> pool;
@@ -94,8 +95,13 @@ public class PooledClient<T> {
 		GenericObjectPoolConfig cfg = new GenericObjectPoolConfig();
 		cfg.setMaxTotal(capacity);
 		cfg.setMaxIdle(idle);
+		cfg.setMinIdle(MIN_IDLE);
 		pool = new GenericObjectPool<T>(fac, cfg);
-		pool.setAbandonedConfig(new AbandonedConfig());
+		AbandonedConfig abandoncfg = new AbandonedConfig();
+		abandoncfg.setRemoveAbandonedTimeout(5 * 60); // 5 minute
+		// remove abandoned background
+		abandoncfg.setRemoveAbandonedOnMaintenance(true);
+		pool.setAbandonedConfig(abandoncfg);
 		qps = MetricCenter.metrics.meter(MetricCenter.metrics.name(fac.getServiceName(), "qps"));
 		dur = MetricCenter.metrics.histogram(fac.getServiceName() + ":" + "response_time");
 		workTs = new ConcurrentHashMap<T, Long>();
@@ -108,7 +114,7 @@ public class PooledClient<T> {
 
 	public T getClient() {
 		// try 1 time and 30000ms
-		return getClient(30000, 1);
+		return getClient(1000, 1);
 	}
 
 	public T getClient(long wtime, int count) {

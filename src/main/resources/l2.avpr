@@ -20,7 +20,7 @@
      },
      "cat_getstring": {
          "request": [{"name": "key",   "type": "string"}],
-         "response": "string"
+         "response": ["string", "null"]
      },
      "cat_delstring": {
          "request": [{"name": "key",   "type": "string"}],
@@ -28,7 +28,7 @@
      },
      "cat_mgetstring": {
          "request": [{"name": "keys",  "type": "string" }],
-         "response": {"type": "map",   "values": "string"}   
+         "response": {"type": "map",   "values": ["string", "null"]}   
      },
      "session_getsession": {
          "request": [{"name": "sessionid",   "type": "string"}],
@@ -37,7 +37,7 @@
      },
      "session_get": {
          "request": [{"name": "sessionid",   "type": "string"}],
-         "response": "string"
+         "response": ["string", "null"]
      },
      "session_set": {
          "request": [{"name": "sessionid",   "type": "string"},
