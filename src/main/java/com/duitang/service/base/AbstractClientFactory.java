@@ -24,6 +24,7 @@ public abstract class AbstractClientFactory<T> implements ServiceFactory<T> {
 	protected List<URL> serviceURL;
 	protected AtomicInteger hashid = new AtomicInteger(0);
 	protected int sz;
+	protected int timeout = 500;
 
 	public String getUrl() {
 		return url;
@@ -43,11 +44,20 @@ public abstract class AbstractClientFactory<T> implements ServiceFactory<T> {
 		this.sz = this.serviceURL.size();
 	}
 
+	public int getTimeout() {
+		return timeout;
+	}
+
+	public void setTimeout(int timeout) {
+		this.timeout = timeout;
+	}
+
 	@Override
 	public T create() {
 		T ret = null;
 		try {
 			HttpTransceiver client = new HttpTransceiver(serviceURL.get(hashid.incrementAndGet() % sz));
+			client.setTimeout(timeout);
 			ret = (T) SpecificRequestor.getClient(getServiceType(), client);
 			ret = enhanceIt(ret, client);
 		} catch (IOException e) {
