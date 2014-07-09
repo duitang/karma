@@ -7,7 +7,6 @@ import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.duitang.service.base.PooledClient;
 import com.duitang.service.base.ServerBootstrap;
 
 public class CacheServiceTest {
@@ -29,8 +28,7 @@ public class CacheServiceTest {
 		}
 		MemoryCacheClientFactory fac = new MemoryCacheClientFactory();
 		fac.setUrl("http://127.0.0.1:9090");
-		PooledClient<DemoService> pool = new PooledClient<DemoService>(fac);
-		DemoService cli = pool.getClient();
+		DemoService cli = fac.create();
 		try {
 			String key = "aaaa";
 			String value = "bbbb";
@@ -41,9 +39,9 @@ public class CacheServiceTest {
 		} catch (Exception e) {
 			e.printStackTrace();
 			Assert.fail();
+		} finally {
+			fac.release(cli);
 		}
-		pool.retClient(cli);
-		pool.close();
 
 		long stime = 10L;
 		// long stime = 10000000L;

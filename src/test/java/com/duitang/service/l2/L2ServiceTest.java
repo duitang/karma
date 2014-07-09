@@ -10,14 +10,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.duitang.service.base.PooledClient;
 import com.duitang.service.base.ServerBootstrap;
 
 public class L2ServiceTest {
 
 	protected MockL2Service service = new MockL2Service();
 	protected ServerBootstrap boot = new ServerBootstrap();
-	protected PooledClient<L2Service> client;
 	protected L2ServiceFactory fac;
 
 	@Before
@@ -25,19 +23,17 @@ public class L2ServiceTest {
 		boot.startUp(L2Service.class, service, 9090);
 		fac = new L2ServiceFactory();
 		fac.setUrl("http://localhost:9090");
-		client = new PooledClient<L2Service>(fac);
 	}
 
 	@After
 	public void tearDown() throws Exception {
 		// Thread.sleep(1000 * 1000);
-		client.close();
 		boot.shutdown();
 	}
 
 	@Test
 	public void testAll() throws AvroRemoteException {
-		L2Service cli = client.getClient();
+		L2Service cli = fac.create();
 		Assert.assertTrue(cli.cat_setstring("", "", 1));
 		Assert.assertTrue(cli.cat_addstring("", "", 1));
 		Assert.assertTrue(cli.cat_incr("", 1) == 101);
@@ -53,7 +49,7 @@ public class L2ServiceTest {
 		Assert.assertEquals(100, cli.session_expire("", 100));
 		Assert.assertEquals(100, cli.session_delete(""));
 		Assert.assertEquals("helloworld", cli.session_genId());
-		client.retClient(cli);
+		fac.release(cli);
 	}
 
 }

@@ -8,7 +8,7 @@ import java.util.Set;
 
 import junit.framework.Assert;
 
-import org.apache.avro.ipc.Transceiver;
+import org.apache.avro.AvroRemoteException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -54,20 +54,22 @@ public class AbstractClientFactoryTest {
 	@Test
 	public void testDoCreate() {
 		fac.setUrl(u);
-		Set<Dummy> pool = new HashSet<Dummy>();
+		List<Dummy> pool = new ArrayList<Dummy>();
 		int sz = 10;
 		Dummy m = null;
 		for (int i = 0; i < sz; i++) {
 			m = fac.create();
 			Assert.assertNotNull(m);
 			pool.add(m);
+			fac.release(m);
 		}
 		Assert.assertEquals(sz, pool.size());
 		Set<String> dupurl = new HashSet<String>();
 		for (String ur : u.split(";")) {
 			dupurl.add(ur);
 		}
-		Assert.assertEquals(dupurl.size(), MockFactory.urls.size());
+		Assert.assertEquals(dupurl.size(), 2);
+		Assert.assertEquals(MockFactory.closed.size(), sz);
 	}
 
 }
@@ -76,7 +78,6 @@ class MockFactory extends AbstractClientFactory<Dummy> {
 
 	public static List<Dummy> all = new ArrayList<Dummy>();
 	public static List<Dummy> closed = new ArrayList<Dummy>();
-	public static Set<String> urls = new HashSet<String>();
 
 	@Override
 	public void release(Dummy srv) {
@@ -101,14 +102,17 @@ class MockFactory extends AbstractClientFactory<Dummy> {
 		return Dummy.class;
 	}
 
+}
+
+class DummyService1 implements Dummy {
+
 	@Override
-	protected Dummy enhanceIt(Dummy client, Transceiver trans) {
-		try {
-			urls.add(trans.getRemoteName());
-		} catch (IOException e) {
-			e.printStackTrace();
+	public Void dummy_dummy() throws AvroRemoteException {
+		boolean errorOnUse = Math.random() > 0.5;
+		if (errorOnUse) {
+			throw new AvroRemoteException("fuck u!");
 		}
-		return super.enhanceIt(client, trans);
+		return null;
 	}
 
 }

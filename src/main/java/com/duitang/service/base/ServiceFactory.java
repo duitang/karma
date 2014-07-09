@@ -1,5 +1,6 @@
 package com.duitang.service.base;
 
+
 public interface ServiceFactory<T> {
 
 	T create();
