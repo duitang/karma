@@ -150,7 +150,13 @@ public class PooledClient<T> {
 	public void releaseClient(T cli) {
 		try {
 			if (cli != null) {
+				Long ts = null;
+				ts = workTs.remove(cli);
 				pool.invalidateObject(cli);
+				if (ts != null) {
+					ts = System.currentTimeMillis() - ts;
+					dur.update(ts);
+				}
 			}
 		} catch (Exception e) {
 			err.error("release client", e);
