@@ -1,0 +1,10 @@
+@namespace("com.duitang.service.l2")
+protocol Session {
+	map<union{null, string, long, int, float, double}> session_getsession(string sessionid);
+    boolean session_setsession(string sessionid, map<union{null, string, long, int, float, double}> sessiondata);
+    string session_get(string sessionid);
+    boolean session_set(string sessionid, string value);
+    long session_expire(string sessionid, int expiryage);
+    long session_delete(string sessionid);
+    string session_genId();	
+}

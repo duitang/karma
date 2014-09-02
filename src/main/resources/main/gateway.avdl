@@ -1,0 +1,5 @@
+@namespace("com.duitang.service.l2")
+protocol L2Service {
+	import idl "../service/cat.avdl";
+	import idl "../service/session.avdl";
+}
