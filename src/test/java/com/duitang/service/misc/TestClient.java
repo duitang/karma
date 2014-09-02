@@ -15,10 +15,10 @@ public class TestClient {
 	}
 
 	static void test() {
-		int loop = 100;
+		int loop = 1000;
 		L2ServiceFactory fac = new L2ServiceFactory();
-		// fac.setTimeout(5000);
-		fac.setUrl("http://localhost:7777");
+		fac.setTimeout(5000);
+		fac.setUrl("http://localhost:9090");
 		String sss = "v4:napi:gandalf-2.3.3-0:574b5a175628dc7819fc52f3f24d06b7";
 		Set<Integer> sz = new HashSet<Integer>();
 		long ts = System.currentTimeMillis();

@@ -16,24 +16,24 @@ public class L2ServiceTest {
 
 	protected MockL2Service service = new MockL2Service();
 	protected ServerBootstrap boot = new ServerBootstrap();
-	protected L2ServiceFactory fac;
+	protected L2ServiceV2Factory fac;
 
 	@Before
 	public void setUp() throws Exception {
-		boot.startUp(L2Service.class, service, 9090);
-		fac = new L2ServiceFactory();
+		boot.startUp(L2ServiceV2.class, service, 9090);
+		fac = new L2ServiceV2Factory();
 		fac.setUrl("http://localhost:9090");
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		// Thread.sleep(1000 * 1000);
+		Thread.sleep(1000 * 1000);
 		boot.shutdown();
 	}
 
 	@Test
 	public void testAll() throws AvroRemoteException {
-		L2Service cli = fac.create();
+		L2ServiceV2 cli = fac.create();
 		Assert.assertTrue(cli.cat_setstring("", "", 1));
 		Assert.assertTrue(cli.cat_addstring("", "", 1));
 		Assert.assertTrue(cli.cat_incr("", 1) == 101);
@@ -44,6 +44,7 @@ public class L2ServiceTest {
 		String lst = "1\n2\n";
 		Assert.assertEquals(m.toString(), cli.cat_mgetstring(lst).toString());
 		Assert.assertFalse(cli.session_getsession("").isEmpty());
+		Assert.assertTrue(cli.session_setsession("", new HashMap()));
 		Assert.assertEquals("helloworld", cli.session_get("").toString());
 		Assert.assertTrue(cli.session_set("", ""));
 		Assert.assertEquals(100, cli.session_expire("", 100));
@@ -54,7 +55,7 @@ public class L2ServiceTest {
 
 }
 
-class MockL2Service implements L2Service {
+class MockL2Service implements L2Service, L2ServiceV2 {
 
 	@Override
 	public boolean cat_setstring(String key, String value, int ttl) throws AvroRemoteException {
@@ -122,6 +123,11 @@ class MockL2Service implements L2Service {
 	@Override
 	public String session_genId() throws AvroRemoteException {
 		return "helloworld";
+	}
+
+	@Override
+	public boolean session_setsession(String sessionid, Map<String, Object> sessiondata) throws AvroRemoteException {
+		return true;
 	}
 
 }

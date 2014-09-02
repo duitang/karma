@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.duitang.service</groupId>
     <artifactId>karma</artifactId>
-    <version>0.1</version>
+    <version>0.2</version>
     <packaging>jar</packaging>
     <name>karma</name>
     <properties>
@@ -83,7 +83,7 @@
                         </goals>
                         <configuration>
                             <stringType>String</stringType>
-                            <sourceDirectory>${project.basedir}/src/main/resources/</sourceDirectory>
+                            <sourceDirectory>${project.basedir}/src/main/resources/main</sourceDirectory>
                             <outputDirectory>${project.basedir}/src/main/java/</outputDirectory>
                             <testSourceDirectory>${project.basedir}/src/test/resources/</testSourceDirectory>
                             <testOutputDirectory>${project.basedir}/src/test/java/</testOutputDirectory>
