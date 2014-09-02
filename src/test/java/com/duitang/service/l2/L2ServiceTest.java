@@ -16,12 +16,12 @@ public class L2ServiceTest {
 
 	protected MockL2Service service = new MockL2Service();
 	protected ServerBootstrap boot = new ServerBootstrap();
-	protected L2ServiceV2Factory fac;
+	protected L2ServiceFactory fac;
 
 	@Before
 	public void setUp() throws Exception {
-		boot.startUp(L2ServiceV2.class, service, 9090);
-		fac = new L2ServiceV2Factory();
+		boot.startUp(L2Service.class, service, 9090);
+		fac = new L2ServiceFactory();
 		fac.setUrl("http://localhost:9090");
 	}
 
@@ -33,7 +33,7 @@ public class L2ServiceTest {
 
 	@Test
 	public void testAll() throws AvroRemoteException {
-		L2ServiceV2 cli = fac.create();
+		L2Service cli = fac.create();
 		Assert.assertTrue(cli.cat_setstring("", "", 1));
 		Assert.assertTrue(cli.cat_addstring("", "", 1));
 		Assert.assertTrue(cli.cat_incr("", 1) == 101);
@@ -55,7 +55,7 @@ public class L2ServiceTest {
 
 }
 
-class MockL2Service implements L2Service, L2ServiceV2 {
+class MockL2Service implements L2Service {
 
 	@Override
 	public boolean cat_setstring(String key, String value, int ttl) throws AvroRemoteException {
