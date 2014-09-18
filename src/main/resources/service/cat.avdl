@@ -3,7 +3,7 @@ protocol Cat {
 	boolean cat_setstring(string key, string value, int ttl);
 	boolean cat_addstring(string key, string value, int ttl);
     long cat_incr(string key, long delta);
-    string cat_getstring(string key);
+    union{null, string} cat_getstring(string key);
     boolean cat_delstring(string key);
     map<union{null, string}> cat_mgetstring(string keys);
     union{null, bytes} cat_getobject(string key);
