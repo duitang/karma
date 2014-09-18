@@ -1,5 +1,6 @@
 package com.duitang.service.l2;
 
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -127,6 +128,16 @@ class MockL2Service implements L2Service {
 
 	@Override
 	public boolean session_setsession(String sessionid, Map<String, Object> sessiondata) throws AvroRemoteException {
+		return true;
+	}
+
+	@Override
+	public ByteBuffer cat_getobject(String key) throws AvroRemoteException {
+		return ByteBuffer.wrap("".getBytes());
+	}
+
+	@Override
+	public boolean cat_setobject(String key, ByteBuffer value, int ttl) throws AvroRemoteException {
 		return true;
 	}
 

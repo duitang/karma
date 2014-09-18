@@ -13,6 +13,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.duitang.service.l2.L2Service;
+
 public class AbstractClientFactoryTest {
 
 	protected AbstractClientFactory<Dummy> fac;
@@ -30,8 +32,15 @@ public class AbstractClientFactoryTest {
 		try {
 			folk1 = new ServerBootstrap();
 			folk1.startUp(Dummy.class, new DummyService1(), port1);
+			StringBuilder sb = new StringBuilder();
+			sb.setLength(0);
+			folk1.serviceInfo(Dummy.class, sb);
+			System.out.println(sb.toString());
 			folk2 = new ServerBootstrap();
 			folk2.startUp(Dummy.class, new DummyService1(), port2);
+			sb.setLength(0);
+			folk2.serviceInfo(Dummy.class, sb);
+			System.out.println(sb.toString());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
