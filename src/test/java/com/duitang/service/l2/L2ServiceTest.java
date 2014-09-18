@@ -28,7 +28,7 @@ public class L2ServiceTest {
 
 	@After
 	public void tearDown() throws Exception {
-		Thread.sleep(1000 * 1000);
+		// Thread.sleep(1000 * 1000);
 		boot.shutdown();
 	}
 
@@ -40,6 +40,8 @@ public class L2ServiceTest {
 		Assert.assertTrue(cli.cat_incr("", 1) == 101);
 		Assert.assertEquals("helloworld", cli.cat_getstring("").toString());
 		Assert.assertTrue(cli.cat_delstring(""));
+		Assert.assertTrue(cli.cat_setobject("", ByteBuffer.wrap("".getBytes()), 111));
+		Assert.assertNull(cli.cat_getobject(""));
 		Map m = new HashMap();
 		m.put("hello", "world");
 		String lst = "1\n2\n";
@@ -133,7 +135,7 @@ class MockL2Service implements L2Service {
 
 	@Override
 	public ByteBuffer cat_getobject(String key) throws AvroRemoteException {
-		return ByteBuffer.wrap("".getBytes());
+		return null;
 	}
 
 	@Override

@@ -6,6 +6,6 @@ protocol Cat {
     string cat_getstring(string key);
     boolean cat_delstring(string key);
     map<union{null, string}> cat_mgetstring(string keys);
-    bytes cat_getobject(string key);
+    union{null, bytes} cat_getobject(string key);
     boolean cat_setobject(string key, bytes value, int ttl);
 }

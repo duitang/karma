@@ -13,8 +13,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.duitang.service.l2.L2Service;
-
 public class AbstractClientFactoryTest {
 
 	protected AbstractClientFactory<Dummy> fac;
