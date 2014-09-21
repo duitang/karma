@@ -18,8 +18,6 @@ import java.util.concurrent.Future;
 
 import org.apache.avro.ipc.Transceiver;
 
-import com.codahale.metrics.Histogram;
-import com.codahale.metrics.Meter;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClient.BoundRequestBuilder;
 import com.ning.http.client.AsyncHttpClientConfig;
@@ -38,10 +36,6 @@ public class MetricableHttpTransceiver extends Transceiver implements Closeable 
 	protected Future<Response> resp;
 	protected long startts = 0;
 	protected long endts = -1;
-	protected Histogram hist;
-	protected Meter qps;
-	protected Histogram hist_f;
-	protected Meter qps_f;
 	protected String clientid;
 
 	static {
@@ -57,13 +51,9 @@ public class MetricableHttpTransceiver extends Transceiver implements Closeable 
 		client = new AsyncHttpClient(new AsyncHttpClientConfig.Builder().setRequestTimeoutInMs(timeout).build());
 	}
 
-	public MetricableHttpTransceiver(String clientid, URL url, Meter qps, Histogram hist, Meter qps_f, Histogram hist_f) {
+	public MetricableHttpTransceiver(String clientid, URL url) {
 		this.clientid = clientid;
 		this.url = url;
-		this.hist = hist;
-		this.qps = qps;
-		this.hist_f = hist_f;
-		this.qps_f = qps_f;
 	}
 
 	public String getRemoteName() {
@@ -73,26 +63,15 @@ public class MetricableHttpTransceiver extends Transceiver implements Closeable 
 	public synchronized List<ByteBuffer> readBuffers() throws IOException {
 		Response r;
 		InputStream in = null;
-		boolean failure = false;
 		try {
 			r = resp.get();
 			in = r.getResponseBodyAsStream();
 			return readBuffers(in);
 		} catch (Exception e) {
-			failure = true;
 			throw new IOException(e);
 		} finally {
 			if (in != null) {
 				in.close();
-			}
-			this.endts = System.currentTimeMillis();
-			Meter q = failure ? this.qps_f : this.qps;
-			Histogram h = failure ? this.hist_f : this.hist;
-			if (h != null) {
-				h.update(endts - startts);
-			}
-			if (q != null) {
-				q.mark();
 			}
 		}
 	}
@@ -104,7 +83,6 @@ public class MetricableHttpTransceiver extends Transceiver implements Closeable 
 		}
 		if (!resp.isDone()) {
 			resp.cancel(true);
-			this.endts = System.currentTimeMillis();
 		}
 	}
 

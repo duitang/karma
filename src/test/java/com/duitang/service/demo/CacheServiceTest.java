@@ -72,11 +72,11 @@ public class CacheServiceTest {
 		MetricCenter.enableConsoleReporter(1);
 		DemoService cli = fac.create();
 		for (int i = 0; i < 10; i++) {
-			System.out.println(cli.trace_msg("wait_500", 100));
+			System.out.println("----->" + cli.trace_msg("wait_500", 100));
 		}
 		for (int i = 0; i < 5; i++) {
 			try {
-				System.out.println(cli.trace_msg("wait_500", 600));
+				System.out.println("----->" + cli.trace_msg("wait_500", 600));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
