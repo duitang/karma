@@ -69,7 +69,7 @@ public class CacheServiceTest {
 
 	@Test
 	public void testMetric() throws Exception {
-		MetricCenter.debugReporter();
+		MetricCenter.enableConsoleReporter(1);
 		DemoService cli = fac.create();
 		for (int i = 0; i < 10; i++) {
 			System.out.println(cli.trace_msg("wait_500", 100));

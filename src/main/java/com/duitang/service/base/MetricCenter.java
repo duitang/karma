@@ -50,10 +50,10 @@ public class MetricCenter {
 		}
 	}
 
-	static public void debugReporter() {
+	static public void enableConsoleReporter(int peroid) {
 		ConsoleReporter ret = ConsoleReporter.forRegistry(metrics).convertRatesTo(TimeUnit.SECONDS)
 		        .convertDurationsTo(TimeUnit.MILLISECONDS).build();
-		ret.start(1, TimeUnit.SECONDS);
+		ret.start(peroid, TimeUnit.SECONDS);
 		console = ret;
 	}
 
