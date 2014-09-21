@@ -40,6 +40,9 @@ public class MetricableHttpTransceiver extends Transceiver implements Closeable 
 	protected long endts = -1;
 	protected Histogram hist;
 	protected Meter qps;
+	protected Histogram hist_f;
+	protected Meter qps_f;
+	protected String clientid;
 
 	static {
 		initClient();
@@ -54,10 +57,13 @@ public class MetricableHttpTransceiver extends Transceiver implements Closeable 
 		client = new AsyncHttpClient(new AsyncHttpClientConfig.Builder().setRequestTimeoutInMs(timeout).build());
 	}
 
-	public MetricableHttpTransceiver(URL url, Meter qps, Histogram hist) {
+	public MetricableHttpTransceiver(String clientid, URL url, Meter qps, Histogram hist, Meter qps_f, Histogram hist_f) {
+		this.clientid = clientid;
 		this.url = url;
 		this.hist = hist;
 		this.qps = qps;
+		this.hist_f = hist_f;
+		this.qps_f = qps_f;
 	}
 
 	public String getRemoteName() {
@@ -67,22 +73,26 @@ public class MetricableHttpTransceiver extends Transceiver implements Closeable 
 	public synchronized List<ByteBuffer> readBuffers() throws IOException {
 		Response r;
 		InputStream in = null;
+		boolean failure = false;
 		try {
 			r = resp.get();
 			in = r.getResponseBodyAsStream();
 			return readBuffers(in);
 		} catch (Exception e) {
+			failure = true;
 			throw new IOException(e);
 		} finally {
 			if (in != null) {
 				in.close();
 			}
 			this.endts = System.currentTimeMillis();
-			if (hist != null) {
-				hist.update(endts - startts);
+			Meter q = failure ? this.qps_f : this.qps;
+			Histogram h = failure ? this.hist_f : this.hist;
+			if (h != null) {
+				h.update(endts - startts);
 			}
-			if (qps != null) {
-				qps.mark();
+			if (q != null) {
+				q.mark();
 			}
 		}
 	}
@@ -95,12 +105,6 @@ public class MetricableHttpTransceiver extends Transceiver implements Closeable 
 		if (!resp.isDone()) {
 			resp.cancel(true);
 			this.endts = System.currentTimeMillis();
-			if (hist != null) {
-				hist.update(endts - startts);
-			}
-			if (qps != null) {
-				qps.mark();
-			}
 		}
 	}
 

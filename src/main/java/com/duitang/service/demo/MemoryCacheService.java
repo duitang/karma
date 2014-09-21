@@ -33,4 +33,15 @@ public class MemoryCacheService implements DemoService {
 		return true;
 	}
 
+	@Override
+	public String trace_msg(String key, long ttl) throws AvroRemoteException {
+		long ts = System.currentTimeMillis();
+		try {
+			Thread.sleep(ttl);
+		} catch (InterruptedException e) {
+		}
+		long ela = System.currentTimeMillis() - ts;
+		return key + " => {" + ts + ", " + ela + "}";
+	}
+
 }

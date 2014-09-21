@@ -53,6 +53,7 @@ public class L2ServiceTest {
 		Assert.assertEquals(100, cli.session_expire("", 100));
 		Assert.assertEquals(100, cli.session_delete(""));
 		Assert.assertEquals("helloworld", cli.session_genId());
+		Assert.assertNull(cli.audit("clientid", "foo", false, System.currentTimeMillis(), 1));
 		fac.release(cli);
 	}
 
@@ -141,6 +142,11 @@ class MockL2Service implements L2Service {
 	@Override
 	public boolean cat_setbytes(String key, ByteBuffer value, int ttl) throws AvroRemoteException {
 		return true;
+	}
+
+	@Override
+	public Void audit(String clientid, String name, boolean failed, long ts, long elapse) throws AvroRemoteException {
+		return null;
 	}
 
 }

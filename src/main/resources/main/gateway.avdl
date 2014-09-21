@@ -2,4 +2,5 @@
 protocol L2Service {
 	import idl "../service/cat.avdl";
 	import idl "../service/session.avdl";
+	import idl "../service/audit.avdl";
 }

@@ -3,7 +3,9 @@ package com.duitang.service.base;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
+import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.Meter;
@@ -13,6 +15,7 @@ public class MetricCenter {
 
 	final public static MetricRegistry metrics = new MetricRegistry();
 	final public static JmxReporter reporter = JmxReporter.forRegistry(metrics).build();
+	public static ConsoleReporter console;
 	static {
 		reporter.start();
 	}
@@ -45,6 +48,13 @@ public class MetricCenter {
 				MetricCenter.method_dur.put(nm, MetricCenter.metrics.histogram(m.getName() + ":" + "response_time"));
 			}
 		}
+	}
+
+	static public void debugReporter() {
+		ConsoleReporter ret = ConsoleReporter.forRegistry(metrics).convertRatesTo(TimeUnit.SECONDS)
+		        .convertDurationsTo(TimeUnit.MILLISECONDS).build();
+		ret.start(1, TimeUnit.SECONDS);
+		console = ret;
 	}
 
 }

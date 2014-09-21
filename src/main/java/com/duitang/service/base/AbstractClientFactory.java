@@ -22,15 +22,44 @@ public abstract class AbstractClientFactory<T> implements ServiceFactory<T> {
 	protected List<URL> serviceURL;
 	protected Meter qps;
 	protected Histogram dur;
+	protected Meter qps_f;
+	protected Histogram dur_f;
 	protected AtomicInteger hashid = new AtomicInteger(0);
 	protected int sz;
 	protected int timeout = 500;
+	protected String clientid;
+
+	public AbstractClientFactory() {
+		this(null);
+	}
+
+	public AbstractClientFactory(String clientid) {
+		this.clientid = clientid;
+		initClientName();
+		init();
+	}
 
 	@SuppressWarnings("static-access")
 	protected void init() {
-		qps = MetricCenter.metrics.meter(MetricCenter.metrics.name(getServiceName(), "qps"));
-		dur = MetricCenter.metrics.histogram(getServiceName() + ":" + "response_time");
+		qps = MetricCenter.metrics.meter(MetricCenter.metrics.name(clientid + ":" + getServiceName(), "qps"));
+		dur = MetricCenter.metrics.histogram(clientid + ":" + getServiceName() + ":" + "response_time");
+		qps_f = MetricCenter.metrics.meter(MetricCenter.metrics.name(clientid + ":" + getServiceName() + "_Failure",
+		        "qps"));
+		dur_f = MetricCenter.metrics.histogram(clientid + ":" + getServiceName() + ":" + "response_time_Failure");
 		MetricCenter.initMetric(getServiceType());
+	}
+
+	protected void initClientName() {
+		if (clientid == null) {
+			StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
+			StackTraceElement e = stacktrace[5];
+			if (e.getMethodName() != null) {
+				clientid = e.getFileName() + "@" + e.getLineNumber() + ":" + e.getMethodName();
+			}
+		}
+		if (clientid == null) {
+			clientid = "";
+		}
 	}
 
 	public String getUrl() {
@@ -64,8 +93,8 @@ public abstract class AbstractClientFactory<T> implements ServiceFactory<T> {
 	public T create() {
 		T ret = null;
 		try {
-			MetricableHttpTransceiver client = new MetricableHttpTransceiver(serviceURL.get(hashid.incrementAndGet()
-			        % sz), qps, dur);
+			MetricableHttpTransceiver client = new MetricableHttpTransceiver(this.clientid, serviceURL.get(hashid
+			        .incrementAndGet() % sz), qps, dur, qps_f, dur_f);
 			ret = (T) SpecificRequestor.getClient(getServiceType(), client);
 		} catch (IOException e) {
 			err.error("create for service: " + this.url, e);
