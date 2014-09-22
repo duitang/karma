@@ -24,11 +24,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class KafkaJsonReporter extends ScheduledReporter {
 
-	final static public String METRICS_NAME = "Metrics";
+	final static public String METRICS_QUEUE_NAME = "Service_Metrics";
 	protected boolean sample = true;
 	protected static ObjectMapper mapper;
 	protected Producer<String, String> reportServer;
-	protected String clientid;
 	protected Properties config;
 
 	protected void init() {
@@ -47,7 +46,6 @@ public class KafkaJsonReporter extends ScheduledReporter {
 	public KafkaJsonReporter(MetricRegistry registry, String name, MetricFilter filter, TimeUnit rateUnit,
 	        TimeUnit durationUnit, Properties props) {
 		super(registry, name, filter, rateUnit, durationUnit);
-		this.clientid = getBackTraceName();
 		config = props;
 		init();
 	}
@@ -77,8 +75,8 @@ public class KafkaJsonReporter extends ScheduledReporter {
 		} catch (JsonProcessingException e) {
 		}
 		try {
-			KeyedMessage<String, String> data = new KeyedMessage<String, String>(METRICS_NAME, clientid,
-			        mapper.writeValueAsString(ret));
+			KeyedMessage<String, String> data = new KeyedMessage<String, String>(METRICS_QUEUE_NAME,
+			        MetricCenter.getHostname(), mapper.writeValueAsString(ret));
 			reportServer.send(data);
 		} catch (JsonProcessingException e) {
 		}
