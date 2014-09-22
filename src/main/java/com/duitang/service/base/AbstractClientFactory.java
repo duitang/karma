@@ -2,16 +2,11 @@ package com.duitang.service.base;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import net.sf.cglib.proxy.Enhancer;
-import net.sf.cglib.proxy.MethodInterceptor;
-import net.sf.cglib.proxy.MethodProxy;
 
 import org.apache.avro.ipc.specific.SpecificRequestor;
 import org.apache.log4j.Logger;
@@ -33,6 +28,7 @@ public abstract class AbstractClientFactory<T> implements ServiceFactory<T> {
 	protected int sz;
 	protected int timeout = 500;
 	protected String clientid;
+	protected TraceableObject<T> tracer;
 
 	public AbstractClientFactory() {
 		this(null);
@@ -46,6 +42,7 @@ public abstract class AbstractClientFactory<T> implements ServiceFactory<T> {
 
 	protected void init() {
 		MetricCenter.initMetric(getServiceType(), clientid);
+		tracer = new TraceableObject<T>();
 	}
 
 	protected void initClientName() {
@@ -95,7 +92,7 @@ public abstract class AbstractClientFactory<T> implements ServiceFactory<T> {
 			MetricableHttpTransceiver client = new MetricableHttpTransceiver(this.clientid, serviceURL.get(hashid
 			        .incrementAndGet() % sz));
 			ret = (T) SpecificRequestor.getClient(getServiceType(), client);
-			ret = enhanceIt(ret, getServiceType());
+			ret = tracer.createTraceableInstance(ret, getServiceType(), clientid);
 		} catch (IOException e) {
 			err.error("create for service: " + this.url, e);
 		}
@@ -110,27 +107,6 @@ public abstract class AbstractClientFactory<T> implements ServiceFactory<T> {
 				err.error(e);
 			}
 		}
-	}
-
-	protected T enhanceIt(final T cli, final Class<T> clz) {
-		Enhancer enhancer = new Enhancer();
-		enhancer.setSuperclass(clz);
-		enhancer.setCallback(new MethodInterceptor() {
-			public Object intercept(Object proxy, Method method, Object[] args, MethodProxy methodProxy)
-			        throws Throwable {
-				long ts = System.currentTimeMillis();
-				Object ret = null;
-				boolean f = false;
-				try {
-					ret = methodProxy.invoke(cli, args);
-				} catch (Exception e) {
-					f = true;
-				}
-				MetricCenter.methodMetric(clientid + ":" + method.getName(), ts, f);
-				return ret;
-			}
-		});
-		return (T) enhancer.create();
 	}
 
 }

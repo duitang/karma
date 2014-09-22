@@ -9,9 +9,16 @@ import org.apache.avro.ipc.specific.SpecificResponder;
 public class ServerBootstrap {
 
 	protected HttpServer server;
+	protected String clientid;
+	protected TraceableObject tracer;
+	protected Object proxiedService;
 
 	public void startUp(Class serviceType, Object service, int port) throws IOException {
-		server = new HttpServer(new SpecificResponder(serviceType, service), port);
+		clientid = service.toString();
+		MetricCenter.initMetric(serviceType, clientid);
+		tracer = new TraceableObject();
+		proxiedService = tracer.createTraceableInstance(service, serviceType, clientid);
+		server = new HttpServer(new SpecificResponder(serviceType, proxiedService), port);
 		server.start();
 	}
 
@@ -19,6 +26,23 @@ public class ServerBootstrap {
 		if (server != null) {
 			server.close();
 		}
+	}
+
+	public String getClientid() {
+		return clientid;
+	}
+
+	protected String initClientName() {
+		String ret = null;
+		StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
+		StackTraceElement e = stacktrace[2];
+		if (e.getMethodName() != null) {
+			ret = e.getFileName() + "@" + e.getLineNumber() + ":" + e.getMethodName();
+		}
+		if (ret == null) {
+			ret = "";
+		}
+		return ret;
 	}
 
 	public void serviceInfo(Class serviceType, StringBuilder sb) {

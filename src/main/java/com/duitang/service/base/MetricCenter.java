@@ -15,6 +15,7 @@ import com.codahale.metrics.MetricRegistry;
 
 public class MetricCenter {
 
+	final public static boolean debug = false;
 	final public static MetricRegistry metrics = new MetricRegistry();
 	final public static JmxReporter reporter = JmxReporter.forRegistry(metrics).build();
 	public static ConsoleReporter console;
@@ -50,6 +51,9 @@ public class MetricCenter {
 		for (Method m : clazz.getMethods()) {
 			nm = clientid + ":" + m.getName();
 			nmf = nm + ":Failure";
+			if (debug) {
+				System.err.println(" ------>" + nm);
+			}
 			// maybe racing, but not serious problem
 			if (!MetricCenter.method_qps.containsKey(nm)) {
 				MetricCenter.method_qps.put(nm, MetricCenter.metrics.meter(MetricCenter.metrics.name(nm + ":qps")));
