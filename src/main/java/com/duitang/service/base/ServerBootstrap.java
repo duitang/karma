@@ -33,20 +33,6 @@ public class ServerBootstrap {
 		return clientid;
 	}
 
-	protected String initClientName() {
-		String ret = null;
-		StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
-		StackTraceElement e = stacktrace[2];
-		if (e.getMethodName() != null) {
-			ret = MetricCenter.getHostname() + "|" + e.getFileName() + "@" + e.getLineNumber() + ":"
-			        + e.getMethodName();
-		}
-		if (ret == null) {
-			ret = "";
-		}
-		return ret;
-	}
-
 	public void serviceInfo(Class serviceType, StringBuilder sb) {
 		if (serviceType == null) {
 			return;

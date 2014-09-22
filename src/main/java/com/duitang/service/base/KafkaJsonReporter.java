@@ -74,6 +74,7 @@ public class KafkaJsonReporter extends ScheduledReporter {
 			ret.put("timers", mapper.writeValueAsString(timers));
 		} catch (JsonProcessingException e) {
 		}
+		ret.put("hostname", MetricCenter.getHostname());
 		try {
 			KeyedMessage<String, String> data = new KeyedMessage<String, String>(METRICS_QUEUE_NAME,
 			        MetricCenter.getHostname(), mapper.writeValueAsString(ret));
