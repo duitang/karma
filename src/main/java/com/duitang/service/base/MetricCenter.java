@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 
 import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Histogram;
-import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
@@ -19,11 +18,11 @@ public class MetricCenter {
 
 	final public static boolean debug = false;
 	final public static MetricRegistry metrics = new MetricRegistry();
-	final public static JmxReporter reporter = JmxReporter.forRegistry(metrics).build();
+//	final public static JmxReporter reporter = JmxReporter.forRegistry(metrics).build();
 	public static ConsoleReporter console;
 	public static KafkaJsonReporter kafkaReporter;
 	static {
-		reporter.start();
+//		reporter.start();
 	}
 	public static Map<String, Meter> method_qps = new HashMap<String, Meter>();
 	public static Map<String, Histogram> method_dur = new HashMap<String, Histogram>();
@@ -64,7 +63,7 @@ public class MetricCenter {
 			nm = clientid + ":" + m.getName();
 			nmf = nm + ":Failure";
 			if (debug) {
-				System.err.println(" ------>" + nm);
+				System.err.println(" ------> " + nm);
 			}
 			// maybe racing, but not serious problem
 			if (!MetricCenter.method_qps.containsKey(nm)) {
