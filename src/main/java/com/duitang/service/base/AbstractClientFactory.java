@@ -50,7 +50,8 @@ public abstract class AbstractClientFactory<T> implements ServiceFactory<T> {
 			StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
 			StackTraceElement e = stacktrace[5];
 			if (e.getMethodName() != null) {
-				clientid = e.getFileName() + "@" + e.getLineNumber() + ":" + e.getMethodName();
+				clientid = MetricCenter.getHostname() + "|" + e.getFileName() + "@" + e.getLineNumber() + ":"
+				        + e.getMethodName();
 			}
 		}
 		if (clientid == null) {

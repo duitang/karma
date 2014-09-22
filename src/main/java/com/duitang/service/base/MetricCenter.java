@@ -1,6 +1,8 @@
 package com.duitang.service.base;
 
 import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -42,6 +44,16 @@ public class MetricCenter {
 		if (m != null) {
 			m.mark();
 		}
+	}
+
+	static public String getHostname() {
+		String ret;
+		try {
+			ret = InetAddress.getLocalHost().getHostName();
+		} catch (UnknownHostException e) {
+			ret = System.getenv("HOSTNAME");
+		}
+		return ret;
 	}
 
 	@SuppressWarnings("static-access")

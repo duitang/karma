@@ -12,9 +12,10 @@ public class ServerBootstrap {
 	protected String clientid;
 	protected TraceableObject tracer;
 	protected Object proxiedService;
+	protected String hostname;
 
 	public void startUp(Class serviceType, Object service, int port) throws IOException {
-		clientid = service.toString();
+		clientid = MetricCenter.getHostname() + "|" + service.toString();
 		MetricCenter.initMetric(serviceType, clientid);
 		tracer = new TraceableObject();
 		proxiedService = tracer.createTraceableInstance(service, serviceType, clientid);
@@ -37,7 +38,8 @@ public class ServerBootstrap {
 		StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
 		StackTraceElement e = stacktrace[2];
 		if (e.getMethodName() != null) {
-			ret = e.getFileName() + "@" + e.getLineNumber() + ":" + e.getMethodName();
+			ret = MetricCenter.getHostname() + "|" + e.getFileName() + "@" + e.getLineNumber() + ":"
+			        + e.getMethodName();
 		}
 		if (ret == null) {
 			ret = "";
@@ -72,4 +74,5 @@ public class ServerBootstrap {
 		}
 
 	}
+
 }
