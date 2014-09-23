@@ -33,13 +33,13 @@ public class KafkaJsonReporter extends ScheduledReporter {
 	protected void init() {
 		mapper = new ObjectMapper().registerModule(new MetricsModule(TimeUnit.SECONDS, TimeUnit.MILLISECONDS, sample));
 		config.put("serializer.class", "kafka.serializer.StringEncoder");
-		config.put("request.required.acks", 0);
-		config.put("batch.num.messages", 100);
+		config.put("request.required.acks", "0");
+		config.put("batch.num.messages", "100");
 		config.put("compression.codec", "gzip");
-		config.put("queue.buffering.max.ms", 5000);
-		config.put("queue.buffering.max.messages", 10000);
-		config.put("queue.enqueue.timeout.ms", 20000);
-		config.put("message.send.max.retries", 2);
+		config.put("queue.buffering.max.ms", "5000");
+		config.put("queue.buffering.max.messages", "10000");
+		config.put("queue.enqueue.timeout.ms", "20000");
+		config.put("message.send.max.retries", "2");
 		ProducerConfig prodconf = new ProducerConfig(config);
 		reportServer = new Producer<String, String>(prodconf);
 	}
