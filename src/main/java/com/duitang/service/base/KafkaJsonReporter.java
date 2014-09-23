@@ -1,40 +1,26 @@
 package com.duitang.service.base;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.SortedMap;
-import java.util.concurrent.TimeUnit;
 
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
 import kafka.producer.ProducerConfig;
 
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.Gauge;
-import com.codahale.metrics.Histogram;
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricFilter;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.ScheduledReporter;
-import com.codahale.metrics.Timer;
-import com.codahale.metrics.json.MetricsModule;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.codehaus.jackson.map.ObjectMapper;
 
-public class KafkaJsonReporter extends ScheduledReporter {
+public class KafkaJsonReporter implements Reporter {
 
 	final static public String METRICS_QUEUE_NAME = "Service_Metrics";
-	protected boolean sample = true;
 	protected static ObjectMapper mapper;
 	protected Producer<String, String> reportServer;
 	protected Properties config;
 
 	protected void init() {
-		mapper = new ObjectMapper().registerModule(new MetricsModule(TimeUnit.SECONDS, TimeUnit.MILLISECONDS, sample));
+		mapper = new ObjectMapper();
 		config.put("serializer.class", "kafka.serializer.StringEncoder");
 		config.put("request.required.acks", "0");
-		config.put("batch.num.messages", "100");
+		config.put("batch.num.messages", "5");
 		config.put("compression.codec", "gzip");
 		config.put("queue.buffering.max.ms", "5000");
 		config.put("queue.buffering.max.messages", "10000");
@@ -44,49 +30,9 @@ public class KafkaJsonReporter extends ScheduledReporter {
 		reportServer = new Producer<String, String>(prodconf);
 	}
 
-	protected KafkaJsonReporter(MetricRegistry registry, String name, MetricFilter filter, TimeUnit rateUnit,
-	        TimeUnit durationUnit) {
-		this(registry, name, filter, rateUnit, durationUnit, new Properties());
-	}
-
-	public KafkaJsonReporter(MetricRegistry registry, String name, MetricFilter filter, TimeUnit rateUnit,
-	        TimeUnit durationUnit, Properties props) {
-		super(registry, name, filter, rateUnit, durationUnit);
+	public KafkaJsonReporter(Properties props) {
 		config = props;
 		init();
-	}
-
-	@Override
-	public void report(SortedMap<String, Gauge> gauges, SortedMap<String, Counter> counters,
-	        SortedMap<String, Histogram> histograms, SortedMap<String, Meter> meters, SortedMap<String, Timer> timers) {
-		Map<String, String> ret = new HashMap<String, String>();
-		try {
-			ret.put("gauges", mapper.writeValueAsString(gauges));
-		} catch (JsonProcessingException e) {
-		}
-		try {
-			ret.put("counters", mapper.writeValueAsString(counters));
-		} catch (JsonProcessingException e) {
-		}
-		try {
-			ret.put("histograms", mapper.writeValueAsString(histograms));
-		} catch (JsonProcessingException e) {
-		}
-		try {
-			ret.put("meters", mapper.writeValueAsString(meters));
-		} catch (JsonProcessingException e) {
-		}
-		try {
-			ret.put("timers", mapper.writeValueAsString(timers));
-		} catch (JsonProcessingException e) {
-		}
-		ret.put("hostname", MetricCenter.getHostname());
-		try {
-			KeyedMessage<String, String> data = new KeyedMessage<String, String>(METRICS_QUEUE_NAME,
-			        MetricCenter.getHostname(), mapper.writeValueAsString(ret));
-			reportServer.send(data);
-		} catch (JsonProcessingException e) {
-		}
 	}
 
 	static protected String getBackTraceName() {
@@ -98,4 +44,17 @@ public class KafkaJsonReporter extends ScheduledReporter {
 		}
 		return ret;
 	}
+
+	@Override
+	public void report(Map data) {
+		KeyedMessage<String, String> d;
+		try {
+			d = new KeyedMessage<String, String>(METRICS_QUEUE_NAME, MetricCenter.getHostname(),
+			        mapper.writeValueAsString(data));
+			reportServer.send(d);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 }

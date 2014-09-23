@@ -32,7 +32,7 @@ class TraceProxy implements MethodInterceptor {
 
 	@Override
 	public Object intercept(Object obj, Method method, Object[] args, MethodProxy mproxy) throws Throwable {
-		long ts = System.currentTimeMillis();
+		long ts = System.nanoTime();
 		Object ret = null;
 		boolean f = false;
 		try {
@@ -40,7 +40,8 @@ class TraceProxy implements MethodInterceptor {
 		} catch (Exception e) {
 			f = true;
 		}
-		MetricCenter.methodMetric(clientid + ":" + method.getName(), ts, f);
+		ts = System.nanoTime() - ts;
+		MetricCenter.methodMetric(clientid, method.getName(), ts, f);
 		return ret;
 	}
 
