@@ -33,6 +33,10 @@ public class MetricUnit {
 		ret.put("max", histo.getMaxValue());
 		ret.put("min", histo.getMinValue());
 		ret.put("stddev", histo.getStdDeviation());
+		long gap = histo.getEndTimeStamp() - histo.getStartTimeStamp();
+		if (gap != 0) {
+			ret.put("qps", histo.getTotalCount() / (gap / 1000D));
+		}
 		try {
 			ret.put("p50", histo.getValueAtPercentile(50));
 			ret.put("p60", histo.getValueAtPercentile(60));
