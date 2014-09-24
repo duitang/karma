@@ -11,6 +11,7 @@ public class MetricUnit {
 	public String clientId;
 	public String name;
 	public String group;
+	public String server;
 	protected LatencyStats stats;
 	protected Histogram histo;
 
@@ -18,6 +19,7 @@ public class MetricUnit {
 		this.clientId = clientId;
 		this.name = name;
 		this.group = group;
+		this.server = clientId.split("\\|")[0];
 		stats = new LatencyStats();
 		histo = stats.getIntervalHistogram();
 	}
@@ -37,6 +39,7 @@ public class MetricUnit {
 		if (gap != 0) {
 			ret.put("qps", histo.getTotalCount() / (gap / 1000D));
 		}
+		ret.put("server", this.server);
 		try {
 			ret.put("p50", histo.getValueAtPercentile(50));
 			ret.put("p60", histo.getValueAtPercentile(60));
