@@ -1,5 +1,6 @@
 package com.duitang.service.base;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.EOFException;
@@ -11,17 +12,16 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.avro.ipc.Transceiver;
-
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.AsyncHttpClient.BoundRequestBuilder;
-import com.ning.http.client.AsyncHttpClientConfig;
-import com.ning.http.client.Response;
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.api.ContentResponse;
+import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.util.BytesContentProvider;
+import org.eclipse.jetty.http.HttpField;
+import org.eclipse.jetty.http.HttpHeader;
 
 public class MetricableHttpTransceiver extends Transceiver implements Closeable {
 
@@ -30,13 +30,16 @@ public class MetricableHttpTransceiver extends Transceiver implements Closeable 
 	static final Collection<String> content_type = Arrays.asList(new String[] { CONTENT_TYPE });
 
 	static protected int timeout = 500;
-	static protected AsyncHttpClient client;
+	static protected int cpu_affinity = Double.valueOf(Runtime.getRuntime().availableProcessors() * 1.5).intValue();
+	static protected List<HttpClient> client = new ArrayList<HttpClient>();
+	static protected AtomicInteger roundrobin = new AtomicInteger(0);
+	static protected int rsize;
 
 	protected URL url;
-	protected Future<Response> resp;
-	protected long startts = 0;
-	protected long endts = -1;
+	protected ContentResponse resp;
 	protected String clientid;
+	protected Exception eer;
+	protected boolean done = false;
 
 	static {
 		initClient();
@@ -48,7 +51,18 @@ public class MetricableHttpTransceiver extends Transceiver implements Closeable 
 	}
 
 	static public void initClient() {
-		client = new AsyncHttpClient(new AsyncHttpClientConfig.Builder().setRequestTimeoutInMs(timeout).build());
+		for (int i = 0; i < cpu_affinity; i++) {
+			HttpClient cli = new HttpClient();
+			cli.setFollowRedirects(false);
+			cli.setIdleTimeout(timeout);
+			try {
+				cli.start();
+			} catch (Exception e) {
+				throw new RuntimeException("metricable http transceiver start http client error: ", e);
+			}
+			client.add(cli);
+		}
+		rsize = client.size();
 	}
 
 	public MetricableHttpTransceiver(String clientid, URL url) {
@@ -61,11 +75,12 @@ public class MetricableHttpTransceiver extends Transceiver implements Closeable 
 	}
 
 	public synchronized List<ByteBuffer> readBuffers() throws IOException {
-		Response r;
 		InputStream in = null;
 		try {
-			r = resp.get();
-			in = r.getResponseBodyAsStream();
+			if (resp == null) {
+				throw new IOException(eer);
+			}
+			in = new ByteArrayInputStream(resp.getContent());
 			return readBuffers(in);
 		} catch (Exception e) {
 			throw new IOException(e);
@@ -73,6 +88,7 @@ public class MetricableHttpTransceiver extends Transceiver implements Closeable 
 			if (in != null) {
 				in.close();
 			}
+			eer = null;
 		}
 	}
 
@@ -81,25 +97,25 @@ public class MetricableHttpTransceiver extends Transceiver implements Closeable 
 		if (resp == null) {
 			return;
 		}
-		if (!resp.isDone()) {
-			resp.cancel(true);
-		}
 	}
 
 	public synchronized void writeBuffers(List<ByteBuffer> buffers) throws IOException {
-		startts = System.currentTimeMillis();
-		BoundRequestBuilder t = client.preparePost(getRemoteName());
-		Map<String, Collection<String>> param = new HashMap<String, Collection<String>>();
-		param.put("Content-Type", content_type);
-		param.put("Content-Length", Arrays.asList(Integer.toString(getLength(buffers))));
-
-		t.setParameters(param);
+		int rid = roundrobin.incrementAndGet();
+		HttpClient cli = client.get(rid % rsize);
+		Request r = cli.newRequest(getRemoteName()).method("POST");
+		r.getHeaders().add(new HttpField(HttpHeader.CONTENT_TYPE, CONTENT_TYPE));
+		r.getHeaders().add(new HttpField(HttpHeader.CONTENT_LENGTH, Integer.toString(getLength(buffers))));
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		try {
 			writeBuffers(buffers, out);
-			t.setBody(out.toByteArray());
-			resp = t.execute();
+			r.content(new BytesContentProvider(out.toByteArray()), CONTENT_TYPE);
+			try {
+				resp = r.send();
+			} catch (Exception e) {
+				resp = null;
+				eer = e;
+			}
 		} finally {
 			if (out != null) {
 				out.close();
