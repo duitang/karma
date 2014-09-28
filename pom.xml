@@ -35,15 +35,7 @@
             <exclusions>
                 <exclusion>
                     <groupId>org.mortbay.jetty</groupId>
-                    <artifactId>jetty</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.mortbay.jetty</groupId>
-                    <artifactId>jetty-util</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.mortbay.jetty</groupId>
-                    <artifactId>servlet-api</artifactId>
+                    <artifactId>jetty-webapp</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
