@@ -12,7 +12,8 @@ import com.duitang.service.base.ServerBootstrap;
 
 public class MemoryServer {
 
-	final static String[] PARAMETER_KEYS = { "server", "client", "port", "host", "print", "thread", "loop", "msg" };
+	final static String[] PARAMETER_KEYS = { "server", "client", "port", "host", "print", "thread", "loop", "msg",
+	        "protocol" };
 
 	public static void main(String[] args) {
 		Map<String, String> param = argsToMap(args);
@@ -36,13 +37,17 @@ public class MemoryServer {
 		if (param.containsKey("print")) {
 			console_print = param.get("print");
 		}
+		String protocol = "http";
+		if (param.containsKey("protocol")) {
+			protocol = param.get("protocol");
+		}
 		int p = Integer.valueOf(port);
 		int s = Integer.valueOf(console_print);
 
 		MemoryCacheService impl = new MemoryCacheService();
 		ServerBootstrap boot = new ServerBootstrap();
 		try {
-			boot.startUp(DemoService.class, impl, p);
+			boot.startUp(DemoService.class, impl, p, protocol);
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.exit(1);
@@ -84,14 +89,19 @@ public class MemoryServer {
 			sb.append("1");
 		}
 		msg = sb.toString();
+		String protocol = "http";
+		if (param.containsKey("protocol")) {
+			protocol = param.get("protocol");
+		}
 
 		int t = Integer.valueOf(thread);
 		int s = Integer.valueOf(console_print);
 		int l = Integer.valueOf(loop);
 
 		MemoryCacheClientFactory fac = new MemoryCacheClientFactory();
-		fac.setUrl("http://" + host + ":" + port);
+		fac.setUrl(protocol + "://" + host + ":" + port);
 
+		LoadRunner.one = fac.create();
 		CountDownLatch latch = new CountDownLatch(t);
 		Thread[] ths = new Thread[t];
 		for (int i = 0; i < ths.length; i++) {
@@ -138,6 +148,7 @@ public class MemoryServer {
 
 class LoadRunner implements Runnable {
 
+	static protected DemoService one;
 	protected CountDownLatch latch;
 	protected int loop;
 	protected String msg;
@@ -154,34 +165,40 @@ class LoadRunner implements Runnable {
 
 	@Override
 	public void run() {
+		int i = 0;
+		int err = 0;
 		long ts = System.currentTimeMillis();
 		try {
 			DemoService cli = null;
 			String val = null;
 			try {
 				cli = fac.create();
-				cli.memory_setString(name, msg, 1000000);
+				if (!cli.memory_setString(name, msg, 1000000)) {
+					System.err.println("setting error: " + name);
+				}
 			} catch (AvroRemoteException e1) {
 				e1.printStackTrace();
 			} finally {
 				fac.release(cli);
 			}
-			for (int i = 0; i < loop; i++) {
+			for (i = 0; i < loop; i++) {
 				try {
-					cli = fac.create();
+					cli = one;
+					// cli = fac.create();
 					val = cli.memory_getString(name);
 					if (val.length() != msg.length()) {
 						throw new Exception("value error: " + val);
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
+					err++;
 				} finally {
-					fac.release(cli);
+					// fac.release(cli);
 				}
 			}
 		} finally {
 			ts = System.currentTimeMillis() - ts;
-			System.out.println(name + " running elapsed: " + ts + "ms with loop=[" + loop + "]");
+			System.out.println(name + " running elapsed: " + ts + "ms with loop=[" + loop + "] @" + i + ", error=" + err);
 			this.latch.countDown();
 		}
 	}

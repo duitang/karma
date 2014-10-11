@@ -2,24 +2,35 @@ package com.duitang.service.base;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.InetSocketAddress;
 
 import org.apache.avro.ipc.HttpServer;
+import org.apache.avro.ipc.NettyServer;
+import org.apache.avro.ipc.Server;
 import org.apache.avro.ipc.specific.SpecificResponder;
 
 public class ServerBootstrap {
 
-	protected HttpServer server;
+	protected Server server;
 	protected String clientid;
 	protected TraceableObject tracer;
 	protected Object proxiedService;
 	protected String hostname;
 
 	public void startUp(Class serviceType, Object service, int port) throws IOException {
+		startUp(serviceType, service, port, "http");
+	}
+
+	public void startUp(Class serviceType, Object service, int port, String protocol) throws IOException {
 		clientid = MetricCenter.getHostname() + "|" + service.toString();
 		MetricCenter.initMetric(serviceType, clientid);
 		tracer = new TraceableObject();
-		proxiedService = tracer.createTraceableInstance(service, serviceType, clientid);
-		server = new HttpServer(new SpecificResponder(serviceType, proxiedService), port);
+		proxiedService = tracer.createTraceableInstance(service, serviceType, clientid, null);
+		if (protocol.equalsIgnoreCase("http")) {
+			server = new HttpServer(new SpecificResponder(serviceType, proxiedService), port);
+		} else {
+			server = new NettyServer(new SpecificResponder(serviceType, proxiedService), new InetSocketAddress(port));
+		}
 		server.start();
 	}
 
