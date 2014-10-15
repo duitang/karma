@@ -1,0 +1,4 @@
+
+
+[snappy]
+python-snappy

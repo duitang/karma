@@ -1,0 +1,57 @@
+{
+  "protocol" : "DemoService",
+  "namespace" : "com.duitang.service.demo",
+  "types" : [ ],
+  "messages" : {
+    "memory_getString" : {
+      "request" : [ {
+        "name" : "key",
+        "type" : "string"
+      } ],
+      "response" : [ "null", "string" ]
+    },
+    "memory_setString" : {
+      "request" : [ {
+        "name" : "key",
+        "type" : "string"
+      }, {
+        "name" : "value",
+        "type" : "string"
+      }, {
+        "name" : "ttl",
+        "type" : "int"
+      } ],
+      "response" : "boolean"
+    },
+    "memory_getBytes" : {
+      "request" : [ {
+        "name" : "key",
+        "type" : "string"
+      } ],
+      "response" : [ "null", "bytes" ]
+    },
+    "memory_setBytes" : {
+      "request" : [ {
+        "name" : "key",
+        "type" : "string"
+      }, {
+        "name" : "value",
+        "type" : "bytes"
+      }, {
+        "name" : "ttl",
+        "type" : "int"
+      } ],
+      "response" : "boolean"
+    },
+    "trace_msg" : {
+      "request" : [ {
+        "name" : "key",
+        "type" : "string"
+      }, {
+        "name" : "ttl",
+        "type" : "long"
+      } ],
+      "response" : "string"
+    }
+  }
+}

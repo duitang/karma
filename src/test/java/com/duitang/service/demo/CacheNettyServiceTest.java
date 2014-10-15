@@ -18,6 +18,8 @@ public class CacheNettyServiceTest {
 
 	ServerBootstrap boot = null;
 	MemoryCacheClientFactory fac = null;
+	ServerBootstrap bootHttp = null;
+	MemoryCacheClientFactory facHttp = null;
 
 	@Before
 	public void setUp() {
@@ -33,6 +35,15 @@ public class CacheNettyServiceTest {
 		}
 		fac = new MemoryCacheClientFactory();
 		fac.setUrl("netty://127.0.0.1:9090");
+		bootHttp = new ServerBootstrap();
+		try {
+			bootHttp.startUp(DemoService.class, impl, 9091, "http");
+		} catch (IOException e) {
+			e.printStackTrace();
+			Assert.fail(e.getMessage());
+		}
+		facHttp = new MemoryCacheClientFactory();
+		facHttp.setUrl("http://127.0.0.1:9091");
 	}
 
 	@After
@@ -41,6 +52,16 @@ public class CacheNettyServiceTest {
 	}
 
 	@Test
+	public void testSleep() {
+		try {
+			Thread.sleep(20000000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+//	@Test
 	public void testBoot() {
 		DemoService cli = fac.create();
 		try {
@@ -86,7 +107,7 @@ public class CacheNettyServiceTest {
 		}
 	}
 
-	// @Test
+//	@Test
 	public void testMetric() throws Exception {
 		MetricCenter.enableConsoleReporter(1);
 		DemoService cli = fac.create();
