@@ -27,12 +27,23 @@ public class TestEnhancer {
 
 	}
 
-	@Test
+	// @Test
 	public void test2() {
 		SampleClass aa = new SampleClass();
 		Sample a = createWrapper(aa);
 		System.out.println(a.test("aaa"));
 
+	}
+
+	@Test
+	public void test3() {
+		String ss = "11";
+		CharSequence ret = ca(CharSequence.class, ss);
+		System.out.println(ret);
+	}
+
+	<T> T ca(Class<T> cls, Object o) {
+		return cls.cast(o);
 	}
 
 	public static Sample createWrapper(final Sample source) {

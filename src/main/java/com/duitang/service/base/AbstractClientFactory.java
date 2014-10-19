@@ -12,8 +12,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.avro.ipc.NettyTransceiver;
 import org.apache.avro.ipc.Transceiver;
-import org.apache.avro.ipc.specific.SpecificRequestor;
-import org.apache.avro.specific.SpecificData;
+import org.apache.avro.ipc.reflect.ReflectRequestor;
+import org.apache.avro.reflect.ReflectData;
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 
@@ -123,7 +123,7 @@ public abstract class AbstractClientFactory<T> implements ServiceFactory<T> {
 			} else {
 				trans = new NettyTransceiver(new InetSocketAddress(u.getHost(), u.getPort()), cliFac);
 			}
-			ret = (T) SpecificRequestor.getClient(getServiceType(), trans, new SpecificData(getServiceType()
+			ret = (T) ReflectRequestor.getClient(getServiceType(), trans, new ReflectData(getServiceType()
 			        .getClassLoader()));
 			ret = tracer.createTraceableInstance(ret, getServiceType(), clientid, null);
 		} catch (IOException e) {
@@ -165,6 +165,24 @@ public abstract class AbstractClientFactory<T> implements ServiceFactory<T> {
 			thread.setName(prefix + " " + threadId.incrementAndGet());
 			return thread;
 		}
+	}
+
+	public static <T1> AbstractClientFactory<T1> createFactory(final Class<T1> clz) {
+		final String name = clz.getName();
+		AbstractClientFactory<T1> ret = new AbstractClientFactory<T1>() {
+
+			@Override
+			public String getServiceName() {
+				return name;
+			}
+
+			@Override
+			public Class getServiceType() {
+				return clz;
+			}
+
+		};
+		return ret;
 	}
 
 }

@@ -18,6 +18,14 @@ public class TraceableObject<T> {
 		return (T) Mixin.create(new Object[] { ret, closeapi });
 	}
 
+	static public <T1> T1 create(final Object inst, final Class<T1> clz, final String clientid, Closeable closeapi) {
+		T1 ret = (T1) Enhancer.create(clz, new TraceProxy(inst, clientid, closeapi));
+		if (closeapi == null) {
+			return ret;
+		}
+		return (T1) Mixin.create(new Object[] { ret, closeapi });
+	}
+
 }
 
 class TraceProxy implements MethodInterceptor {

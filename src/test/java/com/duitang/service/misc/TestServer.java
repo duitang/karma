@@ -34,7 +34,7 @@ public class TestServer {
 		MyInter r1 = ReflectRequestor.getClient(MyInter.class, new NettyTransceiver(new InetSocketAddress("localhost",
 		        9999)), new ReflectData(type.getClassLoader()));
 		YourInter r2 = ReflectRequestor.getClient(YourInter.class, new NettyTransceiver(new InetSocketAddress(
-		        "localhost", 9999)), new ReflectData(type.getClassLoader()));
+		        "localhost", 9999)), new ReflectData());
 
 		r2.hello2();
 		r1.hello();
@@ -42,19 +42,23 @@ public class TestServer {
 }
 
 interface MyInter {
-	public void hello();
+	public String hello();
 }
 
 interface YourInter {
-	public void hello2();
+	public String hello2();
 }
 
 class My implements MyInter, YourInter {
-	public void hello() {
-		System.out.println("hello: " + new Date());
+	public String hello() {
+		String ret = "hello: " + new Date();
+		System.out.println(ret);
+		return ret;
 	}
 
-	public void hello2() {
-		System.out.println("hello2: " + new Date());
+	public String hello2() {
+		String ret = "hello2: " + new Date();
+		System.out.println(ret);
+		return ret;
 	}
 }
