@@ -32,12 +32,12 @@ public class AbstractClientFactoryTest {
 			folk1.startUp(Dummy.class, new DummyService1(), port1);
 			StringBuilder sb = new StringBuilder();
 			sb.setLength(0);
-			folk1.serviceInfo(Dummy.class, sb);
+			folk1.serviceInfo(Dummy.class, sb, "http", port1);
 			System.out.println(sb.toString());
 			folk2 = new ServerBootstrap();
 			folk2.startUp(Dummy.class, new DummyService1(), port2);
 			sb.setLength(0);
-			folk2.serviceInfo(Dummy.class, sb);
+			folk2.serviceInfo(Dummy.class, sb, "http", port2);
 			System.out.println(sb.toString());
 		} catch (IOException e) {
 			e.printStackTrace();
