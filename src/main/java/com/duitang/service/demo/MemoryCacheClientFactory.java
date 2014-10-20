@@ -1,8 +1,8 @@
 package com.duitang.service.demo;
 
-import com.duitang.service.base.AbstractClientFactory;
+import com.duitang.service.base.ClientFactory;
 
-public class MemoryCacheClientFactory extends AbstractClientFactory<DemoService> {
+public class MemoryCacheClientFactory extends ClientFactory<DemoService> {
 
 	final static String servicename = MemoryCacheService.class.getName();
 

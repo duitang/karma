@@ -17,7 +17,7 @@ import org.apache.avro.reflect.ReflectData;
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 
-public abstract class AbstractClientFactory<T> implements ServiceFactory<T> {
+public abstract class ClientFactory<T> implements ServiceFactory<T> {
 
 	protected Logger err = Logger.getLogger("error");
 
@@ -41,11 +41,11 @@ public abstract class AbstractClientFactory<T> implements ServiceFactory<T> {
 	protected String clientid;
 	protected TraceableObject<T> tracer;
 
-	public AbstractClientFactory() {
+	public ClientFactory() {
 		this(null);
 	}
 
-	public AbstractClientFactory(String clientid) {
+	public ClientFactory(String clientid) {
 		this.clientid = clientid;
 		initClientName();
 		init();
@@ -59,10 +59,12 @@ public abstract class AbstractClientFactory<T> implements ServiceFactory<T> {
 	protected void initClientName() {
 		if (clientid == null) {
 			StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
-			StackTraceElement e = stacktrace[5];
-			if (e.getMethodName() != null) {
-				clientid = MetricCenter.getHostname() + "|" + e.getFileName() + "@" + e.getLineNumber() + ":"
-				        + e.getMethodName();
+			for (int i = 0; i < stacktrace.length; i++) {
+				StackTraceElement e = stacktrace[i];
+				if (e.getMethodName() != null && !e.getClassName().startsWith("com.duitang.service.base")) {
+					clientid = MetricCenter.getHostname() + "|" + e.getFileName() + "@" + e.getLineNumber() + ":"
+					        + e.getMethodName();
+				}
 			}
 		}
 		if (clientid == null) {
@@ -167,9 +169,9 @@ public abstract class AbstractClientFactory<T> implements ServiceFactory<T> {
 		}
 	}
 
-	public static <T1> AbstractClientFactory<T1> createFactory(final Class<T1> clz) {
+	public static <T1> ClientFactory<T1> createFactory(final Class<T1> clz) {
 		final String name = clz.getName();
-		AbstractClientFactory<T1> ret = new AbstractClientFactory<T1>() {
+		ClientFactory<T1> ret = new ClientFactory<T1>() {
 
 			@Override
 			public String getServiceName() {

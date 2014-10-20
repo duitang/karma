@@ -44,12 +44,12 @@ public class TestMixinServices {
 		        new InetSocketAddress(9999));
 		server.start();
 
-		AbstractClientFactory<ServiceA> fac1 = AbstractClientFactory.createFactory(ServiceA.class);
+		ClientFactory<ServiceA> fac1 = ClientFactory.createFactory(ServiceA.class);
 		fac1.setUrl("netty://localhost:9999");
 		ServiceA client = fac1.create();
 		String ret = client.sayFromA("hello, laurence");
 		System.out.println(ret);
-		AbstractClientFactory<ServiceB> fac2 = AbstractClientFactory.createFactory(ServiceB.class);
+		ClientFactory<ServiceB> fac2 = ClientFactory.createFactory(ServiceB.class);
 		fac2.setUrl("netty://localhost:9999");
 		ServiceB client2 = fac2.create();
 		ret = client2.sayFromB("hello, laurence");
@@ -64,12 +64,12 @@ public class TestMixinServices {
 		boot.startUp(new Class[] { ServiceA.class, ServiceB.class }, new Object[] { new ServiceImplA(),
 		        new ServiceImplB() }, 9999, "netty");
 
-		AbstractClientFactory<ServiceA> fac = AbstractClientFactory.createFactory(ServiceA.class);
+		ClientFactory<ServiceA> fac = ClientFactory.createFactory(ServiceA.class);
 		fac.setUrl("netty://localhost:9999");
 		ServiceA client = fac.create();
 		String ret = client.sayFromA("hello, laurence");
 		System.out.println(ret);
-		AbstractClientFactory<ServiceB> fac2 = AbstractClientFactory.createFactory(ServiceB.class);
+		ClientFactory<ServiceB> fac2 = ClientFactory.createFactory(ServiceB.class);
 		fac2.setUrl("netty://localhost:9999");
 		ServiceB client2 = fac2.create();
 		ret = client2.sayFromB("hello, laurence");
@@ -99,12 +99,12 @@ public class TestMixinServices {
 		boot.addService(ServiceB.class, new ServiceImplB());
 		boot.startUp(9999, "netty");
 
-		AbstractClientFactory<ServiceA> fac = AbstractClientFactory.createFactory(ServiceA.class);
+		ClientFactory<ServiceA> fac = ClientFactory.createFactory(ServiceA.class);
 		fac.setUrl("netty://localhost:9999");
 		ServiceA client = fac.create();
 		String ret = client.sayFromA("hello, laurence");
 		System.out.println(ret);
-		AbstractClientFactory<ServiceB> fac2 = AbstractClientFactory.createFactory(ServiceB.class);
+		ClientFactory<ServiceB> fac2 = ClientFactory.createFactory(ServiceB.class);
 		fac2.setUrl("netty://localhost:9999");
 		ServiceB client2 = fac2.create();
 		ret = client2.sayFromB("hello, laurence");

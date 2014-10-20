@@ -5,8 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
-import org.apache.avro.AvroRemoteException;
-
+import com.duitang.service.base.ClientFactory;
 import com.duitang.service.base.MetricCenter;
 import com.duitang.service.base.ServerBootstrap;
 
@@ -47,7 +46,8 @@ public class MemoryServer {
 		MemoryCacheService impl = new MemoryCacheService();
 		ServerBootstrap boot = new ServerBootstrap();
 		try {
-			boot.startUp(DemoService.class, impl, p, protocol);
+			boot.addService(DemoService.class, impl);
+			boot.startUp(p, protocol);
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.exit(1);
@@ -98,7 +98,7 @@ public class MemoryServer {
 		int s = Integer.valueOf(console_print);
 		int l = Integer.valueOf(loop);
 
-		MemoryCacheClientFactory fac = new MemoryCacheClientFactory();
+		ClientFactory<DemoService> fac = ClientFactory.createFactory(DemoService.class);
 		fac.setUrl(protocol + "://" + host + ":" + port);
 
 		LoadRunner.one = fac.create();
@@ -152,10 +152,10 @@ class LoadRunner implements Runnable {
 	protected CountDownLatch latch;
 	protected int loop;
 	protected String msg;
-	protected MemoryCacheClientFactory fac;
+	protected ClientFactory<DemoService> fac;
 	protected String name;
 
-	public LoadRunner(CountDownLatch latch, int loop, String msg, MemoryCacheClientFactory fac) {
+	public LoadRunner(CountDownLatch latch, int loop, String msg, ClientFactory<DemoService> fac) {
 		this.latch = latch;
 		this.loop = loop;
 		this.msg = msg;
@@ -176,7 +176,7 @@ class LoadRunner implements Runnable {
 				if (!cli.memory_setString(name, msg, 1000000)) {
 					System.err.println("setting error: " + name);
 				}
-			} catch (AvroRemoteException e1) {
+			} catch (Exception e1) {
 				e1.printStackTrace();
 			} finally {
 				fac.release(cli);
@@ -198,7 +198,8 @@ class LoadRunner implements Runnable {
 			}
 		} finally {
 			ts = System.currentTimeMillis() - ts;
-			System.out.println(name + " running elapsed: " + ts + "ms with loop=[" + loop + "] @" + i + ", error=" + err);
+			System.out.println(name + " running elapsed: " + ts + "ms with loop=[" + loop + "] @" + i + ", error="
+			        + err);
 			this.latch.countDown();
 		}
 	}

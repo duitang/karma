@@ -11,7 +11,6 @@ import kafka.consumer.ConsumerConfig;
 import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
 
-import org.apache.avro.AvroRemoteException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,15 +49,15 @@ public class KafkaJsonReporterTest {
 		// props.put("zookeeper.connect", "192.168.172.2:2181");
 		props.put("metadata.broker.list", "192.168.172.2:9092");
 		props.put("group.id", "my");
-//		props.put("batch.num.messages", "1");
-//		props.put("compression.codec", "gzip");
-//		props.put("request.required.acks", "0");
-//		props.put("producer.type", "async");
-//		props.put("queue.enqueue.timeout.ms", "-1");
-//		props.put("queue.buffering.max.ms", "5000");
-//		props.put("queue.buffering.max.messages", "10000");
-//		props.put("queue.enqueue.timeout.ms", "20000");
-//		props.put("message.send.max.retries", "2");
+		// props.put("batch.num.messages", "1");
+		// props.put("compression.codec", "gzip");
+		// props.put("request.required.acks", "0");
+		// props.put("producer.type", "async");
+		// props.put("queue.enqueue.timeout.ms", "-1");
+		// props.put("queue.buffering.max.ms", "5000");
+		// props.put("queue.buffering.max.messages", "10000");
+		// props.put("queue.enqueue.timeout.ms", "20000");
+		// props.put("message.send.max.retries", "2");
 
 		MetricCenter.enableKafkaReporter(props, 1);
 		try {
@@ -70,7 +69,7 @@ public class KafkaJsonReporterTest {
 		for (int i = 0; i < 10; i++) {
 			try {
 				System.out.println(cli.trace_msg("wait_500", 100));
-			} catch (AvroRemoteException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}

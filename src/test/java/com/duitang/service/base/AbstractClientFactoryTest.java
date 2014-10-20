@@ -15,7 +15,7 @@ import org.junit.Test;
 
 public class AbstractClientFactoryTest {
 
-	protected AbstractClientFactory<Dummy> fac;
+	protected ClientFactory<Dummy> fac;
 	protected String prot = "http://";
 	protected String host = "127.0.0.1";
 	protected int port1 = 8080;
@@ -81,7 +81,7 @@ public class AbstractClientFactoryTest {
 
 }
 
-class MockFactory extends AbstractClientFactory<Dummy> {
+class MockFactory extends ClientFactory<Dummy> {
 
 	public static List<Dummy> all = new ArrayList<Dummy>();
 	public static List<Dummy> closed = new ArrayList<Dummy>();
