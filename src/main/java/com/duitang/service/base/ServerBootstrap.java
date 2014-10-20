@@ -34,6 +34,10 @@ public class ServerBootstrap {
 		origin_service.add(service);
 	}
 
+	public Class getGatewayInterface() {
+		return gatewayInterface;
+	}
+
 	public void startUp(int port, String protocol) throws IOException {
 		Class[] t = origin_stypes.toArray(new Class[origin_stypes.size()]);
 		Object[] s = origin_service.toArray(new Object[origin_service.size()]);
@@ -119,13 +123,13 @@ public class ServerBootstrap {
 		return clientid;
 	}
 
-	public void serviceInfo(Class serviceType, StringBuilder sb) {
+	public void serviceInfo(Class serviceType, StringBuilder sb, String protocol, int port) {
 		if (serviceType == null) {
 			return;
 		}
 
 		try {
-			sb.append(serviceType.getName()).append("\n");
+			sb.append(serviceType.getName()).append("  ##############  ").append(protocol).append("@").append(port).append("\n");
 			Method methlist[] = serviceType.getDeclaredMethods();
 			for (int i = 0; i < methlist.length; i++) {
 				Method m = methlist[i];
