@@ -7,7 +7,8 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.cglib.proxy.InterfaceMaker;
+import net.sf.cglib.asm.ClassWriter;
+import net.sf.cglib.asm.Opcodes;
 import net.sf.cglib.proxy.Mixin;
 
 import org.apache.avro.ipc.HttpServer;
@@ -15,6 +16,8 @@ import org.apache.avro.ipc.NettyServer;
 import org.apache.avro.ipc.Server;
 import org.apache.avro.ipc.reflect.ReflectResponder;
 import org.apache.avro.ipc.specific.SpecificResponder;
+
+import com.duitang.service.misc.TestServer;
 
 public class ServerBootstrap {
 
@@ -28,6 +31,28 @@ public class ServerBootstrap {
 
 	protected List<Class> origin_stypes = new ArrayList<Class>();
 	protected List<Object> origin_service = new ArrayList<Object>();
+
+	protected String SERVICE_INTERFACE = ServerBootstrap.class.getPackage().getName() + ".FacadeServiceImpl";
+
+	protected static Class genInterface(final String destName, Class[] clz) {
+		final String[] interfaces = new String[clz.length];
+		int i = 0;
+		for (Class<?> interfac : clz) {
+			interfaces[i] = interfac.getName().replace('.', '/');
+			i++;
+		}
+		Class<?> klass = new ClassLoader(TestServer.class.getClassLoader()) {
+			public Class<?> defineClass() {
+				ClassWriter cw = new ClassWriter(0);
+				cw.visit(Opcodes.V1_6, Opcodes.ACC_PUBLIC + Opcodes.ACC_ABSTRACT + Opcodes.ACC_INTERFACE,
+				        destName.replaceAll("\\.", "/"), null, "java/lang/Object", interfaces);
+				cw.visitEnd();
+				byte[] bytes = cw.toByteArray();
+				return defineClass(destName.replaceAll("/", "\\."), bytes, 0, bytes.length);
+			}
+		}.defineClass();
+		return klass;
+	}
 
 	public void addService(Class serviceType, Object service) {
 		origin_stypes.add(serviceType);
@@ -85,11 +110,7 @@ public class ServerBootstrap {
 	}
 
 	protected Class mixAllService(Class[] serviceType) {
-		InterfaceMaker im = new InterfaceMaker();
-		for (Class clz : serviceType) {
-			im.add(clz);
-		}
-		return im.create();
+		return genInterface(SERVICE_INTERFACE, serviceType);
 	}
 
 	protected Object mixAllImpls(Class[] serviceType, Object[] impls) {
@@ -129,7 +150,8 @@ public class ServerBootstrap {
 		}
 
 		try {
-			sb.append(serviceType.getName()).append("  ##############  ").append(protocol).append("@").append(port).append("\n");
+			sb.append(serviceType.getName()).append("  ##############  ").append(protocol).append("@").append(port)
+			        .append("\n");
 			Method methlist[] = serviceType.getDeclaredMethods();
 			for (int i = 0; i < methlist.length; i++) {
 				Method m = methlist[i];

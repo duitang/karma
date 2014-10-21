@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.avro.ipc.NettyTransceiver;
 import org.apache.avro.ipc.Transceiver;
 import org.apache.avro.ipc.reflect.ReflectRequestor;
-import org.apache.avro.reflect.ReflectData;
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 
@@ -125,8 +124,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 			} else {
 				trans = new NettyTransceiver(new InetSocketAddress(u.getHost(), u.getPort()), cliFac);
 			}
-			ret = (T) ReflectRequestor.getClient(getServiceType(), trans, new ReflectData(getServiceType()
-			        .getClassLoader()));
+			ret = (T) ReflectRequestor.getClient(getServiceType(), trans);
 			ret = tracer.createTraceableInstance(ret, getServiceType(), clientid, null);
 		} catch (IOException e) {
 			err.error("create for service: " + this.url, e);

@@ -11,15 +11,16 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.duitang.service.base.ClientFactory;
 import com.duitang.service.base.MetricCenter;
 import com.duitang.service.base.ServerBootstrap;
 
 public class CacheNettyServiceTest {
 
 	ServerBootstrap boot = null;
-	MemoryCacheClientFactory fac = null;
+	ClientFactory<DemoService> fac = null;
 	ServerBootstrap bootHttp = null;
-	MemoryCacheClientFactory facHttp = null;
+	ClientFactory<DemoService> facHttp = null;
 
 	@Before
 	public void setUp() {
@@ -27,31 +28,34 @@ public class CacheNettyServiceTest {
 		LogManager.getLogger(NettyTransceiver.class.getName()).setLevel(Level.ALL);
 		MemoryCacheService impl = new MemoryCacheService();
 		boot = new ServerBootstrap();
+		boot.addService(DemoService.class, impl);
 		try {
-			boot.startUp(DemoService.class, impl, 9090, "netty");
+			boot.startUp(9090, "netty");
 		} catch (IOException e) {
-			e.printStackTrace();
 			Assert.fail(e.getMessage());
 		}
-		fac = new MemoryCacheClientFactory();
-		fac.setUrl("netty://127.0.0.1:9090");
 		bootHttp = new ServerBootstrap();
+		bootHttp.addService(DemoService.class, impl);
 		try {
-			bootHttp.startUp(DemoService.class, impl, 9091, "http");
+			bootHttp.startUp(9091, "http");
 		} catch (IOException e) {
-			e.printStackTrace();
 			Assert.fail(e.getMessage());
 		}
-		facHttp = new MemoryCacheClientFactory();
+
+		fac = ClientFactory.createFactory(DemoService.class);
+		fac.setUrl("netty://127.0.0.1:9090");
+
+		facHttp = ClientFactory.createFactory(DemoService.class);
 		facHttp.setUrl("http://127.0.0.1:9091");
 	}
 
 	@After
 	public void destroy() {
 		boot.shutdown();
+		bootHttp.shutdown();
 	}
 
-	@Test
+	// @Test
 	public void testSleep() {
 		try {
 			Thread.sleep(20000000);
@@ -61,7 +65,7 @@ public class CacheNettyServiceTest {
 		}
 	}
 
-//	@Test
+	@Test
 	public void testBoot() {
 		DemoService cli = fac.create();
 		try {
@@ -107,7 +111,7 @@ public class CacheNettyServiceTest {
 		}
 	}
 
-//	@Test
+	@Test
 	public void testMetric() throws Exception {
 		MetricCenter.enableConsoleReporter(1);
 		DemoService cli = fac.create();
