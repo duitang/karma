@@ -2,6 +2,7 @@ package com.duitang.service.misc.domain;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -18,7 +19,7 @@ public class MockObject {
 	protected float score;
 	protected double p;
 	protected boolean active;
-	protected byte[] src;
+	protected ByteBuffer src;
 
 	@Nullable
 	protected MockComplex some;
@@ -79,11 +80,11 @@ public class MockObject {
 		this.active = active;
 	}
 
-	public byte[] getSrc() {
+	public ByteBuffer getSrc() {
 		return src;
 	}
 
-	public void setSrc(byte[] src) {
+	public void setSrc(ByteBuffer src) {
 		this.src = src;
 	}
 

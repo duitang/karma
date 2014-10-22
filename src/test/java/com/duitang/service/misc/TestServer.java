@@ -17,7 +17,7 @@ import org.apache.avro.ipc.reflect.ReflectResponder;
 import org.apache.avro.reflect.Nullable;
 import org.apache.avro.reflect.ReflectData;
 
-import com.duitang.service.base.MapUtils;
+import com.duitang.service.codecs.MapUtils;
 
 public class TestServer {
 
@@ -43,8 +43,8 @@ public class TestServer {
 		m.put("bbb", 333);
 
 		// System.out.println(r2.hello3("11", 1, m).mp);
-		ByteBuffer src;
-		// src = r2.hello3("11", 1, m).mp;
+		// ByteBuffer src;
+		System.out.println(r3.c("11"));
 		// System.out.println(MapUtils.bytesToObject(src, HashMap.class));
 		// System.out.println(r2.hello2());
 		// System.out.println(r1.hello("shit"));
@@ -80,6 +80,7 @@ class MyObj {
 	int id;
 	@Nullable
 	ByteBuffer mp;
+	HashMap src;
 }
 
 interface MyInter {
@@ -125,6 +126,7 @@ class My implements MyInter, YourInter {
 		data.put("aaa", 2.1d);
 		data.put("bbb", "ccc");
 		ret.mp = MapUtils.objectToBytes(data);
+		ret.src = (HashMap) data;
 		return ret;
 	}
 
@@ -134,8 +136,11 @@ class Impl implements A, B, C {
 
 	@Override
 	@Nullable
-	public String c(String b) {
-		return b + "--->c";
+	public HashMap c(String b) {
+		HashMap ret = new HashMap();
+		ret.put("999", "111");
+		ret.put("888", "ccc");
+		return ret;
 	}
 
 	@Override

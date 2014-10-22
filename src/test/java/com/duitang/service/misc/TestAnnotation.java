@@ -1,15 +1,10 @@
 package com.duitang.service.misc;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import net.sf.cglib.asm.ClassWriter;
-import net.sf.cglib.asm.FieldVisitor;
-import static net.sf.cglib.asm.Opcodes.*;
 import net.sf.cglib.asm.Opcodes;
 
 import org.apache.avro.reflect.Nullable;

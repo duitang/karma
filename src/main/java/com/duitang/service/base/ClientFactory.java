@@ -117,6 +117,9 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		T ret = null;
 		try {
 			Transceiver trans = null;
+			if (sz == 0) {
+				throw new RuntimeException("no remote url find? please setUrl(String url)");
+			}
 			int iid = hashid.incrementAndGet() % sz;
 			URL u = serviceURL.get(iid);
 			if (serviceHTTPProtocol.get(iid)) {
