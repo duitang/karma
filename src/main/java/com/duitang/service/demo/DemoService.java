@@ -16,6 +16,8 @@ public interface DemoService {
 
 	String trace_msg(String key, long ttl);
 
-	MapData getmap(MapData data);
+	MapData getmap(String name);
+
+	boolean setmap(String name, MapData data);
 
 }

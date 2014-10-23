@@ -185,8 +185,14 @@ class LoadRunner implements Runnable {
 			MapData vv = null;
 			try {
 				cli = fac.create();
-				if (!cli.memory_setString(name, msg, 1000000)) {
-					System.err.println("setting error: " + name);
+				if (usemap) {
+					if (!cli.setmap(name, v)) {
+						System.err.println("setting error: " + name);
+					}
+				} else {
+					if (!cli.memory_setString(name, msg, 1000000)) {
+						System.err.println("setting error: " + name);
+					}
 				}
 			} catch (Exception e1) {
 				e1.printStackTrace();
@@ -196,9 +202,9 @@ class LoadRunner implements Runnable {
 			for (i = 0; i < loop; i++) {
 				try {
 					cli = one;
-//					cli = fac.create();
+					// cli = fac.create();
 					if (usemap) {
-						vv = cli.getmap(v);
+						vv = cli.getmap(name);
 						if (!vv.getData().containsKey("aaa")
 						        || vv.getData().get("aaa").toString().length() != msg.length()) {
 							throw new Exception("value error: " + vv.getData().toString());
@@ -213,7 +219,7 @@ class LoadRunner implements Runnable {
 					e.printStackTrace();
 					err++;
 				} finally {
-//					fac.release(cli);
+					// fac.release(cli);
 				}
 			}
 		} finally {

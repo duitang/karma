@@ -10,6 +10,7 @@ public class MemoryCacheService implements DemoService {
 
 	protected Map<String, String> memory = new HashMap();
 	protected Map<String, ByteBuffer> memoryB = new HashMap();
+	protected Map<String, MapData> mapA = new HashMap();
 
 	@Override
 	public String memory_getString(String key) {
@@ -46,8 +47,14 @@ public class MemoryCacheService implements DemoService {
 	}
 
 	@Override
-	public MapData getmap(MapData data) {
-		return data;
+	public MapData getmap(String name) {
+		return mapA.get(name);
+	}
+
+	@Override
+	public boolean setmap(String name, MapData data) {
+		mapA.put(name, data);
+		return true;
 	}
 
 }
