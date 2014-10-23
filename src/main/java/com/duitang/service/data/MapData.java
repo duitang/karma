@@ -14,6 +14,9 @@ public class MapData implements Serializable {
 	@AvroEncode(using = Map2Json.class)
 	protected Map data;
 
+	public MapData() {
+	}
+
 	public MapData(Map d) {
 		this.data = d;
 	}

@@ -8,11 +8,12 @@ import java.util.concurrent.CountDownLatch;
 import com.duitang.service.base.ClientFactory;
 import com.duitang.service.base.MetricCenter;
 import com.duitang.service.base.ServerBootstrap;
+import com.duitang.service.data.MapData;
 
 public class MemoryServer {
 
 	final static String[] PARAMETER_KEYS = { "server", "client", "port", "host", "print", "thread", "loop", "msg",
-	        "protocol" };
+	        "protocol", "map" };
 
 	public static void main(String[] args) {
 		Map<String, String> param = argsToMap(args);
@@ -98,6 +99,11 @@ public class MemoryServer {
 		int s = Integer.valueOf(console_print);
 		int l = Integer.valueOf(loop);
 
+		boolean usemap = false;
+		if (param.containsKey("map")) {
+			usemap = true;
+		}
+
 		ClientFactory<DemoService> fac = ClientFactory.createFactory(DemoService.class);
 		fac.setUrl(protocol + "://" + host + ":" + port);
 
@@ -105,7 +111,7 @@ public class MemoryServer {
 		CountDownLatch latch = new CountDownLatch(t);
 		Thread[] ths = new Thread[t];
 		for (int i = 0; i < ths.length; i++) {
-			ths[i] = new Thread(new LoadRunner(latch, l, msg, fac));
+			ths[i] = new Thread(new LoadRunner(latch, l, msg, fac, usemap));
 			ths[i].start();
 		}
 
@@ -154,12 +160,14 @@ class LoadRunner implements Runnable {
 	protected String msg;
 	protected ClientFactory<DemoService> fac;
 	protected String name;
+	protected boolean usemap;
 
-	public LoadRunner(CountDownLatch latch, int loop, String msg, ClientFactory<DemoService> fac) {
+	public LoadRunner(CountDownLatch latch, int loop, String msg, ClientFactory<DemoService> fac, boolean usemap) {
 		this.latch = latch;
 		this.loop = loop;
 		this.msg = msg;
 		this.fac = fac;
+		this.usemap = usemap;
 		this.name = Thread.currentThread().getName();
 	}
 
@@ -171,6 +179,10 @@ class LoadRunner implements Runnable {
 		try {
 			DemoService cli = null;
 			String val = null;
+			Map vvv = new HashMap();
+			vvv.put("aaa", msg);
+			MapData v = new MapData(vvv);
+			MapData vv = null;
 			try {
 				cli = fac.create();
 				if (!cli.memory_setString(name, msg, 1000000)) {
@@ -184,16 +196,24 @@ class LoadRunner implements Runnable {
 			for (i = 0; i < loop; i++) {
 				try {
 					cli = one;
-					// cli = fac.create();
-					val = cli.memory_getString(name);
-					if (val.length() != msg.length()) {
-						throw new Exception("value error: " + val);
+//					cli = fac.create();
+					if (usemap) {
+						vv = cli.getmap(v);
+						if (!vv.getData().containsKey("aaa")
+						        || vv.getData().get("aaa").toString().length() != msg.length()) {
+							throw new Exception("value error: " + vv.getData().toString());
+						}
+					} else {
+						val = cli.memory_getString(name);
+						if (val.length() != msg.length()) {
+							throw new Exception("value error: " + val);
+						}
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
 					err++;
 				} finally {
-					// fac.release(cli);
+//					fac.release(cli);
 				}
 			}
 		} finally {

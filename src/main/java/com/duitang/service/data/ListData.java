@@ -14,6 +14,10 @@ public class ListData implements Serializable {
 	@AvroEncode(using = List2Json.class)
 	protected List data;
 
+	public ListData() {
+		super();
+	}
+
 	public ListData(List d) {
 		this.data = d;
 	}

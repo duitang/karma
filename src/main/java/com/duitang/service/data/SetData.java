@@ -14,6 +14,10 @@ public class SetData implements Serializable {
 	@AvroEncode(using = Set2Json.class)
 	protected Set data;
 
+	public SetData() {
+		super();
+	}
+
 	public SetData(Set d) {
 		this.data = d;
 	}

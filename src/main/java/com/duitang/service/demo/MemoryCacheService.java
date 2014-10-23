@@ -4,6 +4,8 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.duitang.service.data.MapData;
+
 public class MemoryCacheService implements DemoService {
 
 	protected Map<String, String> memory = new HashMap();
@@ -41,6 +43,11 @@ public class MemoryCacheService implements DemoService {
 		long ela = System.currentTimeMillis() - ts;
 		String ret = key + " => {" + ts + ", " + ela + "}";
 		return ret;
+	}
+
+	@Override
+	public MapData getmap(MapData data) {
+		return data;
 	}
 
 }

@@ -17,8 +17,6 @@ import org.apache.avro.ipc.Server;
 import org.apache.avro.ipc.reflect.ReflectResponder;
 import org.apache.avro.ipc.specific.SpecificResponder;
 
-import com.duitang.service.misc.TestServer;
-
 public class ServerBootstrap {
 
 	protected Server server;
@@ -41,7 +39,7 @@ public class ServerBootstrap {
 			interfaces[i] = interfac.getName().replace('.', '/');
 			i++;
 		}
-		Class<?> klass = new ClassLoader(TestServer.class.getClassLoader()) {
+		Class<?> klass = new ClassLoader(ServerBootstrap.class.getClassLoader()) {
 			public Class<?> defineClass() {
 				ClassWriter cw = new ClassWriter(0);
 				cw.visit(Opcodes.V1_6, Opcodes.ACC_PUBLIC + Opcodes.ACC_ABSTRACT + Opcodes.ACC_INTERFACE,
