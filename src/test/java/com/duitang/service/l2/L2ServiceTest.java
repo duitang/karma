@@ -46,7 +46,7 @@ public class L2ServiceTest {
 		m.put("hello", "world");
 		String lst = "1\n2\n";
 		Assert.assertEquals(m.toString(), cli.cat_mgetstring(lst).toString());
-		Assert.assertFalse(cli.session_getsession("").isEmpty());
+//		Assert.assertFalse(cli.session_getsession("").isEmpty());
 		Assert.assertTrue(cli.session_setsession("", new HashMap()));
 		Assert.assertEquals("helloworld", cli.session_get("").toString());
 		Assert.assertTrue(cli.session_set("", ""));
@@ -93,16 +93,17 @@ class MockL2Service implements L2Service {
 		return mret;
 	}
 
-	@Override
-	public Map<String, Object> session_getsession(String sessionid) throws AvroRemoteException {
-		Map<String, Object> ret = new HashMap<String, Object>();
-		ret.put("hello", "world");
-		ret.put("0", 0);
-		ret.put("1", 1L);
-		ret.put("2", 2d);
-		ret.put("3", 3f);
-		return ret;
-	}
+	// @Override
+	// public Map<String, Object> session_getsession(String sessionid) throws
+	// AvroRemoteException {
+	// Map<String, Object> ret = new HashMap<String, Object>();
+	// ret.put("hello", "world");
+	// ret.put("0", 0);
+	// ret.put("1", 1L);
+	// ret.put("2", 2d);
+	// ret.put("3", 3f);
+	// return ret;
+	// }
 
 	@Override
 	public String session_get(String sessionid) throws AvroRemoteException {
