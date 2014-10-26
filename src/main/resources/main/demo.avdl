@@ -1,5 +1,5 @@
 @namespace("com.duitang.service.demo")
-protocol DemoService {
+protocol DemoServiceSpec {
 	union{null, string} memory_getString(string key);
 	boolean memory_setString(string key, string value, int ttl);
     union{null, bytes} memory_getBytes(string key);

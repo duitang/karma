@@ -16,6 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.duitang.service.demo.DemoService;
+import com.duitang.service.demo.DemoServiceSpec;
 import com.duitang.service.demo.MemoryCacheClientFactory;
 import com.duitang.service.demo.MemoryCacheService;
 
@@ -65,7 +66,7 @@ public class KafkaJsonReporterTest {
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
-		DemoService cli = fac.create();
+		DemoServiceSpec cli = fac.create();
 		for (int i = 0; i < 10; i++) {
 			try {
 				System.out.println(cli.trace_msg("wait_500", 100));

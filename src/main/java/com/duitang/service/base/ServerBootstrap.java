@@ -67,21 +67,25 @@ public class ServerBootstrap {
 		startUp(t, s, port, protocol);
 	}
 
+	@Deprecated
 	public void startUp(Class serviceType, Object service, int port) throws IOException {
 		startUp(serviceType, service, port, "http");
 	}
 
+	@Deprecated
 	public void startUp(Class serviceType, Object service, int port, String protocol) throws IOException {
 		clientid = MetricCenter.getHostname() + "|" + service.toString();
-		traceAllService(new Class[] { serviceType }, new Object[] { service }, new Closeable[1]);
+		// traceAllService(new Class[] { serviceType }, new Object[] { service
+		// }, new Closeable[1]);
 		MetricCenter.initMetric(serviceType, clientid);
-		if (protocol.equalsIgnoreCase("http")) {
-			server = new HttpServer(new SpecificResponder(serviceType, proxiedService), port);
-		} else {
-			server = new NettyServer(new SpecificResponder(serviceType, proxiedService), new InetSocketAddress(port));
-		}
 		gatewayInterface = serviceType;
 		gatewayService = service;
+		if (protocol.equalsIgnoreCase("http")) {
+			server = new HttpServer(new SpecificResponder(gatewayInterface, gatewayService), port);
+		} else {
+			server = new NettyServer(new SpecificResponder(gatewayInterface, gatewayService), new InetSocketAddress(
+			        port));
+		}
 		server.start();
 	}
 

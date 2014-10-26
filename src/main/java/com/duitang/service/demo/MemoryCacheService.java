@@ -6,7 +6,7 @@ import java.util.Map;
 
 import com.duitang.service.data.MapData;
 
-public class MemoryCacheService implements DemoService {
+public class MemoryCacheService implements DemoService, DemoServiceSpec {
 
 	protected Map<String, String> memory = new HashMap();
 	protected Map<String, ByteBuffer> memoryB = new HashMap();

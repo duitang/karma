@@ -2,7 +2,7 @@ package com.duitang.service.demo;
 
 import com.duitang.service.base.ClientFactory;
 
-public class MemoryCacheClientFactory extends ClientFactory<DemoService> {
+public class MemoryCacheClientFactory extends ClientFactory<DemoServiceSpec> {
 
 	final static String servicename = MemoryCacheService.class.getName();
 
@@ -13,7 +13,7 @@ public class MemoryCacheClientFactory extends ClientFactory<DemoService> {
 
 	@Override
 	public Class getServiceType() {
-		return DemoService.class;
+		return DemoServiceSpec.class;
 	}
 
 }

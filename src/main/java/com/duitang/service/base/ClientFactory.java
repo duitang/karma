@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.avro.ipc.NettyTransceiver;
 import org.apache.avro.ipc.Transceiver;
 import org.apache.avro.ipc.reflect.ReflectRequestor;
+import org.apache.avro.ipc.specific.SpecificRequestor;
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 
@@ -39,6 +40,8 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 	protected int timeout = 500;
 	protected String clientid;
 	protected TraceableObject<T> tracer;
+
+	protected boolean useSpecific;
 
 	public ClientFactory() {
 		this(null);
@@ -69,6 +72,10 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		if (clientid == null) {
 			clientid = "";
 		}
+	}
+
+	public void setUseSpecific(boolean flag) {
+		this.useSpecific = flag;
 	}
 
 	public String getUrl() {
@@ -127,7 +134,11 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 			} else {
 				trans = new NettyTransceiver(new InetSocketAddress(u.getHost(), u.getPort()), cliFac);
 			}
-			ret = (T) ReflectRequestor.getClient(getServiceType(), trans);
+			if (useSpecific) {
+				ret = (T) SpecificRequestor.getClient(getServiceType(), trans);
+			} else {
+				ret = (T) ReflectRequestor.getClient(getServiceType(), trans);
+			}
 			ret = tracer.createTraceableInstance(ret, getServiceType(), clientid, null);
 		} catch (IOException e) {
 			err.error("create for service: " + this.url, e);
