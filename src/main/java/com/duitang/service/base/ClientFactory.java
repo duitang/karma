@@ -119,6 +119,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		MetricableHttpTransceiver.setTimeout(timeout);
 	}
 
+	// @SuppressWarnings("resource")
 	@Override
 	public T create() {
 		T ret = null;
@@ -132,14 +133,14 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 			if (serviceHTTPProtocol.get(iid)) {
 				trans = new MetricableHttpTransceiver(this.clientid, u);
 			} else {
-				trans = new NettyTransceiver(new InetSocketAddress(u.getHost(), u.getPort()), cliFac);
+				trans = new NettyTransceiver(new InetSocketAddress(u.getHost(), u.getPort()), createFactroy());
 			}
 			if (useSpecific) {
 				ret = (T) SpecificRequestor.getClient(getServiceType(), trans);
 			} else {
 				ret = (T) ReflectRequestor.getClient(getServiceType(), trans);
 			}
-			ret = tracer.createTraceableInstance(ret, getServiceType(), clientid, null);
+			ret = tracer.createTraceableInstance(ret, getServiceType(), clientid, trans);
 		} catch (IOException e) {
 			err.error("create for service: " + this.url, e);
 		}
@@ -197,6 +198,13 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 
 		};
 		return ret;
+	}
+
+	protected NioClientSocketChannelFactory createFactroy() {
+		return new NioClientSocketChannelFactory(Executors.newCachedThreadPool(new NettyTransceiverThreadFactory(
+		        "Avro " + NettyTransceiver.class.getSimpleName() + " Boss")),
+		        Executors.newCachedThreadPool(new NettyTransceiverThreadFactory("Avro "
+		                + NettyTransceiver.class.getSimpleName() + " I/O Worker")));
 	}
 
 }
