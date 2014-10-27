@@ -201,8 +201,8 @@ class LoadRunner implements Runnable {
 			}
 			for (i = 0; i < loop; i++) {
 				try {
-					cli = one;
-					// cli = fac.create();
+					// cli = one;
+					cli = fac.create();
 					if (usemap) {
 						vv = cli.getmap(name);
 						if (!vv.getData().containsKey("aaa")
@@ -219,7 +219,7 @@ class LoadRunner implements Runnable {
 					e.printStackTrace();
 					err++;
 				} finally {
-					// fac.release(cli);
+					fac.release(cli);
 				}
 			}
 		} finally {
