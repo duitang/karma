@@ -10,7 +10,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.avro.ipc.NettyTransceiver;
 import org.apache.avro.ipc.Transceiver;
 import org.apache.avro.ipc.reflect.ReflectRequestor;
 import org.apache.avro.ipc.specific.SpecificRequestor;
@@ -28,9 +27,9 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 	 */
 	final static protected NioClientSocketChannelFactory cliFac = new NioClientSocketChannelFactory(
 	        Executors.newCachedThreadPool(new NettyTransceiverThreadFactory("Avro "
-	                + NettyTransceiver.class.getSimpleName() + " Boss")),
+	                + SmartNettyTransciever.class.getSimpleName() + " Boss")),
 	        Executors.newCachedThreadPool(new NettyTransceiverThreadFactory("Avro "
-	                + NettyTransceiver.class.getSimpleName() + " I/O Worker")));
+	                + SmartNettyTransciever.class.getSimpleName() + " I/O Worker")));
 
 	protected String url;
 	protected List<URL> serviceURL;
@@ -119,7 +118,6 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		MetricableHttpTransceiver.setTimeout(timeout);
 	}
 
-	// @SuppressWarnings("resource")
 	@Override
 	public T create() {
 		T ret = null;
@@ -133,7 +131,8 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 			if (serviceHTTPProtocol.get(iid)) {
 				trans = new MetricableHttpTransceiver(this.clientid, u);
 			} else {
-				trans = new NettyTransceiver(new InetSocketAddress(u.getHost(), u.getPort()), createFactroy());
+				trans = new SmartNettyTransciever(new InetSocketAddress(u.getHost(), u.getPort()),
+				        createChannelFactory());
 			}
 			if (useSpecific) {
 				ret = (T) SpecificRequestor.getClient(getServiceType(), trans);
@@ -200,11 +199,11 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		return ret;
 	}
 
-	protected NioClientSocketChannelFactory createFactroy() {
+	public static NioClientSocketChannelFactory createChannelFactory() {
 		return new NioClientSocketChannelFactory(Executors.newCachedThreadPool(new NettyTransceiverThreadFactory(
-		        "Avro " + NettyTransceiver.class.getSimpleName() + " Boss")),
+		        "Avro " + SmartNettyTransciever.class.getSimpleName() + " Boss")),
 		        Executors.newCachedThreadPool(new NettyTransceiverThreadFactory("Avro "
-		                + NettyTransceiver.class.getSimpleName() + " I/O Worker")));
+		                + SmartNettyTransciever.class.getSimpleName() + " I/O Worker")));
 	}
 
 }

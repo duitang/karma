@@ -87,6 +87,7 @@ public class CacheNettyServiceTest {
 			String value = "bbbb";
 			System.out.println(cli.memory_setString(key, value, 1111));
 			CharSequence sss = (CharSequence) cli.memory_getString(key);
+			System.out.println(sss);
 			Assert.assertEquals(value, String.valueOf(sss));
 			System.out.println(sss);
 		} catch (Exception e) {
