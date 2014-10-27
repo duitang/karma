@@ -139,7 +139,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 			} else {
 				ret = (T) ReflectRequestor.getClient(getServiceType(), trans);
 			}
-			ret = tracer.createTraceableInstance(ret, getServiceType(), clientid, null);
+			ret = tracer.createTraceableInstance(ret, getServiceType(), clientid, trans);
 		} catch (IOException e) {
 			err.error("create for service: " + this.url, e);
 		}

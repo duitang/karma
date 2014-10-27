@@ -65,7 +65,7 @@ public class CacheNettyServiceTest {
 		}
 	}
 
-	@Test
+	// @Test
 	public void testBoot() {
 		DemoService cli = fac.create();
 		try {
@@ -111,7 +111,7 @@ public class CacheNettyServiceTest {
 		}
 	}
 
-	@Test
+	// @Test
 	public void testMetric() throws Exception {
 		MetricCenter.enableConsoleReporter(1);
 		DemoService cli = fac.create();
@@ -128,4 +128,11 @@ public class CacheNettyServiceTest {
 		fac.release(cli);
 		Thread.sleep(5000);
 	}
+
+	@Test
+	public void testCloseit() throws Exception {
+		DemoService cli = fac.create();
+		fac.release(cli);
+	}
+
 }
