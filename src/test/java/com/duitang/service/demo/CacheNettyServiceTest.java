@@ -1,10 +1,13 @@
 package com.duitang.service.demo;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 
 import junit.framework.Assert;
 
-import org.apache.avro.ipc.NettyTransceiver;
+import org.apache.avro.ipc.NettyServer;
+import org.apache.avro.ipc.reflect.ReflectRequestor;
+import org.apache.avro.ipc.reflect.ReflectResponder;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.junit.After;
@@ -14,6 +17,7 @@ import org.junit.Test;
 import com.duitang.service.base.ClientFactory;
 import com.duitang.service.base.MetricCenter;
 import com.duitang.service.base.ServerBootstrap;
+import com.duitang.service.base.SmartNettyTransceiver;
 
 public class CacheNettyServiceTest {
 
@@ -25,7 +29,7 @@ public class CacheNettyServiceTest {
 	@Before
 	public void setUp() {
 		LogManager.getLogger("org.apache.avro.ipc").setLevel(Level.ALL);
-		LogManager.getLogger(NettyTransceiver.class.getName()).setLevel(Level.ALL);
+		LogManager.getLogger(SmartNettyTransceiver.class.getName()).setLevel(Level.ALL);
 		MemoryCacheService impl = new MemoryCacheService();
 		boot = new ServerBootstrap();
 		boot.addService(DemoService.class, impl);
@@ -66,6 +70,29 @@ public class CacheNettyServiceTest {
 	}
 
 	@Test
+	public void testB() throws Exception {
+		MemoryCacheService impl = new MemoryCacheService();
+		NettyServer server = new NettyServer(new ReflectResponder(DemoService.class, impl), new InetSocketAddress(9099));
+		server.start();
+
+		SmartNettyTransceiver tr = new SmartNettyTransceiver(new InetSocketAddress("localhost", 9099));
+		DemoService cli = ReflectRequestor.getClient(DemoService.class, tr);
+		try {
+			String key = "aaaa";
+			String value = "bbbb";
+			System.out.println(cli.memory_setString(key, value, 1111));
+			CharSequence sss = (CharSequence) cli.memory_getString(key);
+			Assert.assertEquals(value, String.valueOf(sss));
+			System.out.println(sss);
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail();
+		} finally {
+			fac.release(cli);
+		}
+	}
+
+	// @Test
 	public void testBoot() {
 		DemoService cli = fac.create();
 		try {
@@ -112,7 +139,7 @@ public class CacheNettyServiceTest {
 		}
 	}
 
-//	@Test
+	// @Test
 	public void testMetric() throws Exception {
 		MetricCenter.enableConsoleReporter(1);
 		DemoService cli = fac.create();
@@ -130,7 +157,7 @@ public class CacheNettyServiceTest {
 		Thread.sleep(5000);
 	}
 
-//	@Test
+	// @Test
 	public void testCloseit() throws Exception {
 		DemoService cli = fac.create();
 		fac.release(cli);

@@ -6,7 +6,6 @@ import java.net.InetSocketAddress;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -14,7 +13,6 @@ import org.apache.avro.ipc.Transceiver;
 import org.apache.avro.ipc.reflect.ReflectRequestor;
 import org.apache.avro.ipc.specific.SpecificRequestor;
 import org.apache.log4j.Logger;
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 
 public abstract class ClientFactory<T> implements ServiceFactory<T> {
 
@@ -25,11 +23,6 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 	 * 
 	 * @see <a href="javatar.iteye.com/blog/1138527">netty内存泄漏</a>
 	 */
-	final static protected NioClientSocketChannelFactory cliFac = new NioClientSocketChannelFactory(
-	        Executors.newCachedThreadPool(new NettyTransceiverThreadFactory("Avro "
-	                + SmartNettyTransciever.class.getSimpleName() + " Boss")),
-	        Executors.newCachedThreadPool(new NettyTransceiverThreadFactory("Avro "
-	                + SmartNettyTransciever.class.getSimpleName() + " I/O Worker")));
 
 	protected String url;
 	protected List<URL> serviceURL;
@@ -131,8 +124,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 			if (serviceHTTPProtocol.get(iid)) {
 				trans = new MetricableHttpTransceiver(this.clientid, u);
 			} else {
-				trans = new SmartNettyTransciever(new InetSocketAddress(u.getHost(), u.getPort()),
-				        createChannelFactory());
+				trans = new SmartNettyTransceiver(new InetSocketAddress(u.getHost(), u.getPort()));
 			}
 			if (useSpecific) {
 				ret = (T) SpecificRequestor.getClient(getServiceType(), trans);
@@ -197,13 +189,6 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 
 		};
 		return ret;
-	}
-
-	public static NioClientSocketChannelFactory createChannelFactory() {
-		return new NioClientSocketChannelFactory(Executors.newCachedThreadPool(new NettyTransceiverThreadFactory(
-		        "Avro " + SmartNettyTransciever.class.getSimpleName() + " Boss")),
-		        Executors.newCachedThreadPool(new NettyTransceiverThreadFactory("Avro "
-		                + SmartNettyTransciever.class.getSimpleName() + " I/O Worker")));
 	}
 
 }

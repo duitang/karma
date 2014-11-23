@@ -1,5 +1,37 @@
 package com.duitang.service.base;
 
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import io.netty.bootstrap.Bootstrap;
+import io.netty.bootstrap.ChannelFactory;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioSocketChannel;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -8,7 +40,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -16,33 +47,18 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.avro.Protocol;
 import org.apache.avro.ipc.CallFuture;
 import org.apache.avro.ipc.Callback;
-import org.apache.avro.ipc.NettyTransceiver;
 import org.apache.avro.ipc.NettyTransportCodec.NettyDataPack;
-import org.apache.avro.ipc.NettyTransportCodec.NettyFrameDecoder;
-import org.apache.avro.ipc.NettyTransportCodec.NettyFrameEncoder;
 import org.apache.avro.ipc.Transceiver;
-import org.jboss.netty.bootstrap.ClientBootstrap;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelEvent;
-import org.jboss.netty.channel.ChannelFactory;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelFutureListener;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.channel.ChannelState;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.ChannelUpstreamHandler;
-import org.jboss.netty.channel.Channels;
-import org.jboss.netty.channel.ExceptionEvent;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SmartNettyTransciever extends Transceiver {
+import com.duitang.service.codecs.NettyFrameDecoder;
+import com.duitang.service.codecs.NettyFrameEncoder;
 
+/**
+ * A Netty-based {@link Transceiver} implementation.
+ */
+public class SmartNettyTransceiver extends Transceiver {
 	/** If not specified, the default connection timeout will be used (60 sec). */
 	public static final long DEFAULT_CONNECTION_TIMEOUT_MILLIS = 60 * 1000L;
 	public static final String NETTY_CONNECT_TIMEOUT_OPTION = "connectTimeoutMillis";
@@ -50,14 +66,14 @@ public class SmartNettyTransciever extends Transceiver {
 	public static final String NETTY_KEEPALIVE_OPTION = "keepAlive";
 	public static final boolean DEFAULT_TCP_NODELAY_VALUE = true;
 
-	private static final Logger LOG = LoggerFactory.getLogger(SmartNettyTransciever.class.getName());
+	private static final Logger LOG = LoggerFactory.getLogger(SmartNettyTransceiver.class.getName());
 
 	private final AtomicInteger serialGenerator = new AtomicInteger(0);
 	private final Map<Integer, Callback<List<ByteBuffer>>> requests = new ConcurrentHashMap<Integer, Callback<List<ByteBuffer>>>();
 
-	private final ChannelFactory channelFactory;
+	// private final ChannelFactory channelFactory;
 	private final long connectTimeoutMillis;
-	private final ClientBootstrap bootstrap;
+	private final Bootstrap bootstrap;
 	private final InetSocketAddress remoteAddr;
 
 	volatile ChannelFuture channelFuture;
@@ -72,8 +88,8 @@ public class SmartNettyTransciever extends Transceiver {
 	private Channel channel; // Synchronized on stateLock
 	private Protocol remote; // Synchronized on stateLock
 
-	SmartNettyTransciever() {
-		channelFactory = null;
+	SmartNettyTransceiver() {
+		// channelFactory = null;
 		connectTimeoutMillis = 0L;
 		bootstrap = null;
 		remoteAddr = null;
@@ -90,7 +106,7 @@ public class SmartNettyTransciever extends Transceiver {
 	 * @throws IOException
 	 *             if an error occurs connecting to the given address.
 	 */
-	public SmartNettyTransciever(InetSocketAddress addr) throws IOException {
+	public SmartNettyTransceiver(InetSocketAddress addr) throws IOException {
 		this(addr, DEFAULT_CONNECTION_TIMEOUT_MILLIS);
 	}
 
@@ -106,11 +122,8 @@ public class SmartNettyTransciever extends Transceiver {
 	 * @throws IOException
 	 *             if an error occurs connecting to the given address.
 	 */
-	public SmartNettyTransciever(InetSocketAddress addr, Long connectTimeoutMillis) throws IOException {
-		this(addr, new NioClientSocketChannelFactory(Executors.newCachedThreadPool(new NettyTransceiverThreadFactory(
-		        "Avro " + NettyTransceiver.class.getSimpleName() + " Boss")),
-		        Executors.newCachedThreadPool(new NettyTransceiverThreadFactory("Avro "
-		                + NettyTransceiver.class.getSimpleName() + " I/O Worker"))), connectTimeoutMillis);
+	public SmartNettyTransceiver(InetSocketAddress addr, Long connectTimeoutMillis) throws IOException {
+		this(addr, null, connectTimeoutMillis);
 	}
 
 	/**
@@ -125,7 +138,7 @@ public class SmartNettyTransciever extends Transceiver {
 	 * @throws IOException
 	 *             if an error occurs connecting to the given address.
 	 */
-	public SmartNettyTransciever(InetSocketAddress addr, ChannelFactory channelFactory) throws IOException {
+	public SmartNettyTransceiver(InetSocketAddress addr, ChannelFactory channelFactory) throws IOException {
 		this(addr, channelFactory, buildDefaultBootstrapOptions(null));
 	}
 
@@ -143,7 +156,7 @@ public class SmartNettyTransciever extends Transceiver {
 	 * @throws IOException
 	 *             if an error occurs connecting to the given address.
 	 */
-	public SmartNettyTransciever(InetSocketAddress addr, ChannelFactory channelFactory, Long connectTimeoutMillis)
+	public SmartNettyTransceiver(InetSocketAddress addr, ChannelFactory channelFactory, Long connectTimeoutMillis)
 	        throws IOException {
 		this(addr, channelFactory, buildDefaultBootstrapOptions(connectTimeoutMillis));
 	}
@@ -166,34 +179,17 @@ public class SmartNettyTransciever extends Transceiver {
 	 * @throws IOException
 	 *             if an error occurs connecting to the given address.
 	 */
-	public SmartNettyTransciever(InetSocketAddress addr, ChannelFactory channelFactory,
+	public SmartNettyTransceiver(InetSocketAddress addr, ChannelFactory channelFactory,
 	        Map<String, Object> nettyClientBootstrapOptions) throws IOException {
-		if (channelFactory == null) {
-			throw new NullPointerException("channelFactory is null");
-		}
+		// if (channelFactory == null) {
+		// throw new NullPointerException("channelFactory is null");
+		// }
 
 		// Set up.
-		this.channelFactory = channelFactory;
+		// this.channelFactory = channelFactory;
 		this.connectTimeoutMillis = (Long) nettyClientBootstrapOptions.get(NETTY_CONNECT_TIMEOUT_OPTION);
-		bootstrap = new ClientBootstrap(channelFactory);
+		bootstrap = getBootstrap();
 		remoteAddr = addr;
-
-		// Configure the event pipeline factory.
-		bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
-			@Override
-			public ChannelPipeline getPipeline() throws Exception {
-				ChannelPipeline p = Channels.pipeline();
-				p.addLast("frameDecoder", new NettyFrameDecoder());
-				p.addLast("frameEncoder", new NettyFrameEncoder());
-				p.addLast("handler", createNettyClientAvroHandler());
-				return p;
-			}
-		});
-
-		if (nettyClientBootstrapOptions != null) {
-			LOG.debug("Using Netty bootstrap options: " + nettyClientBootstrapOptions);
-			bootstrap.setOptions(nettyClientBootstrapOptions);
-		}
 
 		// Make a new connection.
 		stateLock.readLock().lock();
@@ -210,8 +206,8 @@ public class SmartNettyTransciever extends Transceiver {
 	 * 
 	 * @return the ChannelUpstreamHandler to use.
 	 */
-	protected ChannelUpstreamHandler createNettyClientAvroHandler() {
-		return new NettyClientAvroHandler();
+	protected SimpleChannelInboundHandler<NettyDataPack> createNettyClientAvroHandler() {
+		return new SmartNettyClientAvroHandler();
 	}
 
 	/**
@@ -237,7 +233,7 @@ public class SmartNettyTransciever extends Transceiver {
 	 * @return true if the channel is open and ready; false otherwise.
 	 */
 	private static boolean isChannelReady(Channel channel) {
-		return (channel != null) && channel.isOpen() && channel.isBound() && channel.isConnected();
+		return (channel != null) && channel.isOpen() && channel.isRegistered() && channel.isActive();
 	}
 
 	/**
@@ -275,9 +271,9 @@ public class SmartNettyTransciever extends Transceiver {
 
 						synchronized (channelFutureLock) {
 							if (!channelFuture.isSuccess()) {
-								throw new IOException("Error connecting to " + remoteAddr, channelFuture.getCause());
+								throw new IOException("Error connecting to " + remoteAddr, channelFuture.cause());
 							}
-							channel = channelFuture.getChannel();
+							channel = channelFuture.channel();
 							channelFuture = null;
 						}
 					}
@@ -291,12 +287,12 @@ public class SmartNettyTransciever extends Transceiver {
 		return channel;
 	}
 
-	/**
-	 * Closes the connection to the remote peer if connected.
-	 */
-	private void disconnect() {
-		disconnect(false, false, null);
-	}
+	// /**
+	// * Closes the connection to the remote peer if connected.
+	// */
+	// private void disconnect() {
+	// disconnect(false, false, null);
+	// }
 
 	/**
 	 * Closes the connection to the remote peer if connected.
@@ -323,7 +319,7 @@ public class SmartNettyTransciever extends Transceiver {
 			}
 		}
 		if (channelFutureToCancel != null) {
-			channelFutureToCancel.cancel();
+			channelFutureToCancel.cancel(true);
 		}
 
 		if (stateReadLockHeld) {
@@ -419,7 +415,7 @@ public class SmartNettyTransciever extends Transceiver {
 			disconnect(awaitCompletion, true, null);
 		} finally {
 			// Shut down all thread pools to exit.
-			channelFactory.releaseExternalResources();
+			// channelFactory.releaseExternalResources();
 		}
 	}
 
@@ -427,7 +423,7 @@ public class SmartNettyTransciever extends Transceiver {
 	public String getRemoteName() throws IOException {
 		stateLock.readLock().lock();
 		try {
-			return getChannel().getRemoteAddress().toString();
+			return getChannel().remoteAddress().toString();
 		} finally {
 			stateLock.readLock().unlock();
 		}
@@ -483,7 +479,7 @@ public class SmartNettyTransciever extends Transceiver {
 			}
 		}
 		if (!writeFuture.isSuccess()) {
-			throw new IOException("Error writing buffers", writeFuture.getCause());
+			throw new IOException("Error writing buffers", writeFuture.cause());
 		}
 	}
 
@@ -499,7 +495,8 @@ public class SmartNettyTransciever extends Transceiver {
 	 *             if an error occurs connecting to the remote peer.
 	 */
 	private ChannelFuture writeDataPack(NettyDataPack dataPack) throws IOException {
-		return getChannel().write(dataPack);
+		// return getChannel().write(dataPack);
+		return getChannel().writeAndFlush(dataPack);
 	}
 
 	@Override
@@ -558,39 +555,71 @@ public class SmartNettyTransciever extends Transceiver {
 		@Override
 		public void operationComplete(ChannelFuture future) throws Exception {
 			if (!future.isSuccess() && (callback != null)) {
-				callback.handleError(new IOException("Error writing buffers", future.getCause()));
+				callback.handleError(new IOException("Error writing buffers", future.cause()));
 			}
 		}
+	}
+
+	protected final Bootstrap getBootstrap() {
+		EventLoopGroup group = new NioEventLoopGroup();
+		Bootstrap b = new Bootstrap();
+		b.group(group).channel(NioSocketChannel.class);
+		b.handler(new ChannelInitializer<Channel>() {
+			@Override
+			protected void initChannel(Channel ch) throws Exception {
+				ChannelPipeline pipe = ch.pipeline();
+				// pipe.addLast("frameDecoder")
+				pipe.addLast("decoder", new NettyFrameDecoder());
+				pipe.addLast("encoder", new NettyFrameEncoder());
+				pipe.addLast("handler", createNettyClientAvroHandler());
+			}
+		});
+		b.option(ChannelOption.SO_KEEPALIVE, true);
+		return b;
+		//
+		// // Configure the event pipeline factory.
+		// bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
+		// @Override
+		// public ChannelPipeline getPipeline() throws Exception {
+		// ChannelPipeline p = Channels.pipeline();
+		// p.addLast("frameDecoder", new NettyFrameDecoder());
+		// p.addLast("frameEncoder", new NettyFrameEncoder());
+		// return p;
+		// }
+		// });
+
+		// if (nettyClientBootstrapOptions != null) {
+		// LOG.debug("Using Netty bootstrap options: " +
+		// nettyClientBootstrapOptions);
+		// bootstrap.setOptions(nettyClientBootstrapOptions);
+		// }
+
 	}
 
 	/**
 	 * Avro client handler for the Netty transport
 	 */
-	protected class NettyClientAvroHandler extends SimpleChannelUpstreamHandler {
+	protected class SmartNettyClientAvroHandler extends SimpleChannelInboundHandler<NettyDataPack> {
+
+		// @Override
+		// public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e)
+		// throws Exception {
+		// if (e instanceof ChannelStateEvent) {
+		// LOG.debug(e.toString());
+		// ChannelStateEvent cse = (ChannelStateEvent) e;
+		// if ((cse.getState() == ChannelState.OPEN) &&
+		// (Boolean.FALSE.equals(cse.getValue()))) {
+		// // Server closed connection; disconnect client side
+		// LOG.debug("Remote peer " + remoteAddr + " closed connection.");
+		// }
+		// }
+		// super.handleUpstream(ctx, e);
+		// }
 
 		@Override
-		public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e) throws Exception {
-			if (e instanceof ChannelStateEvent) {
-				LOG.debug(e.toString());
-				ChannelStateEvent cse = (ChannelStateEvent) e;
-				if ((cse.getState() == ChannelState.OPEN) && (Boolean.FALSE.equals(cse.getValue()))) {
-					// Server closed connection; disconnect client side
-					LOG.debug("Remote peer " + remoteAddr + " closed connection.");
-					disconnect(false, true, null);
-				}
-			}
-			super.handleUpstream(ctx, e);
-		}
-
-		@Override
-		public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-			// channel = e.getChannel();
-			super.channelOpen(ctx, e);
-		}
-
-		@Override
-		public void messageReceived(ChannelHandlerContext ctx, final MessageEvent e) {
-			NettyDataPack dataPack = (NettyDataPack) e.getMessage();
+		protected void channelRead0(ChannelHandlerContext ctx, NettyDataPack msg) throws Exception {
+			// disconnect(false, true, null);
+			NettyDataPack dataPack = msg;
 			Callback<List<ByteBuffer>> callback = requests.get(dataPack.getSerial());
 			if (callback == null) {
 				throw new RuntimeException("Missing previous call info");
@@ -602,17 +631,12 @@ public class SmartNettyTransciever extends Transceiver {
 			}
 		}
 
-		@Override
-		public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
-			disconnect(false, true, e.getCause());
-		}
-
 	}
 
 	/**
 	 * Creates threads with unique names based on a specified name prefix.
 	 */
-	protected static class NettyTransceiverThreadFactory implements ThreadFactory {
+	protected static class SmartNettyTransceiverThreadFactory implements ThreadFactory {
 		private final AtomicInteger threadId = new AtomicInteger(0);
 		private final String prefix;
 
@@ -625,7 +649,7 @@ public class SmartNettyTransciever extends Transceiver {
 		 *            ThreadFactory. A unique ID will be appended to this prefix
 		 *            to form the final thread name.
 		 */
-		public NettyTransceiverThreadFactory(String prefix) {
+		public SmartNettyTransceiverThreadFactory(String prefix) {
 			this.prefix = prefix;
 		}
 
@@ -636,5 +660,4 @@ public class SmartNettyTransciever extends Transceiver {
 			return thread;
 		}
 	}
-
 }

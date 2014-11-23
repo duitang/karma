@@ -91,9 +91,9 @@ public class ServerBootstrap {
 
 	public void startUp(Class[] serviceType, Object[] service, int port, String protocol) throws IOException {
 		clientid = MetricCenter.getHostname() + "|" + genServiceName(service);
-		traceAllService(serviceType, service, new Closeable[service.length]);
+		// traceAllService(serviceType, service, new Closeable[service.length]);
 		gatewayInterface = mixAllService(serviceType);
-		gatewayService = mixAllImpls(serviceType, proxiedService);
+		gatewayService = mixAllImpls(serviceType, service);
 		MetricCenter.initMetric(gatewayInterface, clientid);
 		if (protocol.equalsIgnoreCase("http")) {
 			server = new HttpServer(new ReflectResponder(gatewayInterface, gatewayService), port);
