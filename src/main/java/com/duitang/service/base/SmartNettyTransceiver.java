@@ -576,45 +576,12 @@ public class SmartNettyTransceiver extends Transceiver {
 		});
 		b.option(ChannelOption.SO_KEEPALIVE, true);
 		return b;
-		//
-		// // Configure the event pipeline factory.
-		// bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
-		// @Override
-		// public ChannelPipeline getPipeline() throws Exception {
-		// ChannelPipeline p = Channels.pipeline();
-		// p.addLast("frameDecoder", new NettyFrameDecoder());
-		// p.addLast("frameEncoder", new NettyFrameEncoder());
-		// return p;
-		// }
-		// });
-
-		// if (nettyClientBootstrapOptions != null) {
-		// LOG.debug("Using Netty bootstrap options: " +
-		// nettyClientBootstrapOptions);
-		// bootstrap.setOptions(nettyClientBootstrapOptions);
-		// }
-
 	}
 
 	/**
 	 * Avro client handler for the Netty transport
 	 */
 	protected class SmartNettyClientAvroHandler extends SimpleChannelInboundHandler<NettyDataPack> {
-
-		// @Override
-		// public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e)
-		// throws Exception {
-		// if (e instanceof ChannelStateEvent) {
-		// LOG.debug(e.toString());
-		// ChannelStateEvent cse = (ChannelStateEvent) e;
-		// if ((cse.getState() == ChannelState.OPEN) &&
-		// (Boolean.FALSE.equals(cse.getValue()))) {
-		// // Server closed connection; disconnect client side
-		// LOG.debug("Remote peer " + remoteAddr + " closed connection.");
-		// }
-		// }
-		// super.handleUpstream(ctx, e);
-		// }
 
 		@Override
 		protected void channelRead0(ChannelHandlerContext ctx, NettyDataPack msg) throws Exception {

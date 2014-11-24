@@ -3,6 +3,8 @@ package com.duitang.service.base;
 import java.net.InetSocketAddress;
 import java.util.Date;
 
+import junit.framework.Assert;
+
 import net.sf.cglib.asm.ClassWriter;
 import net.sf.cglib.asm.Opcodes;
 import net.sf.cglib.proxy.Mixin;
@@ -30,6 +32,7 @@ public class SmartNettyTransceiverTest {
 		server.start();
 		tr = new SmartNettyTransceiver(new InetSocketAddress("localhost", 11222));
 		client = ReflectRequestor.getClient(Echo.class, tr);
+		Assert.assertNotNull(client.echo("......................initialization......................"));
 	}
 
 	@After
@@ -106,7 +109,7 @@ public class SmartNettyTransceiverTest {
 		fac.setUrl("netty://localhost:9991");
 		fac.init();
 		Echo cli = fac.create();
-		for (int i = 0; i < 1000; i++) {
+		for (int i = 0; i < 100; i++) {
 			System.out.println(cli.echo("****" + i + "****"));
 		}
 	}
