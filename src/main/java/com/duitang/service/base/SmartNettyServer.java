@@ -18,20 +18,17 @@ package com.duitang.service.base;
  * limitations under the License.
  */
 
-import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -64,7 +61,7 @@ public class SmartNettyServer implements Server {
 
 	protected static final int BIZGROUPSIZE = Runtime.getRuntime().availableProcessors() * 2; // 默认
 	/** 业务出现线程大小 */
-	protected static final int BIZTHREADSIZE = 4;
+	protected static final int BIZTHREADSIZE = 60;
 	protected static EventLoopGroup bossGroup;
 	protected static EventLoopGroup workerGroup;
 
@@ -87,9 +84,6 @@ public class SmartNettyServer implements Server {
 				ChannelPipeline p = ch.pipeline();
 				p.addLast("frameDecoder", new NettyFrameDecoder());
 				p.addLast("frameEncoder", new NettyFrameEncoder());
-				// if (executionHandler != null) {
-				// p.addLast("executionHandler", executionHandler);
-				// }
 				p.addLast("handler", new SmartNettyServerAvroHandler());
 			}
 
@@ -119,24 +113,6 @@ public class SmartNettyServer implements Server {
 	@Override
 	public void join() throws InterruptedException {
 		closed.await();
-	}
-
-	protected final Bootstrap getBootstrap() {
-		EventLoopGroup group = new NioEventLoopGroup();
-		Bootstrap b = new Bootstrap();
-		b.group(group).channel(NioSocketChannel.class);
-		b.handler(new ChannelInitializer<Channel>() {
-			@Override
-			protected void initChannel(Channel ch) throws Exception {
-				ChannelPipeline pipe = ch.pipeline();
-				// pipe.addLast("frameDecoder")
-				pipe.addLast("decoder", new NettyFrameDecoder());
-				pipe.addLast("encoder", new NettyFrameEncoder());
-				pipe.addLast("handler", new SmartNettyServerAvroHandler());
-			}
-		});
-		b.option(ChannelOption.SO_KEEPALIVE, true);
-		return b;
 	}
 
 	/**

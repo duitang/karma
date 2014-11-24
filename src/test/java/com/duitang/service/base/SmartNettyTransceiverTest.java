@@ -199,7 +199,13 @@ public class SmartNettyTransceiverTest {
 		Echo client = ReflectRequestor.getClient(Echo.class, tr);
 		Assert.assertNotNull(client.echo("......................initialization......................" + sb.toString()));
 		System.out.println("StartUp finished!!");
-		System.exit(1);
+		System.err.close();
+		long ts = System.currentTimeMillis();
+		for(int i=0; i<10000; i++){
+			client.echo(sb.toString());
+		}
+		ts = System.currentTimeMillis() - ts;
+		System.out.println("time elapsed: " + ts + "ms");
 	}
 
 }
@@ -209,14 +215,14 @@ class EchoService implements Echo, Echo2 {
 	@Override
 	public String echo(String msg) {
 		String ret = msg + "@" + new Date();
-		System.err.println(ret);
+//		System.err.println(ret);
 		return ret;
 	}
 
 	@Override
 	public String echo2(String msg) {
 		String ret = msg + "@@" + new Date();
-		System.err.println(ret);
+//		System.err.println(ret);
 		return ret;
 	}
 
@@ -227,7 +233,7 @@ class EchoImpl1 implements Echo {
 	@Override
 	public String echo(String msg) {
 		String ret = msg + "@" + new Date();
-		System.err.println(ret);
+//		System.err.println(ret);
 		return ret;
 	}
 
@@ -238,7 +244,7 @@ class EchoImpl2 implements Echo2 {
 	@Override
 	public String echo2(String msg) {
 		String ret = msg + "@@" + new Date();
-		System.err.println(ret);
+//		System.err.println(ret);
 		return ret;
 	}
 

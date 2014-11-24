@@ -5,6 +5,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.xml.DOMConfigurator;
+
 import com.duitang.service.base.ClientFactory;
 import com.duitang.service.base.MetricCenter;
 import com.duitang.service.base.ServerBootstrap;
@@ -14,6 +17,11 @@ public class MemoryServer {
 
 	final static String[] PARAMETER_KEYS = { "server", "client", "port", "host", "print", "thread", "loop", "msg",
 	        "protocol", "map" };
+
+	static protected void reloadLog4J() {
+		LogManager.resetConfiguration();
+//		DOMConfigurator.configure("conf/test/log4j.xml");
+	}
 
 	public static void main(String[] args) {
 		Map<String, String> param = argsToMap(args);

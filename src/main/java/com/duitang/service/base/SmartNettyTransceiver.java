@@ -32,6 +32,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -40,7 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -58,7 +58,7 @@ import com.duitang.service.codecs.NettyFrameEncoder;
 /**
  * A Netty-based {@link Transceiver} implementation.
  */
-public class SmartNettyTransceiver extends Transceiver {
+public class SmartNettyTransceiver extends Transceiver implements Closeable {
 	/** If not specified, the default connection timeout will be used (60 sec). */
 	public static final long DEFAULT_CONNECTION_TIMEOUT_MILLIS = 60 * 1000L;
 	public static final String NETTY_CONNECT_TIMEOUT_OPTION = "connectTimeoutMillis";
@@ -600,31 +600,4 @@ public class SmartNettyTransceiver extends Transceiver {
 
 	}
 
-	/**
-	 * Creates threads with unique names based on a specified name prefix.
-	 */
-	protected static class SmartNettyTransceiverThreadFactory implements ThreadFactory {
-		private final AtomicInteger threadId = new AtomicInteger(0);
-		private final String prefix;
-
-		/**
-		 * Creates a NettyTransceiverThreadFactory that creates threads with the
-		 * specified name.
-		 * 
-		 * @param prefix
-		 *            the name prefix to use for all threads created by this
-		 *            ThreadFactory. A unique ID will be appended to this prefix
-		 *            to form the final thread name.
-		 */
-		public SmartNettyTransceiverThreadFactory(String prefix) {
-			this.prefix = prefix;
-		}
-
-		@Override
-		public Thread newThread(Runnable r) {
-			Thread thread = new Thread(r);
-			thread.setName(prefix + " " + threadId.incrementAndGet());
-			return thread;
-		}
-	}
 }
