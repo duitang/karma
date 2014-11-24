@@ -4,7 +4,6 @@ import java.net.InetSocketAddress;
 import java.util.Date;
 
 import junit.framework.Assert;
-
 import net.sf.cglib.asm.ClassWriter;
 import net.sf.cglib.asm.Opcodes;
 import net.sf.cglib.proxy.Mixin;
@@ -25,18 +24,27 @@ public class SmartNettyTransceiverTest {
 	protected Echo client;
 
 	protected ServerBootstrap karamServer;
+	protected StringBuilder sb;
 
 	@Before
 	public void setUp() throws Exception {
+		sb = new StringBuilder();
+		for (int i = 0; i < 40000; i++) {
+			sb.append("+");
+		}
+
 		server = new NettyServer(new ReflectResponder(Echo.class, new EchoService()), new InetSocketAddress(11222));
 		server.start();
 		tr = new SmartNettyTransceiver(new InetSocketAddress("localhost", 11222));
 		client = ReflectRequestor.getClient(Echo.class, tr);
-		Assert.assertNotNull(client.echo("......................initialization......................"));
+		Assert.assertNotNull(client.echo("......................initialization......................" + sb.toString()));
+		System.out.println("StartUp finished!!");
+		// System.exit(1);
 	}
 
 	@After
 	public void tearDown() throws Exception {
+		server.close();
 	}
 
 	protected static Class genInterface(final String destName, Class[] clz) {
@@ -99,19 +107,66 @@ public class SmartNettyTransceiverTest {
 	}
 
 	@Test
-	public void testKarmaServerWithSetup() throws Exception {
+	public void testKarmaServerClient() throws Exception {
 		karamServer = new ServerBootstrap();
 		karamServer.addService(Echo.class, new EchoImpl1());
 		karamServer.addService(Echo2.class, new EchoImpl2());
 		karamServer.startUp(9991, "netty");
 
 		ClientFactory<Echo> fac = ClientFactory.createFactory(Echo.class);
+		ClientFactory<Echo2> fac2 = ClientFactory.createFactory(Echo2.class);
+		fac.setUrl("netty://localhost:9991");
+		fac2.setUrl("netty://localhost:9991");
+		fac.init();
+		fac2.init();
+
+		for (int i = 0; i < 10; i++) {
+			Echo cli = fac.create();
+			Echo2 cli2 = fac2.create();
+			System.out.println(cli.echo("****" + i + "****" + sb.toString()));
+			System.out.println(cli2.echo2("----" + i + "----" + sb.toString()));
+			fac.release(cli);
+			fac2.release(cli2);
+		}
+
+		Thread.sleep(5000);
+		karamServer.shutdown();
+	}
+
+	// @Test
+	public void testKarmaServerWithMT() throws Exception {
+		karamServer = new ServerBootstrap();
+		karamServer.addService(Echo.class, new EchoImpl1());
+		karamServer.addService(Echo2.class, new EchoImpl2());
+		karamServer.startUp(9991, "netty");
+
+		Thread[] t = new Thread[5];
+		final ClientFactory<Echo> fac = ClientFactory.createFactory(Echo.class);
 		fac.setUrl("netty://localhost:9991");
 		fac.init();
-		Echo cli = fac.create();
-		for (int i = 0; i < 100; i++) {
-			System.out.println(cli.echo("****" + i + "****"));
+
+		for (int i = 0; i < t.length; i++) {
+			t[i] = new Thread(new Runnable() {
+
+				@Override
+				public void run() {
+					for (int j = 0; j < 1000; j++) {
+						Echo cli = fac.create();
+						cli.echo(Thread.currentThread().getName() + " -----> " + j);
+						fac.release(cli);
+					}
+				}
+
+			});
+			t[i].setDaemon(true);
+			t[i].start();
 		}
+
+		for (int i = 0; i < t.length; i++) {
+			t[i].join();
+		}
+
+		karamServer.shutdown();
 	}
 
 	protected void tt(int loop) {
@@ -127,6 +182,24 @@ public class SmartNettyTransceiverTest {
 			sb.append(ch);
 		}
 		return sb.toString();
+	}
+
+	public static void main(String[] args) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < 40000; i++) {
+			sb.append("+");
+		}
+
+		MyNettyServer server = new MyNettyServer(new ReflectResponder(Echo.class, new EchoService()),
+		        new InetSocketAddress(11222));
+		server.start();
+		// NettyTransceiver tr = new NettyTransceiver(new
+		// InetSocketAddress("localhost", 11222));
+		SmartNettyTransceiver tr = new SmartNettyTransceiver(new InetSocketAddress("localhost", 11222));
+		Echo client = ReflectRequestor.getClient(Echo.class, tr);
+		Assert.assertNotNull(client.echo("......................initialization......................" + sb.toString()));
+		System.out.println("StartUp finished!!");
+		System.exit(1);
 	}
 
 }
