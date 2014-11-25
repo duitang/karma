@@ -68,6 +68,8 @@ public class SmartNettyTransceiver extends Transceiver implements Closeable {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SmartNettyTransceiver.class.getName());
 
+	static protected EventLoopGroup group = new NioEventLoopGroup(300);
+
 	private final AtomicInteger serialGenerator = new AtomicInteger(0);
 	private final Map<Integer, Callback<List<ByteBuffer>>> requests = new ConcurrentHashMap<Integer, Callback<List<ByteBuffer>>>();
 
@@ -561,7 +563,6 @@ public class SmartNettyTransceiver extends Transceiver implements Closeable {
 	}
 
 	protected final Bootstrap getBootstrap() {
-		EventLoopGroup group = new NioEventLoopGroup();
 		Bootstrap b = new Bootstrap();
 		b.group(group).channel(NioSocketChannel.class);
 		b.handler(new ChannelInitializer<Channel>() {
@@ -575,6 +576,13 @@ public class SmartNettyTransceiver extends Transceiver implements Closeable {
 			}
 		});
 		b.option(ChannelOption.SO_KEEPALIVE, true);
+		b.option(ChannelOption.SO_TIMEOUT, 5000);
+		b.option(ChannelOption.SO_REUSEADDR, true);
+		b.option(ChannelOption.SO_LINGER, 1000);
+		b.option(ChannelOption.TCP_NODELAY, true);
+		b.option(ChannelOption.SO_BACKLOG, 300);
+
+		java.util.concurrent.Executors.defaultThreadFactory();
 		return b;
 	}
 

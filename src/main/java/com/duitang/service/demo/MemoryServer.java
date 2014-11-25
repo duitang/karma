@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.log4j.LogManager;
-import org.apache.log4j.xml.DOMConfigurator;
 
 import com.duitang.service.base.ClientFactory;
 import com.duitang.service.base.MetricCenter;
@@ -16,12 +15,14 @@ import com.duitang.service.data.MapData;
 public class MemoryServer {
 
 	final static String[] PARAMETER_KEYS = { "server", "client", "port", "host", "print", "thread", "loop", "msg",
-	        "protocol", "map" };
+	        "protocol", "map", "one" };
 
 	static protected void reloadLog4J() {
 		LogManager.resetConfiguration();
-//		DOMConfigurator.configure("conf/test/log4j.xml");
+		// DOMConfigurator.configure("conf/test/log4j.xml");
 	}
+
+	static protected DemoService one;
 
 	public static void main(String[] args) {
 		Map<String, String> param = argsToMap(args);
@@ -112,11 +113,18 @@ public class MemoryServer {
 			usemap = true;
 		}
 
+		boolean one = false;
+		if (param.containsKey("one")) {
+			one = true;
+		}
+
 		ClientFactory<DemoService> fac = ClientFactory.createFactory(DemoService.class);
 		fac.setUrl(protocol + "://" + host + ":" + port);
 
-		LoadRunner.one = fac.create();
 		CountDownLatch latch = new CountDownLatch(t);
+		if (one) {
+			LoadRunner.one = fac.create();
+		}
 		Thread[] ths = new Thread[t];
 		for (int i = 0; i < ths.length; i++) {
 			ths[i] = new Thread(new LoadRunner(latch, l, msg, fac, usemap));
@@ -209,8 +217,11 @@ class LoadRunner implements Runnable {
 			}
 			for (i = 0; i < loop; i++) {
 				try {
-					// cli = one;
-					cli = fac.create();
+					cli = one;
+					if (one == null) {
+						cli = fac.create();
+					}
+
 					if (usemap) {
 						vv = cli.getmap(name);
 						if (!vv.getData().containsKey("aaa")
@@ -227,7 +238,9 @@ class LoadRunner implements Runnable {
 					e.printStackTrace();
 					err++;
 				} finally {
-					fac.release(cli);
+					if (one == null) {
+						fac.release(cli);
+					}
 				}
 			}
 		} finally {
