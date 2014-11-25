@@ -569,20 +569,15 @@ public class SmartNettyTransceiver extends Transceiver implements Closeable {
 			@Override
 			protected void initChannel(Channel ch) throws Exception {
 				ChannelPipeline pipe = ch.pipeline();
-				// pipe.addLast("frameDecoder")
 				pipe.addLast("decoder", new NettyFrameDecoder());
 				pipe.addLast("encoder", new NettyFrameEncoder());
 				pipe.addLast("handler", createNettyClientAvroHandler());
 			}
 		});
 		b.option(ChannelOption.SO_KEEPALIVE, true);
-		b.option(ChannelOption.SO_TIMEOUT, 5000);
 		b.option(ChannelOption.SO_REUSEADDR, true);
 		b.option(ChannelOption.SO_LINGER, 1000);
 		b.option(ChannelOption.TCP_NODELAY, true);
-		b.option(ChannelOption.SO_BACKLOG, 300);
-
-		java.util.concurrent.Executors.defaultThreadFactory();
 		return b;
 	}
 

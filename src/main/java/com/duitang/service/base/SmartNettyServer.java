@@ -62,7 +62,7 @@ public class SmartNettyServer implements Server {
 
 	protected static final int BIZGROUPSIZE = Runtime.getRuntime().availableProcessors() * 2; // 默认
 	/** 业务出现线程大小 */
-	protected static final int BIZTHREADSIZE = 60;
+	protected static final int BIZTHREADSIZE = 300;
 	protected static EventLoopGroup bossGroup;
 	protected static EventLoopGroup workerGroup;
 
