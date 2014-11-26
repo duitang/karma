@@ -18,7 +18,7 @@ public class CacheServiceTest {
 
 	@Before
 	public void setUp() {
-		MemoryCacheService impl = new MemoryCacheService();
+		MemoryCacheService impl = new MemoryCacheService(true);
 		boot = new ServerBootstrap();
 		try {
 			boot.startUp(DemoServiceSpec.class, impl, 9090);

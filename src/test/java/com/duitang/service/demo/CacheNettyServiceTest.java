@@ -30,7 +30,7 @@ public class CacheNettyServiceTest {
 	public void setUp() {
 		LogManager.getLogger("org.apache.avro.ipc").setLevel(Level.ALL);
 		LogManager.getLogger(SmartNettyTransceiver.class.getName()).setLevel(Level.ALL);
-		MemoryCacheService impl = new MemoryCacheService();
+		MemoryCacheService impl = new MemoryCacheService(true);
 		boot = new ServerBootstrap();
 		boot.addService(DemoService.class, impl);
 		try {

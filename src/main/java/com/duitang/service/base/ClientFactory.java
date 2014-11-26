@@ -2,6 +2,7 @@ package com.duitang.service.base;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.net.URL;
 import java.util.ArrayList;
@@ -9,10 +10,15 @@ import java.util.List;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.avro.Protocol;
+import org.apache.avro.ipc.Requestor;
 import org.apache.avro.ipc.Transceiver;
 import org.apache.avro.ipc.reflect.ReflectRequestor;
 import org.apache.avro.ipc.specific.SpecificRequestor;
+import org.apache.avro.reflect.ReflectData;
 import org.apache.log4j.Logger;
+
+import com.duitang.service.mina.MinaTransceiver;
 
 public abstract class ClientFactory<T> implements ServiceFactory<T> {
 
@@ -32,6 +38,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 	protected int timeout = 500;
 	protected String clientid;
 	protected TraceableObject<T> tracer;
+	protected Field patchRemote;
 
 	protected boolean useSpecific;
 
@@ -48,6 +55,12 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 	protected void init() {
 		MetricCenter.initMetric(getServiceType(), clientid);
 		tracer = new TraceableObject<T>();
+		try {
+			patchRemote = Requestor.class.getDeclaredField("remote");
+			patchRemote.setAccessible(true);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	protected void initClientName() {
@@ -125,15 +138,30 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 				trans = new MetricableHttpTransceiver(this.clientid, u);
 			} else {
 				trans = new SmartNettyTransceiver(new InetSocketAddress(u.getHost(), u.getPort()));
+				// trans = new MinaTransceiver(new
+				// InetSocketAddress(u.getHost(), u.getPort()));
 			}
 			if (useSpecific) {
 				ret = (T) SpecificRequestor.getClient(getServiceType(), trans);
 			} else {
-				ret = (T) ReflectRequestor.getClient(getServiceType(), trans);
+				ReflectRequestor req = genRequest(getServiceType(), trans, new ReflectData(getServiceType()
+				        .getClassLoader()));
+				ret = (T) ReflectRequestor.getClient(getServiceType(), req);
 			}
 			ret = tracer.createTraceableInstance(ret, getServiceType(), clientid, trans);
 		} catch (IOException e) {
 			err.error("create for service: " + this.url, e);
+		}
+		return ret;
+	}
+
+	protected ReflectRequestor genRequest(Class<T> iface, Transceiver transciever, ReflectData reflectData)
+	        throws IOException {
+		Protocol protocol = reflectData.getProtocol(iface);
+		ReflectRequestor ret = new ReflectRequestor(protocol, transciever, reflectData);
+		try {
+			patchRemote.set(ret, transciever.getRemote());
+		} catch (Exception e) {
 		}
 		return ret;
 	}

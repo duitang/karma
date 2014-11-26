@@ -6,7 +6,7 @@ import com.duitang.service.base.ClientFactory;
 
 public class MemoryTest {
 
-	// @Test
+//	@Test
 	public void test1() {
 		DemoService cli = null;
 		ClientFactory<DemoService> fac = ClientFactory.createFactory(DemoService.class);
@@ -28,7 +28,7 @@ public class MemoryTest {
 
 	}
 
-	@Test
+	 @Test
 	public void testConnections() {
 		DemoService cli = null;
 		ClientFactory<DemoService> fac = ClientFactory.createFactory(DemoService.class);
@@ -50,6 +50,26 @@ public class MemoryTest {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+
+	// @Test
+	public void testHuge() {
+		DemoService cli = null;
+		ClientFactory<DemoService> fac = ClientFactory.createFactory(DemoService.class);
+		fac.setUrl("netty://" + "localhost" + ":" + 9999);
+
+		int sz = 50000;
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < sz; i++) {
+			sb.append("a");
+		}
+
+		cli = fac.create();
+		boolean r = cli.memory_setString("aaa", sb.toString(), 50000);
+		System.out.println(r);
+		String rr = cli.memory_getString("aaa");
+		System.out.println(rr);
+		fac.release(cli);
 	}
 
 }

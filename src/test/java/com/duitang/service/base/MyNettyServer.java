@@ -26,7 +26,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 
 import org.apache.avro.ipc.NettyServer;
-
 import org.apache.avro.ipc.NettyTransportCodec.NettyDataPack;
 import org.apache.avro.ipc.NettyTransportCodec.NettyFrameDecoder;
 import org.apache.avro.ipc.NettyTransportCodec.NettyFrameEncoder;

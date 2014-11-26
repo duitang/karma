@@ -15,7 +15,7 @@ import com.duitang.service.data.MapData;
 public class MemoryServer {
 
 	final static String[] PARAMETER_KEYS = { "server", "client", "port", "host", "print", "thread", "loop", "msg",
-	        "protocol", "map", "one" };
+	        "protocol", "map", "one", "verbose" };
 
 	static protected void reloadLog4J() {
 		LogManager.resetConfiguration();
@@ -52,8 +52,12 @@ public class MemoryServer {
 		}
 		int p = Integer.valueOf(port);
 		int s = Integer.valueOf(console_print);
+		boolean verbose = false;
+		if (param.containsKey("verbose")){
+			verbose = true;
+		}
 
-		MemoryCacheService impl = new MemoryCacheService();
+		MemoryCacheService impl = new MemoryCacheService(verbose);
 		ServerBootstrap boot = new ServerBootstrap();
 		try {
 			boot.addService(DemoService.class, impl);
