@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public class MockOpsImpl implements MockOps {
 
-	protected HashMap<String, MockObject> repo = new HashMap<>();
+	protected HashMap<String, MockObject> repo = new HashMap<String, MockObject>();
 
 	@Override
 	public MockObject getMock(String name) {

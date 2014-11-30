@@ -33,12 +33,12 @@ public class SmartNettyTransceiverTest {
 			sb.append("+");
 		}
 
-		server = new NettyServer(new ReflectResponder(Echo.class, new EchoService()), new InetSocketAddress(11222));
-		server.start();
-		tr = new SmartNettyTransceiver(new InetSocketAddress("localhost", 11222));
-		client = ReflectRequestor.getClient(Echo.class, tr);
-		Assert.assertNotNull(client.echo("......................initialization......................" + sb.toString()));
-		System.out.println("StartUp finished!!");
+//		server = new NettyServer(new ReflectResponder(Echo.class, new EchoService()), new InetSocketAddress(11222));
+//		server.start();
+//		tr = new SmartNettyTransceiver(new InetSocketAddress("localhost", 11222));
+//		client = ReflectRequestor.getClient(Echo.class, tr);
+//		Assert.assertNotNull(client.echo("......................initialization......................" + sb.toString()));
+//		System.out.println("StartUp finished!!");
 		// System.exit(1);
 	}
 
@@ -92,13 +92,13 @@ public class SmartNettyTransceiverTest {
 		Server server = new NettyServer(new ReflectResponder(clztype, servicetype), new InetSocketAddress(22222));
 		server.start();
 
-		SmartNettyTransceiver tr1 = new SmartNettyTransceiver(new InetSocketAddress("localhost", 22222));
-		SmartNettyTransceiver tr2 = new SmartNettyTransceiver(new InetSocketAddress("localhost", 22222));
-		Echo client = ReflectRequestor.getClient(Echo.class, tr1);
-		Echo2 client2 = ReflectRequestor.getClient(Echo2.class, tr2);
+//		SmartNettyTransceiver tr1 = new SmartNettyTransceiver(new InetSocketAddress("localhost", 22222));
+//		SmartNettyTransceiver tr2 = new SmartNettyTransceiver(new InetSocketAddress("localhost", 22222));
+//		Echo client = ReflectRequestor.getClient(Echo.class, tr1);
+//		Echo2 client2 = ReflectRequestor.getClient(Echo2.class, tr2);
 
 		System.out.println(client.echo("---------"));
-		System.out.println(client2.echo2("+-------+"));
+//		System.out.println(client2.echo2("+-------+"));
 	}
 
 	// @Test
@@ -195,17 +195,17 @@ public class SmartNettyTransceiverTest {
 		server.start();
 		// NettyTransceiver tr = new NettyTransceiver(new
 		// InetSocketAddress("localhost", 11222));
-		SmartNettyTransceiver tr = new SmartNettyTransceiver(new InetSocketAddress("localhost", 11222));
-		Echo client = ReflectRequestor.getClient(Echo.class, tr);
-		Assert.assertNotNull(client.echo("......................initialization......................" + sb.toString()));
-		System.out.println("StartUp finished!!");
-		System.err.close();
-		long ts = System.currentTimeMillis();
-		for(int i=0; i<10000; i++){
-			client.echo(sb.toString());
-		}
-		ts = System.currentTimeMillis() - ts;
-		System.out.println("time elapsed: " + ts + "ms");
+//		SmartNettyTransceiver tr = new SmartNettyTransceiver(new InetSocketAddress("localhost", 11222));
+//		Echo client = ReflectRequestor.getClient(Echo.class, tr);
+//		Assert.assertNotNull(client.echo("......................initialization......................" + sb.toString()));
+//		System.out.println("StartUp finished!!");
+//		System.err.close();
+//		long ts = System.currentTimeMillis();
+//		for(int i=0; i<10000; i++){
+//			client.echo(sb.toString());
+//		}
+//		ts = System.currentTimeMillis() - ts;
+//		System.out.println("time elapsed: " + ts + "ms");
 	}
 
 }

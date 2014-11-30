@@ -11,6 +11,7 @@ import com.duitang.service.base.ClientFactory;
 import com.duitang.service.base.MetricCenter;
 import com.duitang.service.base.ServerBootstrap;
 import com.duitang.service.data.MapData;
+import com.duitang.service.mina.AvroRPCHandler;
 
 public class MemoryServer {
 
@@ -53,12 +54,21 @@ public class MemoryServer {
 		int p = Integer.valueOf(port);
 		int s = Integer.valueOf(console_print);
 		boolean verbose = false;
-		if (param.containsKey("verbose")){
+		if (param.containsKey("verbose")) {
 			verbose = true;
+			AvroRPCHandler.debugMode = true;
+			AvroRPCHandler.debugOutputCount = 10;
 		}
+		String msg = "20000";
+		if (param.containsKey("msg")) {
+			msg = param.get("msg");
+		}
+		msg = genMsg(msg);
 
 		MemoryCacheService impl = new MemoryCacheService(verbose);
 		ServerBootstrap boot = new ServerBootstrap();
+		impl.memory_setString("main", msg, 50000);
+		impl.memory_setString("aaa", msg, 50000);
 		try {
 			boot.addService(DemoService.class, impl);
 			boot.startUp(p, protocol);
@@ -97,12 +107,7 @@ public class MemoryServer {
 		if (param.containsKey("msg")) {
 			msg = param.get("msg");
 		}
-		int m = Integer.valueOf(msg);
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < m; i++) {
-			sb.append("1");
-		}
-		msg = sb.toString();
+		msg = genMsg(msg);
 		String protocol = "http";
 		if (param.containsKey("protocol")) {
 			protocol = param.get("protocol");
@@ -170,6 +175,15 @@ public class MemoryServer {
 		return ret;
 	}
 
+	static String genMsg(String msg) {
+		int m = Integer.valueOf(msg);
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < m - 1; i++) {
+			sb.append("1");
+		}
+		sb.append("9");
+		return sb.toString();
+	}
 }
 
 class LoadRunner implements Runnable {
@@ -225,7 +239,6 @@ class LoadRunner implements Runnable {
 					if (one == null) {
 						cli = fac.create();
 					}
-
 					if (usemap) {
 						vv = cli.getmap(name);
 						if (!vv.getData().containsKey("aaa")

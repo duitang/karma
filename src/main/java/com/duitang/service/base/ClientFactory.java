@@ -11,14 +11,13 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.avro.Protocol;
+import org.apache.avro.ipc.NettyTransceiver;
 import org.apache.avro.ipc.Requestor;
 import org.apache.avro.ipc.Transceiver;
 import org.apache.avro.ipc.reflect.ReflectRequestor;
 import org.apache.avro.ipc.specific.SpecificRequestor;
 import org.apache.avro.reflect.ReflectData;
 import org.apache.log4j.Logger;
-
-import com.duitang.service.mina.MinaTransceiver;
 
 public abstract class ClientFactory<T> implements ServiceFactory<T> {
 
@@ -33,6 +32,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 	protected String url;
 	protected List<URL> serviceURL;
 	protected List<Boolean> serviceHTTPProtocol;
+	protected List<NettyTransceiver> transceivers;
 	protected AtomicInteger hashid = new AtomicInteger(0);
 	protected int sz;
 	protected int timeout = 500;
@@ -92,6 +92,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		String[] urlitems = url.split(";");
 		this.serviceURL = new ArrayList<URL>();
 		this.serviceHTTPProtocol = new ArrayList<Boolean>();
+		this.transceivers = new ArrayList<NettyTransceiver>();
 		boolean isHttp = false;
 		URL ur = null;
 		for (String u : urlitems) {
@@ -106,6 +107,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 					}
 					ur = new URL("http://" + u);
 				}
+				this.transceivers.add(new NettyTransceiver(new InetSocketAddress(ur.getHost(), ur.getPort())));
 				this.serviceURL.add(ur);
 				this.serviceHTTPProtocol.add(isHttp);
 			} catch (Exception e) {
@@ -137,19 +139,26 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 			if (serviceHTTPProtocol.get(iid)) {
 				trans = new MetricableHttpTransceiver(this.clientid, u);
 			} else {
-				trans = new SmartNettyTransceiver(new InetSocketAddress(u.getHost(), u.getPort()));
+				trans = new NettyTransceiver(new InetSocketAddress(u.getHost(), u.getPort()));
+				// trans = new SmartNettyTransceiver(new
+				// InetSocketAddress(u.getHost(), u.getPort()));
+				// trans = transceivers.get(iid);
 				// trans = new MinaTransceiver(new
 				// InetSocketAddress(u.getHost(), u.getPort()));
+				// trans = MinaTransceiver.getInstance(u.getHost() + ":" +
+				// u.getPort());
 			}
 			if (useSpecific) {
 				ret = (T) SpecificRequestor.getClient(getServiceType(), trans);
 			} else {
-				ReflectRequestor req = genRequest(getServiceType(), trans, new ReflectData(getServiceType()
-				        .getClassLoader()));
-				ret = (T) ReflectRequestor.getClient(getServiceType(), req);
+				// ReflectRequestor req = genRequest(getServiceType(), trans,
+				// new ReflectData(getServiceType()
+				// .getClassLoader()));
+				// ret = (T) ReflectRequestor.getClient(getServiceType(), req);
+				ret = (T) ReflectRequestor.getClient(getServiceType(), trans);
 			}
 			ret = tracer.createTraceableInstance(ret, getServiceType(), clientid, trans);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			err.error("create for service: " + this.url, e);
 		}
 		return ret;

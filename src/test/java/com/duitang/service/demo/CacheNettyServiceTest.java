@@ -6,6 +6,7 @@ import java.net.InetSocketAddress;
 import junit.framework.Assert;
 
 import org.apache.avro.ipc.NettyServer;
+import org.apache.avro.ipc.NettyTransceiver;
 import org.apache.avro.ipc.reflect.ReflectRequestor;
 import org.apache.avro.ipc.reflect.ReflectResponder;
 import org.apache.log4j.Level;
@@ -75,7 +76,7 @@ public class CacheNettyServiceTest {
 		NettyServer server = new NettyServer(new ReflectResponder(DemoService.class, impl), new InetSocketAddress(9099));
 		server.start();
 
-		SmartNettyTransceiver tr = new SmartNettyTransceiver(new InetSocketAddress("localhost", 9099));
+		NettyTransceiver tr = new NettyTransceiver(new InetSocketAddress("localhost", 9099));
 		DemoService cli = ReflectRequestor.getClient(DemoService.class, tr);
 		try {
 			String key = "aaaa";
@@ -139,7 +140,7 @@ public class CacheNettyServiceTest {
 		}
 	}
 
-	// @Test
+	@Test
 	public void testMetric() throws Exception {
 		MetricCenter.enableConsoleReporter(1);
 		DemoService cli = fac.create();

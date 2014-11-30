@@ -26,7 +26,6 @@ public class AvroEncoder extends ProtocolEncoderAdapter {
 			data = IoBuffer.wrap(b.array(), b.position(), b.remaining());
 			out.write(data);
 		}
-
 	}
 
 	private IoBuffer getPackHeader(NettyDataPack dataPack) {

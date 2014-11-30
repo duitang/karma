@@ -12,8 +12,17 @@ import com.duitang.service.base.CallbackRepository;
 
 public class CallbackCenter implements CallbackRepository {
 
+	final protected static CallbackCenter allinone = new CallbackCenter();
+
 	protected final AtomicInteger serialGenerator = new AtomicInteger(0);
 	protected final Map<Integer, Callback<List<ByteBuffer>>> requests = new ConcurrentHashMap<Integer, Callback<List<ByteBuffer>>>();
+
+	static public CallbackCenter getInstance() {
+		return allinone;
+	}
+
+	private CallbackCenter() {
+	}
 
 	@Override
 	public void push(int cbid, Callback<List<ByteBuffer>> callback) {
@@ -29,8 +38,8 @@ public class CallbackCenter implements CallbackRepository {
 	}
 
 	@Override
-    public int genId(List<ByteBuffer> data, Callback<List<ByteBuffer>> callback) {
-	    return serialGenerator.incrementAndGet();
-    }
+	public int genId(List<ByteBuffer> data, Callback<List<ByteBuffer>> callback) {
+		return serialGenerator.incrementAndGet();
+	}
 
 }

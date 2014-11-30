@@ -12,6 +12,7 @@ import net.sf.cglib.asm.Opcodes;
 import net.sf.cglib.proxy.Mixin;
 
 import org.apache.avro.ipc.HttpServer;
+import org.apache.avro.ipc.NettyServer;
 import org.apache.avro.ipc.Server;
 import org.apache.avro.ipc.reflect.ReflectResponder;
 import org.apache.avro.ipc.specific.SpecificResponder;
@@ -83,7 +84,7 @@ public class ServerBootstrap {
 			server = new HttpServer(new SpecificResponder(gatewayInterface, gatewayService), port);
 		} else {
 			try {
-				server = new SmartNettyServer(new SpecificResponder(gatewayInterface, gatewayService),
+				server = new NettyServer(new SpecificResponder(gatewayInterface, gatewayService),
 				        new InetSocketAddress(port));
 			} catch (Exception e) {
 				throw new IOException(e);
@@ -102,8 +103,8 @@ public class ServerBootstrap {
 			server = new HttpServer(new ReflectResponder(gatewayInterface, gatewayService), port);
 		} else {
 			try {
-				server = new SmartNettyServer(new ReflectResponder(gatewayInterface, gatewayService),
-				        new InetSocketAddress(port));
+				server = new NettyServer(new ReflectResponder(gatewayInterface, gatewayService), new InetSocketAddress(
+				        port));
 			} catch (Exception e) {
 				throw new IOException(e);
 			}

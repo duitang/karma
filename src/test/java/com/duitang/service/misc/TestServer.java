@@ -110,7 +110,7 @@ class My implements MyInter, YourInter {
 	public String hello2() {
 		String ret1 = "hello2: " + new Date();
 		System.out.println(ret1);
-		Map<String, String> ret = new HashMap<>();
+		Map<String, String> ret = new HashMap<String, String>();
 		ret.put("aaa", ret1);
 		return MapUtils.objectToJson(ret);
 	}

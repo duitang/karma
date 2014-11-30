@@ -3,10 +3,11 @@ package com.duitang.service.demo;
 import org.junit.Test;
 
 import com.duitang.service.base.ClientFactory;
+import com.duitang.service.mina.AvroRPCHandler;
 
 public class MemoryTest {
 
-//	@Test
+	// @Test
 	public void test1() {
 		DemoService cli = null;
 		ClientFactory<DemoService> fac = ClientFactory.createFactory(DemoService.class);
@@ -17,8 +18,8 @@ public class MemoryTest {
 		System.out.println(r);
 		String rr = cli.memory_getString("aaa");
 		System.out.println(rr);
-		rr = cli.memory_getString("aaa");
-		System.out.println(rr);
+		// rr = cli.memory_getString("aaa");
+		// System.out.println(rr);
 
 		fac.release(cli);
 		cli = fac.create();
@@ -28,7 +29,7 @@ public class MemoryTest {
 
 	}
 
-	 @Test
+	// @Test
 	public void testConnections() {
 		DemoService cli = null;
 		ClientFactory<DemoService> fac = ClientFactory.createFactory(DemoService.class);
@@ -52,8 +53,10 @@ public class MemoryTest {
 		}
 	}
 
-	// @Test
+	@Test
 	public void testHuge() {
+		AvroRPCHandler.debugMode = true;
+		AvroRPCHandler.debugOutputCount = 1;
 		DemoService cli = null;
 		ClientFactory<DemoService> fac = ClientFactory.createFactory(DemoService.class);
 		fac.setUrl("netty://" + "localhost" + ":" + 9999);
@@ -64,10 +67,19 @@ public class MemoryTest {
 			sb.append("a");
 		}
 
+		long ts = System.currentTimeMillis();
 		cli = fac.create();
+		ts = System.currentTimeMillis() - ts;
+		System.out.println("created ........................." + ts);
+		ts = System.currentTimeMillis();
 		boolean r = cli.memory_setString("aaa", sb.toString(), 50000);
+		ts = System.currentTimeMillis() - ts;
 		System.out.println(r);
+		System.out.println("........................." + ts);
+		ts = System.currentTimeMillis();
 		String rr = cli.memory_getString("aaa");
+		ts = System.currentTimeMillis() - ts;
+		System.out.println("........................." + ts);
 		System.out.println(rr);
 		fac.release(cli);
 	}

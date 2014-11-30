@@ -1,15 +1,16 @@
 package com.duitang.service.mina;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.avro.Protocol;
-import org.apache.avro.ipc.Callback;
 import org.apache.avro.ipc.NettyTransportCodec.NettyDataPack;
+import org.apache.commons.pool2.ObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.mina.core.future.ConnectFuture;
+import org.apache.mina.core.future.WriteFuture;
 import org.apache.mina.core.service.IoHandler;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
@@ -17,18 +18,24 @@ import org.apache.mina.transport.socket.nio.NioSocketConnector;
 
 import com.duitang.service.base.CallbackRepository;
 
-public class Headquarter {
+public class Headquarter implements Closeable {
 
 	static protected ConcurrentHashMap<String, Headquarter> mgr = new ConcurrentHashMap<String, Headquarter>();
 
-	static protected CallbackRepository cbcenter = new CallbackCenter();
+	static protected CallbackRepository cbcenter = CallbackCenter.getInstance();
 	static protected IoHandler handler = new AvroRPCHandler(cbcenter);
 
 	protected NioSocketConnector connector;
 	protected ConnectFuture conn;
 	protected Protocol remote;
 	protected String remoteName;
-	protected IoSession session;
+	protected ObjectPool<IoSession> pool;
+
+	// protected List<IoSession> pool;
+
+	public CallbackRepository getCallback() {
+		return cbcenter;
+	}
 
 	public Protocol getRemote() {
 		return remote;
@@ -61,52 +68,86 @@ public class Headquarter {
 			InetSocketAddress addr = new InetSocketAddress(host, port);
 			try {
 				ret.conn = ret.connector.connect(addr).await();
-				ret.session = ret.conn.getSession();
+				ret.pool = new GenericObjectPool<IoSession>(new IoSessionFactory(ret.conn));
 			} catch (InterruptedException e1) {
 				if (!ret.conn.isConnected()) {
 					ret.conn = null;
 				}
 			}
-			try {
-				ret.conn.await(3000);
-			} catch (InterruptedException e) {
-				throw new IOException(e);
-			}
+			// ret.pool = new ArrayList<IoSession>();
+			// try {
+			// ret.conn.await(3000);
+			// for (int i = 0; i < 10; i++) {
+			// ret.pool.add(ret.conn.getSession());
+			// }
+			// } catch (InterruptedException e) {
+			// throw new IOException(e);
+			// }
+			// ret.iidsz = ret.pool.size();
 			mgr.putIfAbsent(k, ret);
 		}
 		return ret;
 	}
 
-	public void request(List<ByteBuffer> data, Callback<List<ByteBuffer>> cb) {
-		int uuid = cbcenter.genId(data, cb);
-		NettyDataPack dataPack = new NettyDataPack(uuid, data);
-		cbcenter.push(uuid, cb);
-
-//		try {
-			session.write(dataPack);
-			// if (wf.)
-			// for(int i=0; i< 100; i++){
-			// System.out.println(wf.isDone() + "!!");
-			// System.out.println(wf.isWritten() + "^^");
-			// Thread.sleep(10);
-			// }
-			// wf.await();
-
-//		} catch (InterruptedException e) {
-//		}
-		// session.close(false);
-		// return cbcenter.pop(uuid);
+	public void close() {
+		// this.pool.close();
+		this.connector.dispose();
+		this.conn.cancel();
 	}
 
-	protected void active() {
-		if (session == null) {
-			synchronized (this) {
-				if (session == null) {
-					session = conn.getSession();
-					System.out.println("addd---->s");
+	// public void write2Channel(List<ByteBuffer> data,
+	// CallFuture<List<ByteBuffer>> cf) {
+	// if (data == null || cf == null) {
+	// return;
+	// }
+	// NettyDataPack ndp = new NettyDataPack();
+	// ndp.setSerial(cbcenter.genId(data, cf));
+	// ndp.setDatas(data);
+	// cbcenter.push(ndp.getSerial(), cf);
+	// IoSession session = null;
+	// try {
+	// session = pool.borrowObject();
+	// session.write(ndp);
+	// } catch (Exception e) {
+	// } finally {
+	// if (session != null) {
+	// try {
+	// pool.returnObject(session);
+	// } catch (Exception e) {
+	// }
+	// }
+	// }
+	// try {
+	// cf.await();
+	// } catch (InterruptedException e) {
+	// }
+	// }
+
+	public void write2Channel(NettyDataPack datapack) {
+		if (datapack == null) {
+			return;
+		}
+		IoSession session = null;
+		WriteFuture wf = null;
+		try {
+			session = pool.borrowObject();
+			wf = session.write(datapack);
+			try {
+				if (wf != null) {
+					wf.await();
+				}
+			} catch (InterruptedException e) {
+			}
+			Thread.sleep(10);
+		} catch (Exception e) {
+		} finally {
+			if (session != null) {
+				try {
+					pool.returnObject(session);
+				} catch (Exception e) {
 				}
 			}
 		}
 	}
-	
+
 }

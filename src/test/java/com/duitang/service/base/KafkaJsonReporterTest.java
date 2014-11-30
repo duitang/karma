@@ -30,13 +30,15 @@ public class KafkaJsonReporterTest {
 		MemoryCacheService impl = new MemoryCacheService();
 		boot = new ServerBootstrap();
 		try {
-			boot.startUp(DemoService.class, impl, 9090);
+//			boot.startUp(DemoService.class, impl, 9090);
+			boot.addService(DemoService.class, impl);
+			boot.startUp(9090, "netty");
 		} catch (IOException e) {
 			e.printStackTrace();
 			Assert.fail(e.getMessage());
 		}
 		fac = new MemoryCacheClientFactory();
-		fac.setUrl("http://127.0.0.1:9090");
+		fac.setUrl("netty://127.0.0.1:9090");
 	}
 
 	@After

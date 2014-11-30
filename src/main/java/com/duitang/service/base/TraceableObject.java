@@ -42,11 +42,15 @@ class TraceProxy implements MethodInterceptor {
 
 	@Override
 	public Object intercept(Object obj, Method method, Object[] args, MethodProxy mproxy) throws Throwable {
+		String name = method.getName();
 		if (this.closeapi != null) {
-			if ("close".equals(method.getName())) {
+			if ("close".equals(name)) {
 				this.closeapi.close();
 				return null;
 			}
+		}
+		if ("finalize".equals(name)) {
+			return mproxy.invokeSuper(obj, args);
 		}
 		long ts = System.nanoTime();
 		Object ret = null;
@@ -54,6 +58,7 @@ class TraceProxy implements MethodInterceptor {
 		try {
 			ret = mproxy.invoke(proxy, args);
 		} catch (Exception e) {
+			e.printStackTrace();
 			f = true;
 		}
 		ts = System.nanoTime() - ts;
