@@ -58,7 +58,7 @@ class TraceProxy implements MethodInterceptor {
 		try {
 			ret = mproxy.invoke(proxy, args);
 		} catch (Exception e) {
-			e.printStackTrace();
+//			e.printStackTrace();
 			f = true;
 		}
 		ts = System.nanoTime() - ts;

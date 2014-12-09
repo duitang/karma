@@ -70,7 +70,7 @@ public class CacheNettyServiceTest {
 		}
 	}
 
-	@Test
+//	@Test
 	public void testB() throws Exception {
 		MemoryCacheService impl = new MemoryCacheService();
 		NettyServer server = new NettyServer(new ReflectResponder(DemoService.class, impl), new InetSocketAddress(9099));
@@ -147,6 +147,7 @@ public class CacheNettyServiceTest {
 		for (int i = 0; i < 10; i++) {
 			System.out.println("----->" + cli.trace_msg("wait_100", 100));
 		}
+		boot.shutdown();
 		for (int i = 0; i < 5; i++) {
 			try {
 				System.out.println("----->" + cli.trace_msg("wait_600", 600));

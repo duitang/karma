@@ -35,7 +35,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 	protected List<NettyTransceiver> transceivers;
 	protected AtomicInteger hashid = new AtomicInteger(0);
 	protected int sz;
-	protected int timeout = 500;
+	protected long timeout = 500;
 	protected String clientid;
 	protected TraceableObject<T> tracer;
 	protected Field patchRemote;
@@ -117,7 +117,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		this.sz = this.serviceURL.size();
 	}
 
-	public int getTimeout() {
+	public long getTimeout() {
 		return timeout;
 	}
 
@@ -139,7 +139,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 			if (serviceHTTPProtocol.get(iid)) {
 				trans = new MetricableHttpTransceiver(this.clientid, u);
 			} else {
-				trans = new NettyTransceiver(new InetSocketAddress(u.getHost(), u.getPort()));
+				trans = new NettyTransceiver(new InetSocketAddress(u.getHost(), u.getPort()), timeout);
 				// trans = new SmartNettyTransceiver(new
 				// InetSocketAddress(u.getHost(), u.getPort()));
 				// trans = transceivers.get(iid);
