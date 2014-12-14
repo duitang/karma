@@ -128,6 +128,7 @@ class MinaCFFactory implements PooledObjectFactory<MinaSocket> {
 		MinaSocket msocket = p.getObject();
 		if (msocket != null) {
 			// System.out.println("destroy MinaSocket: " + msocket);
+			msocket.connection.cancel();
 			msocket.session.close(true);
 		}
 	}
@@ -140,12 +141,16 @@ class MinaCFFactory implements PooledObjectFactory<MinaSocket> {
 
 	@Override
 	public void activateObject(PooledObject<MinaSocket> p) throws Exception {
-
+		if (p.getObject().lost) {
+			throw new Exception("lost mina socket");
+		}
 	}
 
 	@Override
 	public void passivateObject(PooledObject<MinaSocket> p) throws Exception {
-
+		if (p.getObject().lost) {
+			throw new Exception("lost mina socket");
+		}
 	}
 
 }

@@ -66,8 +66,8 @@ public class MemoryServer {
 
 		MemoryCacheService impl = new MemoryCacheService(verbose);
 		ServerBootstrap boot = new ServerBootstrap();
-//		impl.memory_setString("main", msg, 50000);
-//		impl.memory_setString("aaa", msg, 50000);
+		impl.memory_setString("main", msg, 50000);
+		impl.memory_setString("aaa", msg, 50000);
 		try {
 			boot.addService(DemoService.class, impl);
 			boot.startUp(p, protocol);
@@ -135,7 +135,7 @@ public class MemoryServer {
 
 		CountDownLatch latch = new CountDownLatch(t);
 		if (one) {
-			LoadRunner.one = fac.create();
+			// LoadRunner.one = fac.create();
 		}
 		Thread[] ths = new Thread[t];
 		for (int i = 0; i < ths.length; i++) {
@@ -240,10 +240,10 @@ class LoadRunner implements Runnable {
 			}
 			for (i = 0; i < loop; i++) {
 				try {
-					cli = one;
-					if (one == null) {
-						cli = fac.create();
-					}
+					// cli = one;
+					// if (one == null) {
+					cli = fac.create();
+					// }
 					if (trace > 0) {
 						val = cli.trace_msg(name, trace);
 						if (val.length() != name.length()) {
@@ -256,7 +256,8 @@ class LoadRunner implements Runnable {
 						}
 					} else {
 						val = cli.memory_getString(name);
-						if (val.length() != msg.length()) {
+						// if (val.length() != msg.length()) {
+						if (val == null) {
 							throw new Exception("value error: " + val);
 						}
 					}
@@ -264,9 +265,9 @@ class LoadRunner implements Runnable {
 					e.printStackTrace();
 					err++;
 				} finally {
-					if (one == null) {
-						fac.release(cli);
-					}
+					// if (one == null) {
+					fac.release(cli);
+					// }
 				}
 			}
 		} finally {

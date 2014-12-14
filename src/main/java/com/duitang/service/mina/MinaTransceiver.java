@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.avro.Protocol;
@@ -149,14 +148,6 @@ public class MinaTransceiver extends Transceiver {
 		// System.out.println("return mina socket: " + socket);
 		ConnectionPool.retConnection(url, socket);
 		this.socket = null;
-	}
-
-	protected void breakdown(CallFuture cf) {
-		try {
-			CountDownLatch latch = (CountDownLatch) MinaTransceiver.vistor.get(cf);
-			latch.countDown();
-		} catch (Exception e) {
-		}
 	}
 
 	private IoBuffer getPackHeader(NettyDataPack dataPack) {

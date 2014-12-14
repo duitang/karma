@@ -36,9 +36,9 @@ public class MinaTransceiverTest {
 		String name = "memory_setString";
 		Object param = new Object[] { "aaa", data, 50000 };
 		for (int i = 0; i < 34; i++) {
-			List<ByteBuffer> data1 = PackageTester.mock(clz, name, param);
-			MinaTransceiver tran = new MinaTransceiver("localhost:9999");
-			tran.transceive(data1);
+//			List<ByteBuffer> data1 = PackageTester.mock(clz, name, param);
+//			MinaTransceiver tran = new MinaTransceiver("localhost:9999");
+//			tran.transceive(data1);
 		}
 	}
 
