@@ -1,9 +1,11 @@
 package com.duitang.service.mina;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.avro.Protocol;
 import org.apache.avro.ipc.CallFuture;
@@ -20,9 +22,31 @@ import org.apache.mina.core.buffer.IoBuffer;
  */
 public class MinaTransceiver extends Transceiver {
 
+	static final protected long default_timeout = 500; // 0.5s
+
+	static protected Field vistor;
+
 	protected MinaSocket socket;
 	protected String remoteName;
 	protected String url;
+	protected long timeout = default_timeout;
+	protected int uuid;
+
+	static {
+		try {
+			vistor = CallFuture.class.getDeclaredField("latch");
+		} catch (Exception e) {
+			vistor = null; // not happen when version is defined
+		}
+	}
+
+	public long getTimeout() {
+		return timeout;
+	}
+
+	public void setTimeout(long timeout) {
+		this.timeout = timeout;
+	}
 
 	public MinaTransceiver(String host, int port) {
 		this(host + ":" + port);
@@ -71,12 +95,11 @@ public class MinaTransceiver extends Transceiver {
 		try {
 			CallFuture<List<ByteBuffer>> transceiverFuture = new CallFuture<List<ByteBuffer>>();
 			transceive(request, transceiverFuture);
-			return transceiverFuture.get();
-		} catch (InterruptedException e) {
-			return null;
-		} catch (ExecutionException e) {
-			return null;
+			return transceiverFuture.get(timeout, TimeUnit.MILLISECONDS);
+		} catch (Exception e) {
+			this.socket.lost = true;
 		}
+		return null;
 	}
 
 	@Override
@@ -93,11 +116,12 @@ public class MinaTransceiver extends Transceiver {
 		if (socket == null) {
 			socket = ConnectionPool.getConnection(url);
 		}
+		CallFuture<List<ByteBuffer>> gw = new CallFuture<List<ByteBuffer>>(callback);
 		NettyDataPack ndp = new NettyDataPack();
 		ndp.setDatas(buffers);
-		int uuid = socket.epoll.uuid.incrementAndGet();
+		uuid = socket.epoll.uuid.incrementAndGet();
 		ndp.setSerial(uuid);
-		socket.epoll.callbacks.put(uuid, callback);
+		socket.epoll.callbacks.put(uuid, gw);
 		// try {
 		// System.out.println(session.toString());
 		// System.out.println(socket.cf.getSession().toString());
@@ -111,6 +135,13 @@ public class MinaTransceiver extends Transceiver {
 			socket.session.write(getLengthHeader(d));
 			socket.session.write(IoBuffer.wrap(d.array(), d.position(), d.remaining()));
 		}
+
+		try {
+			gw.get(timeout, TimeUnit.MILLISECONDS);
+		} catch (Exception e) {
+			socket.lost = true;
+			gw.handleError(e);
+		}
 	}
 
 	@Override
@@ -118,6 +149,14 @@ public class MinaTransceiver extends Transceiver {
 		// System.out.println("return mina socket: " + socket);
 		ConnectionPool.retConnection(url, socket);
 		this.socket = null;
+	}
+
+	protected void breakdown(CallFuture cf) {
+		try {
+			CountDownLatch latch = (CountDownLatch) MinaTransceiver.vistor.get(cf);
+			latch.countDown();
+		} catch (Exception e) {
+		}
 	}
 
 	private IoBuffer getPackHeader(NettyDataPack dataPack) {

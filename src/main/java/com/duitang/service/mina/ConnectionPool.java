@@ -55,7 +55,7 @@ public class ConnectionPool {
 		if (msocket == null) {
 			return;
 		}
-		if (host == null) { // no target
+		if (host == null || msocket.lost) { // no target
 			msocket.session.close(true);
 			return;
 		}
@@ -134,7 +134,8 @@ class MinaCFFactory implements PooledObjectFactory<MinaSocket> {
 
 	@Override
 	public boolean validateObject(PooledObject<MinaSocket> p) {
-		return p != null && p.getObject().connection.isConnected();
+		MinaSocket ms = p.getObject();
+		return !ms.lost && ms.connection.isConnected();
 	}
 
 	@Override

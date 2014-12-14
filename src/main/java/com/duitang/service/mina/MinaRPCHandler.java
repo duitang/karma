@@ -28,12 +28,17 @@ public class MinaRPCHandler extends IoHandlerAdapter {
 		NettyDataPack dataPack = (NettyDataPack) message;
 		Integer uuid = dataPack.getSerial();
 		Callback<List<ByteBuffer>> callback = this.epoll.callbacks.get(uuid);
-		if (callback == null) {
+		if (callback == null) {// maybe timeout
 			throw new RuntimeException("Missing previous call info " + dataPack.getSerial());
 		}
 		this.epoll.callbacks.remove(uuid);
 		actionPool.submit(new WrapperCallback(callback, dataPack));
 		// new WrapperCallback(callback, dataPack).run();
+	}
+
+	@Override
+	public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
+		super.exceptionCaught(session, cause);
 	}
 
 	class WrapperCallback implements Runnable {

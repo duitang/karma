@@ -39,6 +39,24 @@ public class MemoryTest {
 		System.out.println(rr);
 		fac.release(cli);
 
+		System.out.println("------------------- break it!");
+		cli = fac.create();
+		System.out.println("...................");
+		long ts = System.currentTimeMillis();
+		rr = cli.trace_msg("this will timeout ", 1000);
+		System.out.println("time elapsed:" + (System.currentTimeMillis() - ts));
+		System.out.println("should be null! ---> " + rr);
+		fac.release(cli);
+
+		System.out.println("------------------- recover!");
+		cli = fac.create();
+		System.out.println("...................");
+		ts = System.currentTimeMillis();
+		rr = cli.trace_msg("this not timeout ", 300);
+		System.out.println("time elapsed:" + (System.currentTimeMillis() - ts));
+		System.out.println("not null! ---> " + rr);
+		fac.release(cli);
+
 	}
 
 	// @Test
@@ -70,7 +88,7 @@ public class MemoryTest {
 		}
 	}
 
-	@Test
+	// @Test
 	public void testHuge() {
 		AvroRPCHandler.debugMode = true;
 		AvroRPCHandler.debugOutputCount = 1;

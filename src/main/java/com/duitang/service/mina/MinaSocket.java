@@ -10,6 +10,7 @@ public class MinaSocket {
 	public ConnectFuture connection;
 	public IoSession session;
 	public Protocol remote;
+	public boolean lost = false;
 
 	public MinaSocket(MinaEpoll epoll) {
 		this.epoll = epoll;
