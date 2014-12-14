@@ -1,10 +1,8 @@
 package com.duitang.service.mina;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.avro.Protocol;
@@ -12,59 +10,27 @@ import org.apache.avro.ipc.CallFuture;
 import org.apache.avro.ipc.Callback;
 import org.apache.avro.ipc.NettyTransportCodec.NettyDataPack;
 import org.apache.avro.ipc.Transceiver;
-import org.apache.commons.pool2.ObjectPool;
-import org.apache.commons.pool2.impl.GenericObjectPool;
-import org.apache.mina.core.future.ConnectFuture;
-import org.apache.mina.core.session.IoSession;
-import org.apache.mina.filter.codec.ProtocolCodecFilter;
-import org.apache.mina.transport.socket.nio.NioSocketConnector;
+import org.apache.mina.core.buffer.IoBuffer;
 
+/**
+ * for safety consideration, no connection, no session reused
+ * 
+ * @author laurence
+ * 
+ */
 public class MinaTransceiver extends Transceiver {
 
-	protected static CallbackCenter cbcenter = CallbackCenter.getInstance();
-	protected static ConcurrentHashMap<String, ObjectPool<MinaTransceiver>> pool = new ConcurrentHashMap<String, ObjectPool<MinaTransceiver>>();
-
-	protected NioSocketConnector connector;
-	// protected Headquarter headquarter;
-	protected ConnectFuture cf;
-	protected Protocol remote;
-	protected IoSession session;
+	protected MinaSocket socket;
 	protected String remoteName;
 	protected String url;
 
-	static public MinaTransceiver getInstance(String url) throws Exception {
-		if (!pool.containsKey(url)) {
-			System.out.println("*******************************=>" + url );
-			synchronized (pool) {
-				if (!pool.contains(url)) {
-					ObjectPool<MinaTransceiver> one = new GenericObjectPool<MinaTransceiver>(new MinaTranseiverFactory(
-					        url));
-					pool.putIfAbsent(url, one);
-				}
-			}
-		}
-		ObjectPool<MinaTransceiver> one = pool.get(url);
-		return one.borrowObject();
+	public MinaTransceiver(String host, int port) {
+		this(host + ":" + port);
 	}
 
-	void init(InetSocketAddress addr) {
-		if (connector == null) {
-			connector = new NioSocketConnector();
-			connector.getFilterChain().addLast("codec", new ProtocolCodecFilter(new AvroCodecFactory()));
-			connector.setHandler(Headquarter.handler);
-			try {
-				cf = connector.connect(addr).await();
-			} catch (InterruptedException e) {
-			}
-		}
-	}
-
-	protected MinaTransceiver(String url, InetSocketAddress addr) throws IOException {
-		this.url = url;
-		init(addr);
-
-		session = cf.getSession();
-		remoteName = session.getRemoteAddress().toString();
+	public MinaTransceiver(String hostAndPort) {
+		this.url = hostAndPort;
+		this.remoteName = ConnectionPool.getRemoteAddress(hostAndPort);
 	}
 
 	@Override
@@ -74,21 +40,24 @@ public class MinaTransceiver extends Transceiver {
 
 	@Override
 	public Protocol getRemote() {
-		return remote;
+		// System.out.println("get remote: " + socket);
+		if (socket == null) {
+			// return null;
+			socket = ConnectionPool.getConnection(url);
+		}
+		return socket.remote;
 	}
 
 	@Override
 	public void setRemote(Protocol protocol) {
-		this.remote = protocol;
-		// if (this.remote == null) {
-		// }
-		// this.headquarter.setRemote(this.remote);
+		if (socket == null) {
+			socket = ConnectionPool.getConnection(url);
+		}
+		this.socket.remote = protocol;
 	}
 
 	@Override
 	public String getRemoteName() throws IOException {
-		// return headquarter.getRemoteName();
-		// return session.getRemoteAddress().toString();
 		return this.remoteName;
 	}
 
@@ -112,51 +81,56 @@ public class MinaTransceiver extends Transceiver {
 
 	@Override
 	public void writeBuffers(List<ByteBuffer> buffers) throws IOException {
-		NettyDataPack ndp = new NettyDataPack();
-		ndp.setDatas(buffers);
-		// ndp.setSerial(headquarter.getCallback().genId(buffers, null));
-		// headquarter.write2Channel(ndp);
-		ndp.setSerial(cbcenter.genId(buffers, null));
-		write(ndp);
+		write(buffers, null);
 	}
 
 	@Override
 	public void transceive(List<ByteBuffer> request, Callback<List<ByteBuffer>> callback) throws IOException {
-		NettyDataPack ndp = new NettyDataPack();
-		ndp.setDatas(request);
-		// ndp.setSerial(headquarter.getCallback().genId(request, callback));
-		// headquarter.getCallback().push(ndp.getSerial(), callback);
-		// headquarter.write2Channel(ndp);
-		ndp.setSerial(cbcenter.genId(request, callback));
-		cbcenter.push(ndp.getSerial(), callback);
-		write(ndp);
+		write(request, callback);
 	}
 
-	protected void write(NettyDataPack ndp) {
-		try {
-			session.write(ndp).await();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+	protected void write(List<ByteBuffer> buffers, Callback<List<ByteBuffer>> callback) {
+		if (socket == null) {
+			socket = ConnectionPool.getConnection(url);
+		}
+		NettyDataPack ndp = new NettyDataPack();
+		ndp.setDatas(buffers);
+		int uuid = socket.epoll.uuid.incrementAndGet();
+		ndp.setSerial(uuid);
+		socket.epoll.callbacks.put(uuid, callback);
+		// try {
+		// System.out.println(session.toString());
+		// System.out.println(socket.cf.getSession().toString());
+
+		// System.out.println("write netty data pack ---> " + uuid);
+		// socket.session.write(ndp);
+		// } catch (InterruptedException e) {
+		// }
+		socket.session.write(getPackHeader(ndp));
+		for (ByteBuffer d : ndp.getDatas()) {
+			socket.session.write(getLengthHeader(d));
+			socket.session.write(IoBuffer.wrap(d.array(), d.position(), d.remaining()));
 		}
 	}
 
 	@Override
 	public void close() throws IOException {
-		ObjectPool<MinaTransceiver> one = pool.get(url);
-		try {
-			one.returnObject(this);
-		} catch (Exception e) {
-		}
+		// System.out.println("return mina socket: " + socket);
+		ConnectionPool.retConnection(url, socket);
+		this.socket = null;
 	}
 
-	public void release() throws IOException {
-		session.close(true);
-		cf.cancel();
-		connector.dispose();
+	private IoBuffer getPackHeader(NettyDataPack dataPack) {
+		IoBuffer ret = IoBuffer.allocate(8);
+		ret.putInt(dataPack.getSerial());
+		ret.putInt(dataPack.getDatas().size());
+		return ret.flip();
 	}
 
-	public boolean isAlive() {
-		return session.isConnected();
+	private IoBuffer getLengthHeader(ByteBuffer buf) {
+		IoBuffer ret = IoBuffer.allocate(4);
+		ret.putInt(buf.limit());
+		return ret.flip();
 	}
 
 }

@@ -19,6 +19,8 @@ import org.apache.avro.ipc.specific.SpecificRequestor;
 import org.apache.avro.reflect.ReflectData;
 import org.apache.log4j.Logger;
 
+import com.duitang.service.mina.MinaTransceiver;
+
 public abstract class ClientFactory<T> implements ServiceFactory<T> {
 
 	protected Logger err = Logger.getLogger("error");
@@ -65,12 +67,16 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 
 	protected void initClientName() {
 		if (clientid == null) {
-			StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
+			StackTraceElement[] stacktrace = Thread.currentThread()
+					.getStackTrace();
 			for (int i = 0; i < stacktrace.length; i++) {
 				StackTraceElement e = stacktrace[i];
-				if (e.getMethodName() != null && !e.getClassName().startsWith("com.duitang.service.base")) {
-					clientid = MetricCenter.getHostname() + "|" + e.getFileName() + "@" + e.getLineNumber() + ":"
-					        + e.getMethodName();
+				if (e.getMethodName() != null
+						&& !e.getClassName().startsWith(
+								"com.duitang.service.base")) {
+					clientid = MetricCenter.getHostname() + "|"
+							+ e.getFileName() + "@" + e.getLineNumber() + ":"
+							+ e.getMethodName();
 				}
 			}
 		}
@@ -107,7 +113,8 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 					}
 					ur = new URL("http://" + u);
 				}
-				this.transceivers.add(new NettyTransceiver(new InetSocketAddress(ur.getHost(), ur.getPort())));
+				this.transceivers.add(new NettyTransceiver(
+						new InetSocketAddress(ur.getHost(), ur.getPort())));
 				this.serviceURL.add(ur);
 				this.serviceHTTPProtocol.add(isHttp);
 			} catch (Exception e) {
@@ -132,42 +139,45 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		try {
 			Transceiver trans = null;
 			if (sz == 0) {
-				throw new RuntimeException("no remote url find? please setUrl(String url)");
+				throw new RuntimeException(
+						"no remote url find? please setUrl(String url)");
 			}
 			int iid = hashid.incrementAndGet() % sz;
 			URL u = serviceURL.get(iid);
 			if (serviceHTTPProtocol.get(iid)) {
 				trans = new MetricableHttpTransceiver(this.clientid, u);
 			} else {
-				trans = new NettyTransceiver(new InetSocketAddress(u.getHost(), u.getPort()), timeout);
+				// trans = new NettyTransceiver(new
+				// InetSocketAddress(u.getHost(), u.getPort()), timeout);
 				// trans = new SmartNettyTransceiver(new
 				// InetSocketAddress(u.getHost(), u.getPort()));
 				// trans = transceivers.get(iid);
-				// trans = new MinaTransceiver(new
-				// InetSocketAddress(u.getHost(), u.getPort()));
+				trans = new MinaTransceiver(u.getHost(), u.getPort());
 				// trans = MinaTransceiver.getInstance(u.getHost() + ":" +
 				// u.getPort());
 			}
 			if (useSpecific) {
 				ret = (T) SpecificRequestor.getClient(getServiceType(), trans);
 			} else {
-				// ReflectRequestor req = genRequest(getServiceType(), trans,
-				// new ReflectData(getServiceType()
-				// .getClassLoader()));
-				// ret = (T) ReflectRequestor.getClient(getServiceType(), req);
-				ret = (T) ReflectRequestor.getClient(getServiceType(), trans);
+				ReflectRequestor req = genRequest(getServiceType(), trans,
+						new ReflectData(getServiceType().getClassLoader()));
+				ret = (T) ReflectRequestor.getClient(getServiceType(), req);
+//				ret = (T) ReflectRequestor.getClient(getServiceType(), trans);
 			}
-			ret = tracer.createTraceableInstance(ret, getServiceType(), clientid, trans);
+			ret = tracer.createTraceableInstance(ret, getServiceType(),
+					clientid, trans);
 		} catch (Exception e) {
 			err.error("create for service: " + this.url, e);
 		}
 		return ret;
 	}
 
-	protected ReflectRequestor genRequest(Class<T> iface, Transceiver transciever, ReflectData reflectData)
-	        throws IOException {
+	protected ReflectRequestor genRequest(Class<T> iface,
+			Transceiver transciever, ReflectData reflectData)
+			throws IOException {
 		Protocol protocol = reflectData.getProtocol(iface);
-		ReflectRequestor ret = new ReflectRequestor(protocol, transciever, reflectData);
+		ReflectRequestor ret = new ReflectRequestor(protocol, transciever,
+				reflectData);
 		try {
 			patchRemote.set(ret, transciever.getRemote());
 		} catch (Exception e) {
@@ -185,7 +195,8 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		}
 	}
 
-	protected static class NettyTransceiverThreadFactory implements ThreadFactory {
+	protected static class NettyTransceiverThreadFactory implements
+			ThreadFactory {
 		private final AtomicInteger threadId = new AtomicInteger(0);
 		private final String prefix;
 

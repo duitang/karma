@@ -1,6 +1,7 @@
 package com.duitang.service.mina;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.avro.ipc.NettyTransportCodec.NettyDataPack;
@@ -11,21 +12,27 @@ import org.apache.mina.filter.codec.ProtocolEncoderOutput;
 
 public class AvroEncoder extends ProtocolEncoderAdapter {
 
+	protected List<IoBuffer> data = new ArrayList<IoBuffer>();
+
 	@Override
-	public void encode(IoSession session, Object message, ProtocolEncoderOutput out) throws Exception {
+	public void encode(IoSession session, Object message,
+			ProtocolEncoderOutput out) throws Exception {
+		data.clear();
 		NettyDataPack msg = (NettyDataPack) message;
 		List<ByteBuffer> origs = msg.getDatas();
 		// prepend a pack header including serial number and list size
-		IoBuffer data = null;
-		data = getPackHeader(msg);
-		out.write(data);
+		data.add(getPackHeader(msg));
 		for (ByteBuffer b : origs) {
 			// for each buffer prepend length field
-			data = getLengthHeader(b);
-			out.write(data);
-			data = IoBuffer.wrap(b.array(), b.position(), b.remaining());
-			out.write(data);
+			data.add(getLengthHeader(b));
+			data.add(IoBuffer.wrap(b.array(), b.position(), b.remaining()));
 		}
+//		synchronized (out) { // should be because of write queue not thread-safe
+			for (IoBuffer bb : data) {
+				out.write(bb);
+			}
+//		}
+		data.clear();
 	}
 
 	private IoBuffer getPackHeader(NettyDataPack dataPack) {

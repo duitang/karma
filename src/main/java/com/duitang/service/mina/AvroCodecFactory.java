@@ -9,22 +9,12 @@ public class AvroCodecFactory implements ProtocolCodecFactory {
 
 	@Override
 	public ProtocolEncoder getEncoder(IoSession session) throws Exception {
-		ProtocolEncoder ret = (ProtocolEncoder) session.getAttribute("encoder");
-		if (ret == null) {
-			ret = new AvroEncoder();
-			session.setAttributeIfAbsent("encoder", ret);
-		}
-		return ret;
+		return (ProtocolEncoder) session.getAttribute("encoder", new AvroEncoder());
 	}
 
 	@Override
 	public ProtocolDecoder getDecoder(IoSession session) throws Exception {
-		ProtocolDecoder ret = (ProtocolDecoder) session.getAttribute("decoder");
-		if (ret == null) {
-			ret = new AvroDecoder();
-			session.setAttributeIfAbsent("decoder", ret);
-		}
-		return ret;
+		return (ProtocolDecoder) session.getAttribute("decoder", new AvroDecoder());
 	}
 
 }

@@ -15,8 +15,7 @@ import com.duitang.service.mina.AvroRPCHandler;
 
 public class MemoryServer {
 
-	final static String[] PARAMETER_KEYS = { "server", "client", "port", "host", "print", "thread", "loop", "msg",
-	        "protocol", "map", "one", "verbose" };
+	final static String[] PARAMETER_KEYS = { "server", "client", "port", "host", "print", "thread", "loop", "msg", "protocol", "map", "one", "verbose", "trace" };
 
 	static protected void reloadLog4J() {
 		LogManager.resetConfiguration();
@@ -67,8 +66,8 @@ public class MemoryServer {
 
 		MemoryCacheService impl = new MemoryCacheService(verbose);
 		ServerBootstrap boot = new ServerBootstrap();
-		impl.memory_setString("main", msg, 50000);
-		impl.memory_setString("aaa", msg, 50000);
+//		impl.memory_setString("main", msg, 50000);
+//		impl.memory_setString("aaa", msg, 50000);
 		try {
 			boot.addService(DemoService.class, impl);
 			boot.startUp(p, protocol);
@@ -126,6 +125,10 @@ public class MemoryServer {
 		if (param.containsKey("one")) {
 			one = true;
 		}
+		int trace = -1; // nouse
+		if (param.containsKey("trace")) {
+			trace = Integer.valueOf(param.get("trace"));
+		}
 
 		ClientFactory<DemoService> fac = ClientFactory.createFactory(DemoService.class);
 		fac.setUrl(protocol + "://" + host + ":" + port);
@@ -136,7 +139,7 @@ public class MemoryServer {
 		}
 		Thread[] ths = new Thread[t];
 		for (int i = 0; i < ths.length; i++) {
-			ths[i] = new Thread(new LoadRunner(latch, l, msg, fac, usemap));
+			ths[i] = new Thread(new LoadRunner(latch, l, msg, fac, usemap, trace));
 			ths[i].start();
 		}
 
@@ -195,13 +198,15 @@ class LoadRunner implements Runnable {
 	protected ClientFactory<DemoService> fac;
 	protected String name;
 	protected boolean usemap;
+	protected int trace;
 
-	public LoadRunner(CountDownLatch latch, int loop, String msg, ClientFactory<DemoService> fac, boolean usemap) {
+	public LoadRunner(CountDownLatch latch, int loop, String msg, ClientFactory<DemoService> fac, boolean usemap, int trace) {
 		this.latch = latch;
 		this.loop = loop;
 		this.msg = msg;
 		this.fac = fac;
 		this.usemap = usemap;
+		this.trace = trace;
 		this.name = Thread.currentThread().getName();
 	}
 
@@ -239,10 +244,14 @@ class LoadRunner implements Runnable {
 					if (one == null) {
 						cli = fac.create();
 					}
-					if (usemap) {
+					if (trace > 0) {
+						val = cli.trace_msg(name, trace);
+						if (val.length() != name.length()) {
+							throw new Exception("value error: " + name);
+						}
+					} else if (usemap) {
 						vv = cli.getmap(name);
-						if (!vv.getData().containsKey("aaa")
-						        || vv.getData().get("aaa").toString().length() != msg.length()) {
+						if (!vv.getData().containsKey("aaa") || vv.getData().get("aaa").toString().length() != msg.length()) {
 							throw new Exception("value error: " + vv.getData().toString());
 						}
 					} else {
@@ -262,8 +271,7 @@ class LoadRunner implements Runnable {
 			}
 		} finally {
 			ts = System.currentTimeMillis() - ts;
-			System.out.println(name + " running elapsed: " + ts + "ms with loop=[" + loop + "] @" + i + ", error="
-			        + err);
+			System.out.println(name + " running elapsed: " + ts + "ms with loop=[" + loop + "] @" + i + ", error=" + err);
 			this.latch.countDown();
 		}
 	}

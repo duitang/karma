@@ -1,6 +1,5 @@
 package com.duitang.service.mina;
 
-import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.List;
 
@@ -36,11 +35,11 @@ public class MinaTransceiverTest {
 		Class<DemoService> clz = DemoService.class;
 		String name = "memory_setString";
 		Object param = new Object[] { "aaa", data, 50000 };
-//		for (int i = 0; i < 34; i++) {
-//			List<ByteBuffer> data1 = PackageTester.mock(clz, name, param);
-//			MinaTransceiver tran = new MinaTransceiver(new InetSocketAddress("localhost", 9999));
-//			tran.transceive(data1);
-//		}
+		for (int i = 0; i < 34; i++) {
+			List<ByteBuffer> data1 = PackageTester.mock(clz, name, param);
+			MinaTransceiver tran = new MinaTransceiver("localhost:9999");
+			tran.transceive(data1);
+		}
 	}
 
 	// @Test
@@ -60,19 +59,21 @@ class RN extends Thread {
 
 	@Override
 	public void run() {
-//		try {
-//			Class<DemoService> clz = DemoService.class;
-//			String name = "memory_setString";
-//			Object param = new Object[] { "aaa", MinaTransceiverTest.data, 50000 };
-//			for (int i = 0; i < MinaTransceiverTest.loop; i++) {
-//				List<ByteBuffer> data1 = PackageTester.mock(clz, name, param);
-//				MinaTransceiver tran = new MinaTransceiver(new InetSocketAddress("localhost", 9999));
-//				tran.transceive(data1);
-//				tran.close();
-//			}
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
+		// try {
+		// Class<DemoService> clz = DemoService.class;
+		// String name = "memory_setString";
+		// Object param = new Object[] { "aaa", MinaTransceiverTest.data, 50000
+		// };
+		// for (int i = 0; i < MinaTransceiverTest.loop; i++) {
+		// List<ByteBuffer> data1 = PackageTester.mock(clz, name, param);
+		// MinaTransceiver tran = new MinaTransceiver(new
+		// InetSocketAddress("localhost", 9999));
+		// tran.transceive(data1);
+		// tran.close();
+		// }
+		// } catch (Exception e) {
+		// e.printStackTrace();
+		// }
 	}
 
 }

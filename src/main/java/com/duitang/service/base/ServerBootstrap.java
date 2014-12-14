@@ -42,8 +42,7 @@ public class ServerBootstrap {
 		Class<?> klass = new ClassLoader(ServerBootstrap.class.getClassLoader()) {
 			public Class<?> defineClass() {
 				ClassWriter cw = new ClassWriter(0);
-				cw.visit(Opcodes.V1_6, Opcodes.ACC_PUBLIC + Opcodes.ACC_ABSTRACT + Opcodes.ACC_INTERFACE,
-				        destName.replaceAll("\\.", "/"), null, "java/lang/Object", interfaces);
+				cw.visit(Opcodes.V1_6, Opcodes.ACC_PUBLIC + Opcodes.ACC_ABSTRACT + Opcodes.ACC_INTERFACE, destName.replaceAll("\\.", "/"), null, "java/lang/Object", interfaces);
 				cw.visitEnd();
 				byte[] bytes = cw.toByteArray();
 				return defineClass(destName.replaceAll("/", "\\."), bytes, 0, bytes.length);
@@ -84,8 +83,7 @@ public class ServerBootstrap {
 			server = new HttpServer(new SpecificResponder(gatewayInterface, gatewayService), port);
 		} else {
 			try {
-				server = new NettyServer(new SpecificResponder(gatewayInterface, gatewayService),
-				        new InetSocketAddress(port));
+				server = new NettyServer(new SpecificResponder(gatewayInterface, gatewayService), new InetSocketAddress(port));
 			} catch (Exception e) {
 				throw new IOException(e);
 			}
@@ -103,8 +101,7 @@ public class ServerBootstrap {
 			server = new HttpServer(new ReflectResponder(gatewayInterface, gatewayService), port);
 		} else {
 			try {
-				server = new NettyServer(new ReflectResponder(gatewayInterface, gatewayService), new InetSocketAddress(
-				        port));
+				server = new NettyServer(new ReflectResponder(gatewayInterface, gatewayService), new InetSocketAddress(port));
 			} catch (Exception e) {
 				throw new IOException(e);
 			}
@@ -160,8 +157,7 @@ public class ServerBootstrap {
 		}
 
 		try {
-			sb.append(serviceType.getName()).append("  ##############  ").append(protocol).append("@").append(port)
-			        .append("\n");
+			sb.append(serviceType.getName()).append("  ##############  ").append(protocol).append("@").append(port).append("\n");
 			Method methlist[] = serviceType.getDeclaredMethods();
 			for (int i = 0; i < methlist.length; i++) {
 				Method m = methlist[i];
