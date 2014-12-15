@@ -8,7 +8,7 @@ import avro.protocol as protocol
 
 PROTOCOL = protocol.parse(open("../resources/main/demo.avpr").read())
 
-server_addr = ('localhost', 9091)
+server_addr = ('localhost', 9999)
 
 class UsageError(Exception):
     def __init__(self, value):

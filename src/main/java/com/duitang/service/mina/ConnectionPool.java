@@ -4,6 +4,7 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.pool2.PooledObject;
@@ -112,7 +113,10 @@ class MinaCFFactory implements PooledObjectFactory<MinaSocket> {
 			int iid = ConnectionPool.rr.getAndIncrement();
 			MinaEpoll me = ConnectionPool.epoll.get(iid % ConnectionPool.epoll_size);
 			MinaSocket ret = new MinaSocket(me);
-			ret.connection = me.epoll.connect(new InetSocketAddress(host, port)).await();
+			synchronized (me.epoll) {
+				ret.connection = me.epoll.connect(new InetSocketAddress(host, port));
+				ret.connection.await(ConnectionPool.default_timeout, TimeUnit.MILLISECONDS);
+			}
 			ret.session = ret.connection.getSession();
 			return new DefaultPooledObject<MinaSocket>(ret);
 		} catch (Exception e) {
