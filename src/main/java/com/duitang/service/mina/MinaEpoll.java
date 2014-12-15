@@ -12,6 +12,6 @@ public class MinaEpoll {
 
 	final public AtomicInteger uuid = new AtomicInteger(0);
 	final public ConcurrentHashMap<Integer, Callback<List<ByteBuffer>>> callbacks = new ConcurrentHashMap<Integer, Callback<List<ByteBuffer>>>();
-	final public NioSocketConnector epoll = new NioSocketConnector();
+	final public NioSocketConnector epoll = new NioSocketConnector(2);
 
 }
