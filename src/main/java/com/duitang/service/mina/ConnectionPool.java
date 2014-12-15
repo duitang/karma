@@ -17,7 +17,7 @@ import org.apache.mina.filter.codec.ProtocolCodecFilter;
 public class ConnectionPool {
 
 	static final protected List<MinaEpoll> epoll = new ArrayList<MinaEpoll>();
-	static final protected int epoll_size = 6;
+	static final protected int epoll_size = 2;
 	// round robin
 	static final protected AtomicInteger rr = new AtomicInteger(0);
 	static final protected ConcurrentHashMap<String, GenericObjectPool<MinaSocket>> u2c = new ConcurrentHashMap<String, GenericObjectPool<MinaSocket>>();
