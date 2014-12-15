@@ -136,15 +136,14 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 				trans = new MetricableHttpTransceiver(this.clientid, u);
 				MetricableHttpTransceiver.setTimeout(timeout);
 			} else {
-				// trans = new NettyTransceiver(new
-				// InetSocketAddress(u.getHost(), u.getPort()), timeout);
+//				 trans = new NettyTransceiver(new
+//				 InetSocketAddress(u.getHost(), u.getPort()),
+//				 Long.valueOf(timeout));
 				// trans = new SmartNettyTransceiver(new
 				// InetSocketAddress(u.getHost(), u.getPort()));
 				// trans = transceivers.get(iid);
-				@SuppressWarnings("resource")
-                MinaTransceiver trans1 = new MinaTransceiver(u.getHost(), u.getPort());
-				trans1.setTimeout(timeout);
-				trans = trans1;
+				// @SuppressWarnings("resource")
+				trans = new MinaTransceiver(u.getHost() + ":" + u.getPort(), timeout);
 			}
 			if (useSpecific) {
 				ret = (T) SpecificRequestor.getClient(getServiceType(), trans);
@@ -164,10 +163,11 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 	protected ReflectRequestor genRequest(Class<T> iface, Transceiver transciever, ReflectData reflectData) throws IOException {
 		Protocol protocol = reflectData.getProtocol(iface);
 		ReflectRequestor ret = new ReflectRequestor(protocol, transciever, reflectData);
-		try {
-			patchRemote.set(ret, transciever.getRemote());
-		} catch (Exception e) {
-		}
+		ret.getRemote();
+//		try {
+//			patchRemote.set(ret, transciever.getRemote());
+//		} catch (Exception e) {
+//		}
 		return ret;
 	}
 

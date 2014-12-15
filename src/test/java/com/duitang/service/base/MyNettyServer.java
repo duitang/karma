@@ -161,7 +161,7 @@ public class MyNettyServer implements Server {
 	 */
 	class NettyServerAvroHandler extends SimpleChannelUpstreamHandler {
 
-		private NettyTransceiver connectionMetadata = new NettyTransceiver();
+		private NettyTransceiver1 connectionMetadata = new NettyTransceiver1();
 
 		@Override
 		public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e) throws Exception {

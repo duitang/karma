@@ -1,7 +1,6 @@
 package com.duitang.service.mina;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -23,21 +22,11 @@ public class MinaTransceiver extends Transceiver {
 
 	static final protected long default_timeout = 500; // 0.5s
 
-	static protected Field vistor;
-
 	protected MinaSocket socket;
 	protected String remoteName;
 	protected String url;
 	protected long timeout = default_timeout;
 	protected int uuid;
-
-	static {
-		try {
-			vistor = CallFuture.class.getDeclaredField("latch");
-		} catch (Exception e) {
-			vistor = null; // not happen when version is defined
-		}
-	}
 
 	public long getTimeout() {
 		return timeout;
@@ -47,13 +36,10 @@ public class MinaTransceiver extends Transceiver {
 		this.timeout = timeout;
 	}
 
-	public MinaTransceiver(String host, int port) {
-		this(host + ":" + port);
-	}
-
-	public MinaTransceiver(String hostAndPort) {
+	public MinaTransceiver(String hostAndPort, long timeout) {
 		this.url = hostAndPort;
 		this.remoteName = ConnectionPool.getRemoteAddress(hostAndPort);
+		this.socket = ConnectionPool.getConnection(url, timeout * 10);
 	}
 
 	@Override
@@ -63,19 +49,11 @@ public class MinaTransceiver extends Transceiver {
 
 	@Override
 	public Protocol getRemote() {
-		// System.out.println("get remote: " + socket);
-		if (socket == null) {
-			// return null;
-			socket = ConnectionPool.getConnection(url);
-		}
 		return socket.remote;
 	}
 
 	@Override
 	public void setRemote(Protocol protocol) {
-		if (socket == null) {
-			socket = ConnectionPool.getConnection(url);
-		}
 		this.socket.remote = protocol;
 	}
 
@@ -112,9 +90,6 @@ public class MinaTransceiver extends Transceiver {
 	}
 
 	protected void write(List<ByteBuffer> buffers, Callback<List<ByteBuffer>> callback) {
-		if (socket == null) {
-			socket = ConnectionPool.getConnection(url);
-		}
 		CallFuture<List<ByteBuffer>> gw = new CallFuture<List<ByteBuffer>>(callback);
 		NettyDataPack ndp = new NettyDataPack();
 		ndp.setDatas(buffers);
@@ -146,8 +121,9 @@ public class MinaTransceiver extends Transceiver {
 	@Override
 	public void close() throws IOException {
 		// System.out.println("return mina socket: " + socket);
-		ConnectionPool.retConnection(url, socket);
+		MinaSocket sock = socket;
 		this.socket = null;
+		ConnectionPool.retConnection(url, sock);
 	}
 
 	private IoBuffer getPackHeader(NettyDataPack dataPack) {

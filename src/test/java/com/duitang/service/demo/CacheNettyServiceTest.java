@@ -70,7 +70,7 @@ public class CacheNettyServiceTest {
 		}
 	}
 
-//	@Test
+	@Test
 	public void testB() throws Exception {
 		MemoryCacheService impl = new MemoryCacheService();
 		NettyServer server = new NettyServer(new ReflectResponder(DemoService.class, impl), new InetSocketAddress(9099));
@@ -93,7 +93,7 @@ public class CacheNettyServiceTest {
 		}
 	}
 
-	// @Test
+//	 @Test
 	public void testBoot() {
 		DemoService cli = fac.create();
 		try {
@@ -140,7 +140,7 @@ public class CacheNettyServiceTest {
 		}
 	}
 
-	@Test
+//	@Test
 	public void testMetric() throws Exception {
 		MetricCenter.enableConsoleReporter(1);
 		DemoService cli = fac.create();

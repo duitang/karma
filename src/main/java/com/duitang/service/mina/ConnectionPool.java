@@ -79,7 +79,7 @@ public class ConnectionPool {
 		GenericObjectPoolConfig cfg = new GenericObjectPoolConfig();
 		cfg.setMaxIdle(10);
 		cfg.setMinIdle(3);
-		cfg.setMaxTotal(300);
+		cfg.setMaxTotal(100);
 		GenericObjectPool<MinaSocket> newone = new GenericObjectPool<MinaSocket>(new MinaCFFactory(host), cfg);
 		u2c.putIfAbsent(host, newone);
 		return u2c.get(host);
@@ -113,10 +113,8 @@ class MinaCFFactory implements PooledObjectFactory<MinaSocket> {
 			int iid = ConnectionPool.rr.getAndIncrement();
 			MinaEpoll me = ConnectionPool.epoll.get(iid % ConnectionPool.epoll_size);
 			MinaSocket ret = new MinaSocket(me);
-			synchronized (me.epoll) {
-				ret.connection = me.epoll.connect(new InetSocketAddress(host, port));
-				ret.connection.await(ConnectionPool.default_timeout, TimeUnit.MILLISECONDS);
-			}
+			ret.connection = me.epoll.connect(new InetSocketAddress(host, port));
+			ret.connection.await(ConnectionPool.default_timeout, TimeUnit.MILLISECONDS);
 			ret.session = ret.connection.getSession();
 			return new DefaultPooledObject<MinaSocket>(ret);
 		} catch (Exception e) {

@@ -101,6 +101,7 @@ public class ServerBootstrap {
 			server = new HttpServer(new ReflectResponder(gatewayInterface, gatewayService), port);
 		} else {
 			try {
+//				server = new DebugNettyServer(new ReflectResponder(gatewayInterface, gatewayService), new InetSocketAddress(port));
 				server = new NettyServer(new ReflectResponder(gatewayInterface, gatewayService), new InetSocketAddress(port));
 			} catch (Exception e) {
 				throw new IOException(e);
