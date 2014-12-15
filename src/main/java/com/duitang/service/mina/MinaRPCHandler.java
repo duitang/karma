@@ -2,8 +2,6 @@ package com.duitang.service.mina;
 
 import java.nio.ByteBuffer;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.apache.avro.ipc.Callback;
 import org.apache.avro.ipc.NettyTransportCodec.NettyDataPack;
@@ -15,7 +13,7 @@ import org.slf4j.LoggerFactory;
 public class MinaRPCHandler extends IoHandlerAdapter {
 
 	static protected Logger logger = LoggerFactory.getLogger(MinaRPCHandler.class);
-	static protected ExecutorService actionPool = Executors.newFixedThreadPool(100);
+//	static protected ExecutorService actionPool = Executors.newFixedThreadPool(100);
 
 	protected MinaEpoll epoll;
 
@@ -27,18 +25,28 @@ public class MinaRPCHandler extends IoHandlerAdapter {
 	public void messageReceived(IoSession session, Object message) throws Exception {
 		NettyDataPack dataPack = (NettyDataPack) message;
 		Integer uuid = dataPack.getSerial();
-		Callback<List<ByteBuffer>> callback = this.epoll.callbacks.get(uuid);
+		Callback<List<ByteBuffer>> callback = this.epoll.callbacks.remove(uuid);
 		if (callback == null) {// maybe timeout
 			throw new RuntimeException("Missing previous call info " + dataPack.getSerial());
 		}
-		this.epoll.callbacks.remove(uuid);
-		actionPool.submit(new WrapperCallback(callback, dataPack));
-		// new WrapperCallback(callback, dataPack).run();
+//		this.epoll.callbacks.remove(uuid);
+//		actionPool.submit(new WrapperCallback(callback, dataPack));
+//		new WrapperCallback(callback, dataPack).run();
+		runTask(callback, dataPack);
 	}
 
 	@Override
 	public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
 		super.exceptionCaught(session, cause);
+	}
+	
+	static void runTask(Callback<List<ByteBuffer>> cb, NettyDataPack data){
+		try {
+			// System.out.println("with ====> " + data.getDatas().size());
+			cb.handleResult(data.getDatas());
+		} catch (Exception e) {
+			logger.error("WrapperCallback:", e);
+		}
 	}
 
 	class WrapperCallback implements Runnable {
@@ -53,12 +61,7 @@ public class MinaRPCHandler extends IoHandlerAdapter {
 
 		@Override
 		public void run() {
-			try {
-				// System.out.println("with ====> " + data.getDatas().size());
-				cb.handleResult(data.getDatas());
-			} catch (Exception e) {
-				logger.error("WrapperCallback:", e);
-			}
+			runTask(cb, data);
 		}
 	}
 
