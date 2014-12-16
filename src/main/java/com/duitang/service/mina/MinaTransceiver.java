@@ -36,10 +36,13 @@ public class MinaTransceiver extends Transceiver {
 		this.timeout = timeout;
 	}
 
-	public MinaTransceiver(String hostAndPort, long timeout) {
+	public MinaTransceiver(String hostAndPort, long timeout) throws Exception {
 		this.url = hostAndPort;
 		this.remoteName = ConnectionPool.getRemoteAddress(hostAndPort);
-		this.socket = ConnectionPool.getConnection(url, timeout * 10);
+		this.socket = ConnectionPool.getConnection(url, timeout);
+		if (socket == null) {
+			throw new Exception("can't create connection to " + url);
+		}
 	}
 
 	@Override

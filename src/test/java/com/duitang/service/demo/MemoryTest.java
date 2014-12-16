@@ -5,7 +5,6 @@ import junit.framework.Assert;
 import org.junit.Test;
 
 import com.duitang.service.base.ClientFactory;
-import com.duitang.service.mina.AvroRPCHandler;
 
 public class MemoryTest {
 
@@ -90,8 +89,6 @@ public class MemoryTest {
 
 	// @Test
 	public void testHuge() {
-		AvroRPCHandler.debugMode = true;
-		AvroRPCHandler.debugOutputCount = 1;
 		DemoService cli = null;
 		ClientFactory<DemoService> fac = ClientFactory.createFactory(DemoService.class);
 		fac.setUrl("netty://" + "localhost" + ":" + 9999);

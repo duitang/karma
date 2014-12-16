@@ -18,7 +18,6 @@ import org.junit.Test;
 import com.duitang.service.base.ClientFactory;
 import com.duitang.service.base.MetricCenter;
 import com.duitang.service.base.ServerBootstrap;
-import com.duitang.service.base.SmartNettyTransceiver;
 
 public class CacheNettyServiceTest {
 
@@ -30,7 +29,6 @@ public class CacheNettyServiceTest {
 	@Before
 	public void setUp() {
 		LogManager.getLogger("org.apache.avro.ipc").setLevel(Level.ALL);
-		LogManager.getLogger(SmartNettyTransceiver.class.getName()).setLevel(Level.ALL);
 		MemoryCacheService impl = new MemoryCacheService(true);
 		boot = new ServerBootstrap();
 		boot.addService(DemoService.class, impl);
@@ -93,7 +91,7 @@ public class CacheNettyServiceTest {
 		}
 	}
 
-//	 @Test
+	// @Test
 	public void testBoot() {
 		DemoService cli = fac.create();
 		try {
@@ -140,7 +138,7 @@ public class CacheNettyServiceTest {
 		}
 	}
 
-//	@Test
+	// @Test
 	public void testMetric() throws Exception {
 		MetricCenter.enableConsoleReporter(1);
 		DemoService cli = fac.create();

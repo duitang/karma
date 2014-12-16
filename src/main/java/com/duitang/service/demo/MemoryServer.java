@@ -11,7 +11,6 @@ import com.duitang.service.base.ClientFactory;
 import com.duitang.service.base.MetricCenter;
 import com.duitang.service.base.ServerBootstrap;
 import com.duitang.service.data.MapData;
-import com.duitang.service.mina.AvroRPCHandler;
 
 public class MemoryServer {
 
@@ -55,8 +54,6 @@ public class MemoryServer {
 		boolean verbose = false;
 		if (param.containsKey("verbose")) {
 			verbose = true;
-			AvroRPCHandler.debugMode = true;
-			AvroRPCHandler.debugOutputCount = 10;
 		}
 		String msg = "20000";
 		if (param.containsKey("msg")) {

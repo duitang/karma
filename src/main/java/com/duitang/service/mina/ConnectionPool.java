@@ -17,7 +17,7 @@ import org.apache.mina.filter.codec.ProtocolCodecFilter;
 public class ConnectionPool {
 
 	static final protected List<MinaEpoll> epoll = new ArrayList<MinaEpoll>();
-	static final protected int epoll_size = 1;
+	static final protected int epoll_size = 4;
 	// round robin
 	static final protected AtomicInteger rr = new AtomicInteger(0);
 	static final protected ConcurrentHashMap<String, GenericObjectPool<MinaSocket>> u2c = new ConcurrentHashMap<String, GenericObjectPool<MinaSocket>>();
@@ -58,6 +58,14 @@ public class ConnectionPool {
 		}
 		if (host == null || msocket.lost) { // no target
 			msocket.session.close(true);
+			GenericObjectPool<MinaSocket> pool = u2c.get(host);
+			if (pool != null) {
+				try {
+					pool.invalidateObject(msocket);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
 			return;
 		}
 		GenericObjectPool<MinaSocket> pool = u2c.get(host);
@@ -79,7 +87,9 @@ public class ConnectionPool {
 		GenericObjectPoolConfig cfg = new GenericObjectPoolConfig();
 		cfg.setMaxIdle(10);
 		cfg.setMinIdle(3);
-		cfg.setMaxTotal(100);
+		cfg.setMaxTotal(200);
+		cfg.setTestWhileIdle(false);
+		cfg.setBlockWhenExhausted(true);
 		GenericObjectPool<MinaSocket> newone = new GenericObjectPool<MinaSocket>(new MinaCFFactory(host), cfg);
 		u2c.putIfAbsent(host, newone);
 		return u2c.get(host);
@@ -111,13 +121,15 @@ class MinaCFFactory implements PooledObjectFactory<MinaSocket> {
 	public PooledObject<MinaSocket> makeObject() throws Exception {
 		try {
 			int iid = ConnectionPool.rr.getAndIncrement();
-			MinaEpoll me = ConnectionPool.epoll.get(iid % ConnectionPool.epoll_size);
+			iid = Math.abs(iid) % ConnectionPool.epoll_size;
+			MinaEpoll me = ConnectionPool.epoll.get(iid);
 			MinaSocket ret = new MinaSocket(me);
 			ret.connection = me.epoll.connect(new InetSocketAddress(host, port));
 			ret.connection.await(ConnectionPool.default_timeout, TimeUnit.MILLISECONDS);
 			ret.session = ret.connection.getSession();
 			return new DefaultPooledObject<MinaSocket>(ret);
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw e;
 		}
 	}
@@ -143,16 +155,10 @@ class MinaCFFactory implements PooledObjectFactory<MinaSocket> {
 
 	@Override
 	public void activateObject(PooledObject<MinaSocket> p) throws Exception {
-		if (p.getObject().lost) {
-			throw new Exception("lost mina socket");
-		}
 	}
 
 	@Override
 	public void passivateObject(PooledObject<MinaSocket> p) throws Exception {
-		if (p.getObject().lost) {
-			throw new Exception("lost mina socket");
-		}
 	}
 
 }

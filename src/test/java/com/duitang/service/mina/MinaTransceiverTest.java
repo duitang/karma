@@ -1,9 +1,5 @@
 package com.duitang.service.mina;
 
-import java.nio.ByteBuffer;
-import java.util.List;
-
-import org.apache.avro.ipc.PackageTester;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,15 +26,13 @@ public class MinaTransceiverTest {
 
 	@Test
 	public void testOne() throws Exception {
-		AvroRPCHandler.debugMode = true;
-		AvroRPCHandler.debugOutputCount = 10;
 		Class<DemoService> clz = DemoService.class;
 		String name = "memory_setString";
 		Object param = new Object[] { "aaa", data, 50000 };
 		for (int i = 0; i < 34; i++) {
-//			List<ByteBuffer> data1 = PackageTester.mock(clz, name, param);
-//			MinaTransceiver tran = new MinaTransceiver("localhost:9999");
-//			tran.transceive(data1);
+			// List<ByteBuffer> data1 = PackageTester.mock(clz, name, param);
+			// MinaTransceiver tran = new MinaTransceiver("localhost:9999");
+			// tran.transceive(data1);
 		}
 	}
 
