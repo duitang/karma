@@ -14,7 +14,6 @@ import net.sf.cglib.proxy.Mixin;
 import org.apache.avro.ipc.HttpServer;
 import org.apache.avro.ipc.NettyServer;
 import org.apache.avro.ipc.Server;
-import org.apache.avro.ipc.reflect.ReflectResponder;
 import org.apache.avro.ipc.specific.SpecificResponder;
 
 public class ServerBootstrap {
@@ -97,12 +96,13 @@ public class ServerBootstrap {
 		gatewayInterface = mixAllService(serviceType);
 		gatewayService = mixAllImpls(serviceType, service);
 		MetricCenter.initMetric(gatewayInterface, clientid);
+		MetricalReflectResponder responder = new MetricalReflectResponder(gatewayInterface, gatewayService);
+		responder.setClientid(clientid);
 		if (protocol.equalsIgnoreCase("http")) {
-			server = new HttpServer(new ReflectResponder(gatewayInterface, gatewayService), port);
+			server = new HttpServer(responder, port);
 		} else {
 			try {
-//				server = new DebugNettyServer(new ReflectResponder(gatewayInterface, gatewayService), new InetSocketAddress(port));
-				server = new NettyServer(new ReflectResponder(gatewayInterface, gatewayService), new InetSocketAddress(port));
+				server = new NettyServer(responder, new InetSocketAddress(port));
 			} catch (Exception e) {
 				throw new IOException(e);
 			}

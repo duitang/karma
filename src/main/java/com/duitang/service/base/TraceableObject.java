@@ -33,6 +33,7 @@ class TraceProxy implements MethodInterceptor {
 	protected String clientid;
 	protected Object proxy;
 	protected Closeable closeapi;
+	protected int invalid = 0;
 
 	public TraceProxy(Object proxy, String clientid, Closeable closeapi) {
 		this.proxy = proxy;
@@ -43,6 +44,10 @@ class TraceProxy implements MethodInterceptor {
 	@Override
 	public Object intercept(Object obj, Method method, Object[] args, MethodProxy mproxy) throws Throwable {
 		String name = method.getName();
+		if ("invalid".equals(name)) {
+			invalid = 1;
+			return null;
+		}
 		if (this.closeapi != null) {
 			if ("close".equals(name)) {
 				this.closeapi.close();
@@ -58,7 +63,7 @@ class TraceProxy implements MethodInterceptor {
 		try {
 			ret = mproxy.invoke(proxy, args);
 		} catch (Exception e) {
-//			e.printStackTrace();
+			// e.printStackTrace();
 			f = true;
 		}
 		ts = System.nanoTime() - ts;

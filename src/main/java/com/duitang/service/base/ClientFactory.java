@@ -1,20 +1,17 @@
 package com.duitang.service.base;
 
 import java.io.Closeable;
-import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.avro.Protocol;
-import org.apache.avro.ipc.Requestor;
 import org.apache.avro.ipc.Transceiver;
-import org.apache.avro.ipc.reflect.ReflectRequestor;
-import org.apache.avro.ipc.specific.SpecificRequestor;
-import org.apache.avro.reflect.ReflectData;
+import org.apache.commons.pool2.PooledObject;
+import org.apache.commons.pool2.PooledObjectFactory;
+import org.apache.commons.pool2.impl.DefaultPooledObject;
+import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.apache.log4j.Logger;
 
 import com.duitang.service.mina.MinaTransceiver;
@@ -23,12 +20,6 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 
 	protected Logger err = Logger.getLogger("error");
 
-	/**
-	 * only 1 nio client socket channel factory because of leak risk
-	 * 
-	 * @see <a href="javatar.iteye.com/blog/1138527">netty内存泄漏</a>
-	 */
-
 	protected String url;
 	protected List<URL> serviceURL;
 	protected List<Boolean> serviceHTTPProtocol;
@@ -36,10 +27,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 	protected int sz;
 	protected int timeout = 500;
 	protected String clientid;
-	protected TraceableObject<T> tracer;
-	protected Field patchRemote;
-
-	protected boolean useSpecific;
+	protected GenericObjectPool<T> cliPool = forceCreatePool();
 
 	public ClientFactory() {
 		this(null);
@@ -53,13 +41,6 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 
 	protected void init() {
 		MetricCenter.initMetric(getServiceType(), clientid);
-		tracer = new TraceableObject<T>();
-		try {
-			patchRemote = Requestor.class.getDeclaredField("remote");
-			patchRemote.setAccessible(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 
 	protected void initClientName() {
@@ -75,10 +56,6 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		if (clientid == null) {
 			clientid = "";
 		}
-	}
-
-	public void setUseSpecific(boolean flag) {
-		this.useSpecific = flag;
 	}
 
 	public String getUrl() {
@@ -124,85 +101,32 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 
 	@Override
 	public T create() {
-		T ret = null;
-		try {
-			Transceiver trans = null;
-			if (sz == 0) {
-				throw new RuntimeException("no remote url find? please setUrl(String url)");
-			}
-			int iid = hashid.incrementAndGet() % sz;
-			URL u = serviceURL.get(iid);
-			if (serviceHTTPProtocol.get(iid)) {
-				trans = new MetricableHttpTransceiver(this.clientid, u);
-				MetricableHttpTransceiver.setTimeout(timeout);
-			} else {
-//				 trans = new NettyTransceiver(new
-//				 InetSocketAddress(u.getHost(), u.getPort()),
-//				 Long.valueOf(timeout));
-				// trans = new SmartNettyTransceiver(new
-				// InetSocketAddress(u.getHost(), u.getPort()));
-				// trans = transceivers.get(iid);
-				// @SuppressWarnings("resource")
-				trans = new MinaTransceiver(u.getHost() + ":" + u.getPort(), timeout);
-			}
-			if (useSpecific) {
-				ret = (T) SpecificRequestor.getClient(getServiceType(), trans);
-			} else {
-				ReflectRequestor req = genRequest(getServiceType(), trans, new ReflectData(getServiceType().getClassLoader()));
-				ret = (T) ReflectRequestor.getClient(getServiceType(), req);
-				// ret = (T) ReflectRequestor.getClient(getServiceType(),
-				// trans);
-			}
-			ret = tracer.createTraceableInstance(ret, getServiceType(), clientid, trans);
-		} catch (Exception e) {
-			err.error("create for service: " + this.url, e);
+		if (sz == 0) {
+			throw new RuntimeException("no remote url find? please setUrl(String url)");
 		}
-		return ret;
-	}
-
-	protected ReflectRequestor genRequest(Class<T> iface, Transceiver transciever, ReflectData reflectData) throws IOException {
-		Protocol protocol = reflectData.getProtocol(iface);
-		ReflectRequestor ret = new ReflectRequestor(protocol, transciever, reflectData);
-		ret.getRemote();
-//		try {
-//			patchRemote.set(ret, transciever.getRemote());
-//		} catch (Exception e) {
-//		}
-		return ret;
+		try {
+			return cliPool.borrowObject(timeout);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	public void release(T client) {
-		if (client instanceof Closeable) {
+		if (client == null) {
+			return;
+		}
+		boolean v = true;
+		if (client instanceof Validation) {
+			v = ((Validation) client).isValid();
+		}
+		if (v) {
+			cliPool.returnObject(client);
+		} else {
 			try {
-				((Closeable) client).close();
-			} catch (IOException e) {
-				err.error(e);
+				cliPool.invalidateObject(client);
+			} catch (Exception e) {
 			}
-		}
-	}
-
-	protected static class NettyTransceiverThreadFactory implements ThreadFactory {
-		private final AtomicInteger threadId = new AtomicInteger(0);
-		private final String prefix;
-
-		/**
-		 * Creates a NettyTransceiverThreadFactory that creates threads with the
-		 * specified name.
-		 * 
-		 * @param prefix
-		 *            the name prefix to use for all threads created by this
-		 *            ThreadFactory. A unique ID will be appended to this prefix
-		 *            to form the final thread name.
-		 */
-		public NettyTransceiverThreadFactory(String prefix) {
-			this.prefix = prefix;
-		}
-
-		@Override
-		public Thread newThread(Runnable r) {
-			Thread thread = new Thread(r);
-			thread.setName(prefix + " " + threadId.incrementAndGet());
-			return thread;
 		}
 	}
 
@@ -222,6 +146,72 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 
 		};
 		return ret;
+	}
+
+	protected GenericObjectPool<T> forceCreatePool() {
+		GenericObjectPoolConfig cfg = new GenericObjectPoolConfig();
+		cfg.setMaxIdle(10);
+		cfg.setMinIdle(3);
+		cfg.setMaxTotal(200);
+		cfg.setTestWhileIdle(false);
+		cfg.setBlockWhenExhausted(true);
+		cfg.setTestOnReturn(true); // may release it if error
+		GenericObjectPool<T> ret = new GenericObjectPool<T>(new ReflectServiceFactory<T>(), cfg);
+		return ret;
+	}
+
+	class ReflectServiceFactory<T1 extends T> implements PooledObjectFactory<T> {
+
+		@Override
+		public PooledObject<T> makeObject() throws Exception {
+			T ret = null;
+			try {
+				Integer iid = Math.abs(hashid.incrementAndGet()) % sz;
+				Transceiver trans = null;
+				URL u = serviceURL.get(iid);
+				if (serviceHTTPProtocol.get(iid)) {
+					trans = new MetricableHttpTransceiver(clientid, u);
+					MetricableHttpTransceiver.setTimeout(timeout);
+				} else {
+					trans = new MinaTransceiver(u.getHost() + ":" + u.getPort(), timeout);
+				}
+				ret = (T) MetricalReflectRequestor.getClient(getServiceType(), trans);
+				// force flush
+			} catch (Exception e) {
+				err.error("create for service: " + url, e);
+			}
+			// System.out.println("created ...... " + ret);
+			return new DefaultPooledObject<T>(ret);
+		}
+
+		@Override
+		public void destroyObject(PooledObject<T> p) throws Exception {
+			T obj = p.getObject();
+			// System.out.println("destroy ..... " + obj);
+			if (obj instanceof Closeable) {
+				((Closeable) obj).close();
+			}
+		}
+
+		@Override
+		public boolean validateObject(PooledObject<T> p) {
+			T obj = p.getObject();
+			// System.out.println("checking ..... " + ((Validation)
+			// obj).isValid() + " ---> " + obj);
+			if (obj instanceof Validation) {
+				return ((Validation) obj).isValid();
+			}
+			return true;
+		}
+
+		@Override
+		public void activateObject(PooledObject<T> p) throws Exception {
+		}
+
+		@Override
+		public void passivateObject(PooledObject<T> p) throws Exception {
+		}
+
 	}
 
 }

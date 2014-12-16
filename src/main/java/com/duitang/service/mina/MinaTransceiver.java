@@ -1,9 +1,12 @@
 package com.duitang.service.mina;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.avro.Protocol;
 import org.apache.avro.ipc.CallFuture;
@@ -11,6 +14,11 @@ import org.apache.avro.ipc.Callback;
 import org.apache.avro.ipc.NettyTransportCodec.NettyDataPack;
 import org.apache.avro.ipc.Transceiver;
 import org.apache.mina.core.buffer.IoBuffer;
+import org.apache.mina.core.future.ConnectFuture;
+import org.apache.mina.core.session.IoSession;
+import org.apache.mina.filter.codec.ProtocolCodecFilter;
+
+import com.duitang.service.base.Validation;
 
 /**
  * for safety consideration, no connection, no session reused
@@ -18,15 +26,48 @@ import org.apache.mina.core.buffer.IoBuffer;
  * @author laurence
  * 
  */
-public class MinaTransceiver extends Transceiver {
+public class MinaTransceiver extends Transceiver implements Validation {
 
 	static final protected long default_timeout = 500; // 0.5s
+	static final protected List<MinaEpoll> engine = new ArrayList<MinaEpoll>();
+	static final protected int epoll_size = 4;
+	// round robin
+	static final protected AtomicInteger rr = new AtomicInteger(0);
 
-	protected MinaSocket socket;
+	static {
+		for (int i = 0; i < epoll_size; i++) {
+			MinaEpoll m = new MinaEpoll();
+			m.epoll.getSessionConfig().setTcpNoDelay(true);
+			m.epoll.getSessionConfig().setKeepAlive(true);
+			m.epoll.getFilterChain().addLast("codec", new ProtocolCodecFilter(new AvroCodecFactory()));
+			m.epoll.setHandler(new MinaRPCHandler(m));
+			engine.add(m);
+		}
+	}
+
+	static public MinaEpoll getEngine() throws Exception {
+		int iid = MinaEngine.rr.getAndIncrement();
+		iid = Math.abs(iid) % MinaEngine.epoll_size;
+		return engine.get(iid);
+	}
+
 	protected String remoteName;
 	protected String url;
 	protected long timeout = default_timeout;
-	protected int uuid;
+
+	protected MinaEpoll epoll;
+	protected ConnectFuture connection;
+	protected IoSession session;
+	protected Protocol remote;
+	protected boolean lost = false;
+
+	static protected String forceRemoteName(String hostAndPort) {
+		String[] uu = hostAndPort.split(":");
+		String host = uu[0];
+		int port = Integer.valueOf(uu[1]);
+		InetSocketAddress addr = new InetSocketAddress(host, port);
+		return addr.toString();
+	}
 
 	public long getTimeout() {
 		return timeout;
@@ -38,11 +79,17 @@ public class MinaTransceiver extends Transceiver {
 
 	public MinaTransceiver(String hostAndPort, long timeout) throws Exception {
 		this.url = hostAndPort;
-		this.remoteName = ConnectionPool.getRemoteAddress(hostAndPort);
-		this.socket = ConnectionPool.getConnection(url, timeout);
-		if (socket == null) {
-			throw new Exception("can't create connection to " + url);
+		String[] uu = hostAndPort.split(":");
+		String host = uu[0];
+		int port = Integer.valueOf(uu[1]);
+		InetSocketAddress addr = new InetSocketAddress(host, port);
+		this.remoteName = addr.toString();
+		this.epoll = getEngine();
+		this.connection = this.epoll.epoll.connect(new InetSocketAddress(host, port));
+		if (!this.connection.await(timeout, TimeUnit.MILLISECONDS)) {
+			throw new IOException("create connection to " + hostAndPort + " failed!");
 		}
+		this.session = connection.getSession();
 	}
 
 	@Override
@@ -52,12 +99,12 @@ public class MinaTransceiver extends Transceiver {
 
 	@Override
 	public Protocol getRemote() {
-		return socket.remote;
+		return remote;
 	}
 
 	@Override
 	public void setRemote(Protocol protocol) {
-		this.socket.remote = protocol;
+		this.remote = protocol;
 	}
 
 	@Override
@@ -77,7 +124,7 @@ public class MinaTransceiver extends Transceiver {
 			transceive(request, transceiverFuture);
 			return transceiverFuture.get(timeout, TimeUnit.MILLISECONDS);
 		} catch (Exception e) {
-			this.socket.lost = true;
+			this.lost = true;
 		}
 		return null;
 	}
@@ -96,37 +143,27 @@ public class MinaTransceiver extends Transceiver {
 		CallFuture<List<ByteBuffer>> gw = new CallFuture<List<ByteBuffer>>(callback);
 		NettyDataPack ndp = new NettyDataPack();
 		ndp.setDatas(buffers);
-		uuid = socket.epoll.uuid.incrementAndGet();
+		int uuid = epoll.uuid.incrementAndGet();
 		ndp.setSerial(uuid);
-		socket.epoll.callbacks.put(uuid, gw);
-		// try {
-		// System.out.println(session.toString());
-		// System.out.println(socket.cf.getSession().toString());
-
-		// System.out.println("write netty data pack ---> " + uuid);
-		// socket.session.write(ndp);
-		// } catch (InterruptedException e) {
-		// }
-		socket.session.write(getPackHeader(ndp));
+		epoll.callbacks.put(uuid, gw);
+		session.write(getPackHeader(ndp));
 		for (ByteBuffer d : ndp.getDatas()) {
-			socket.session.write(getLengthHeader(d));
-			socket.session.write(IoBuffer.wrap(d.array(), d.position(), d.remaining()));
+			session.write(getLengthHeader(d));
+			session.write(IoBuffer.wrap(d.array(), d.position(), d.remaining()));
 		}
-
 		try {
 			gw.get(timeout, TimeUnit.MILLISECONDS);
 		} catch (Exception e) {
-			socket.lost = true;
-			gw.handleError(e);
+			lost = true;
+			gw.handleError(null);
 		}
 	}
 
 	@Override
 	public void close() throws IOException {
 		// System.out.println("return mina socket: " + socket);
-		MinaSocket sock = socket;
-		this.socket = null;
-		ConnectionPool.retConnection(url, sock);
+		connection.cancel();
+		session.close(true);
 	}
 
 	private IoBuffer getPackHeader(NettyDataPack dataPack) {
@@ -140,6 +177,11 @@ public class MinaTransceiver extends Transceiver {
 		IoBuffer ret = IoBuffer.allocate(4);
 		ret.putInt(buf.limit());
 		return ret.flip();
+	}
+
+	@Override
+	public boolean isValid() {
+		return !lost && connection.isConnected();
 	}
 
 }

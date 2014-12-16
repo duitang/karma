@@ -6,9 +6,6 @@ import java.net.InetSocketAddress;
 import junit.framework.Assert;
 
 import org.apache.avro.ipc.NettyServer;
-import org.apache.avro.ipc.NettyTransceiver;
-import org.apache.avro.ipc.reflect.ReflectRequestor;
-import org.apache.avro.ipc.reflect.ReflectResponder;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.junit.After;
@@ -17,7 +14,10 @@ import org.junit.Test;
 
 import com.duitang.service.base.ClientFactory;
 import com.duitang.service.base.MetricCenter;
+import com.duitang.service.base.MetricalReflectRequestor;
+import com.duitang.service.base.MetricalReflectResponder;
 import com.duitang.service.base.ServerBootstrap;
+import com.duitang.service.mina.MinaTransceiver;
 
 public class CacheNettyServiceTest {
 
@@ -71,11 +71,15 @@ public class CacheNettyServiceTest {
 	@Test
 	public void testB() throws Exception {
 		MemoryCacheService impl = new MemoryCacheService();
-		NettyServer server = new NettyServer(new ReflectResponder(DemoService.class, impl), new InetSocketAddress(9099));
+		MetricalReflectResponder responder = new MetricalReflectResponder(DemoService.class, impl);
+		responder.setClientid("unittesting");
+		NettyServer server = new NettyServer(responder, new InetSocketAddress(9099));
 		server.start();
 
-		NettyTransceiver tr = new NettyTransceiver(new InetSocketAddress("localhost", 9099));
-		DemoService cli = ReflectRequestor.getClient(DemoService.class, tr);
+		// Transceiver tr = new NettyTransceiver(new
+		// InetSocketAddress("localhost", 9099));
+		MinaTransceiver tr = new MinaTransceiver("localhost:9090", 500);
+		DemoService cli = MetricalReflectRequestor.getClient(DemoService.class, tr);
 		try {
 			String key = "aaaa";
 			String value = "bbbb";
@@ -87,7 +91,7 @@ public class CacheNettyServiceTest {
 			e.printStackTrace();
 			Assert.fail();
 		} finally {
-			fac.release(cli);
+			// fac.release(cli);
 		}
 	}
 

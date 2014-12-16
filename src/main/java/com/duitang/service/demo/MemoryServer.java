@@ -1,11 +1,14 @@
 package com.duitang.service.demo;
 
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
+import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.LogManager;
+import org.apache.log4j.PatternLayout;
 
 import com.duitang.service.base.ClientFactory;
 import com.duitang.service.base.MetricCenter;
@@ -33,7 +36,6 @@ public class MemoryServer {
 		} else {
 			runServer(param);
 		}
-
 	}
 
 	static void runServer(Map<String, String> param) {
@@ -54,6 +56,10 @@ public class MemoryServer {
 		boolean verbose = false;
 		if (param.containsKey("verbose")) {
 			verbose = true;
+			ConsoleAppender console = new ConsoleAppender();
+			console.setWriter(new OutputStreamWriter(System.out));
+			console.setLayout(new PatternLayout("%-5p [%t]: %m%n"));
+			LogManager.getRootLogger().addAppender(console);
 		}
 		String msg = "20000";
 		if (param.containsKey("msg")) {
