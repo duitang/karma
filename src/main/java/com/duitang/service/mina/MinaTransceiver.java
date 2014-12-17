@@ -46,10 +46,16 @@ public class MinaTransceiver extends Transceiver implements Validation {
 	}
 
 	static public MinaEpoll getEngine() {
-		int iid = MinaEngine.rr.getAndIncrement();
-		iid = Math.abs(iid) % MinaEngine.epoll_size;
-		System.out.println("getEninge@MinaTransceiver get...." + iid);
-		return engine.get(iid);
+//		int iid = MinaEngine.rr.getAndIncrement();
+//		iid = Math.abs(iid) % MinaEngine.epoll_size;
+//		System.out.println("getEninge@MinaTransceiver get...." + iid);
+//		return engine.get(iid);
+		MinaEpoll m = new MinaEpoll();
+		m.epoll.getSessionConfig().setTcpNoDelay(true);
+		m.epoll.getSessionConfig().setKeepAlive(true);
+		m.epoll.getFilterChain().addLast("codec", new ProtocolCodecFilter(new AvroCodecFactory()));
+		m.epoll.setHandler(new MinaRPCHandler(m));
+		return m;
 	}
 
 	protected String remoteName;
