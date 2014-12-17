@@ -46,8 +46,8 @@ public class MinaTransceiver extends Transceiver implements Validation {
 	}
 
 	static public MinaEpoll getEngine() {
-		int iid = MinaEngine.rr.getAndIncrement();
-		iid = Math.abs(iid) % MinaEngine.epoll_size;
+		int iid = rr.getAndIncrement();
+		iid = Math.abs(iid) % epoll_size;
 		return engine.get(iid);
 	}
 
@@ -61,6 +61,9 @@ public class MinaTransceiver extends Transceiver implements Validation {
 	protected Protocol remote;
 	protected boolean lost = false;
 
+	// not thread-safe
+	protected boolean initialed = false;
+
 	public long getTimeout() {
 		return timeout;
 	}
@@ -72,9 +75,6 @@ public class MinaTransceiver extends Transceiver implements Validation {
 	public MinaTransceiver(String hostAndPort, long timeout) {
 		this.url = hostAndPort;
 		this.timeout = timeout;
-	}
-
-	public MinaTransceiver init() throws IOException {
 		String[] uu = url.split(":");
 		String host = uu[0];
 		int port = Integer.valueOf(uu[1]);
@@ -82,6 +82,12 @@ public class MinaTransceiver extends Transceiver implements Validation {
 		this.remoteName = addr.toString();
 		this.epoll = getEngine();
 		this.connection = this.epoll.epoll.connect(new InetSocketAddress(host, port));
+	}
+
+	public void init() throws IOException {
+		if (initialed) {
+			return;
+		}
 		try {
 			// ensure connect stable, should > 1s
 			// so connect is very heavy action
@@ -96,7 +102,8 @@ public class MinaTransceiver extends Transceiver implements Validation {
 			throw new IOException("create connection to " + url + " failed!");
 		}
 		this.session = connection.getSession();
-		return this;
+		this.initialed = true;
+		return;
 	}
 
 	@Override

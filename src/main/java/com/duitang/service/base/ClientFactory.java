@@ -100,14 +100,14 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 	}
 
 	@Override
-	public T create() {
+	public T create() { // for python performance issue no exception
 		if (sz == 0) {
-			throw new RuntimeException("no remote url find? please setUrl(String url)");
+			new RuntimeException("no remote url find? please setUrl(String url)").printStackTrace();
+			return null;
 		}
 		try {
 			return cliPool.borrowObject(timeout);
 		} catch (Exception e) {
-			e.printStackTrace();
 		}
 		return null;
 	}
@@ -157,14 +157,13 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		cfg.setTestWhileIdle(false);
 		cfg.setBlockWhenExhausted(true);
 		cfg.setMaxWaitMillis(timeout);
-//		cfg.setTestOnReturn(true); // may release it if error
+		// cfg.setTestOnReturn(true); // may release it if error
 		GenericObjectPool<T> ret = new GenericObjectPool<T>(new ReflectServiceFactory<T>(), cfg);
 		return ret;
 	}
 
-	class ReflectServiceFactory<T1 extends T> implements PooledObjectFactory<T> {
+	class ReflectServiceFactory<T1> implements PooledObjectFactory<T> {
 
-		@SuppressWarnings("resource")
 		@Override
 		public PooledObject<T> makeObject() throws Exception {
 			T ret = null;
@@ -176,7 +175,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 					trans = new MetricableHttpTransceiver(clientid, u);
 					MetricableHttpTransceiver.setTimeout(timeout);
 				} else {
-					trans = new MinaTransceiver(u.getHost() + ":" + u.getPort(), timeout).init();
+					trans = new MinaTransceiver(u.getHost() + ":" + u.getPort(), timeout);
 				}
 				ret = (T) MetricalReflectRequestor.getClient(getServiceType(), trans);
 			} catch (Exception e) {

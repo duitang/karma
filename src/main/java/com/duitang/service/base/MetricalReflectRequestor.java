@@ -136,6 +136,13 @@ public class MetricalReflectRequestor extends ReflectRequestor implements Closea
 	}
 
 	@Override
+	public void init() throws Exception {
+		if (closeableTrans instanceof Validation) {
+			((Validation) closeableTrans).init();
+		}
+	}
+
+	@Override
 	public boolean isValid() {
 		boolean b = false;
 		if (closeableTrans instanceof Validation) {
@@ -154,6 +161,15 @@ public class MetricalReflectRequestor extends ReflectRequestor implements Closea
 	public static <T> T getClient(Class<T> iface, Transceiver transciever, ReflectData reflectData) throws IOException {
 		Protocol protocol = reflectData.getProtocol(iface);
 		MetricalReflectRequestor req = new MetricalReflectRequestor(protocol, transciever, reflectData);
+		if (transciever instanceof Validation) {
+			try {
+				((Validation) transciever).init();
+			} catch (Exception e) {
+				transciever.close();
+				req.close();
+				throw new IOException(e);
+			}
+		}
 		req.initClientName();
 		req.getRemote();
 		return (T) Proxy.newProxyInstance(reflectData.getClassLoader(), new Class[] { iface, Closeable.class, Validation.class }, req);

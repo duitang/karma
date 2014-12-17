@@ -25,7 +25,7 @@ public class MemoryTest {
 	public void test1() {
 		DemoService cli = null;
 		ClientFactory<DemoService> fac = ClientFactory.createFactory(DemoService.class);
-		fac.setUrl("netty://" + "localhost" + ":" + 9999);
+		fac.setUrl("netty://" + "gpu0" + ":" + 9999);
 
 		System.out.println("-------------------");
 		cli = fac.create();
