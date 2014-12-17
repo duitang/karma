@@ -83,7 +83,10 @@ public class MinaTransceiver extends Transceiver implements Validation {
 		this.epoll = getEngine();
 		this.connection = this.epoll.epoll.connect(new InetSocketAddress(host, port));
 		try {
-			this.connection.await(timeout);
+			// ensure connect stable, should > 1s
+			// so connect is very heavy action
+			long t = timeout >= 1000 ? timeout : 1000;
+			this.connection.await(t);
 		} catch (InterruptedException e) {
 		}
 
