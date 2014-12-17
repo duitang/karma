@@ -165,9 +165,11 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 
 		@Override
 		public PooledObject<T> makeObject() throws Exception {
+			System.out.println("wanted to create ..... ");
 			T ret = null;
 			try {
 				Integer iid = Math.abs(hashid.incrementAndGet()) % sz;
+				System.out.println("wanted to use ..... " + iid);
 				Transceiver trans = null;
 				URL u = serviceURL.get(iid);
 				if (serviceHTTPProtocol.get(iid)) {
