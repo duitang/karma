@@ -159,6 +159,8 @@ public class MetricalReflectRequestor extends ReflectRequestor implements Closea
 		MetricalReflectRequestor req = new MetricalReflectRequestor(protocol, transciever, reflectData);
 		req.initClientName();
 		req.getRemote();
-		return (T) Proxy.newProxyInstance(reflectData.getClassLoader(), new Class[] { iface, Closeable.class, Validation.class }, req);
+		T ret = (T) Proxy.newProxyInstance(reflectData.getClassLoader(), new Class[] { iface, Closeable.class, Validation.class }, req);
+		System.out.println("getClient@MetricalReflectRequestor created .... " + req + " ----> return : " + ret);		
+		return ret;
 	}
 }
