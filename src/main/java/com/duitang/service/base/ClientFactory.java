@@ -151,7 +151,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 
 	protected GenericObjectPool<T> forceCreatePool() {
 		GenericObjectPoolConfig cfg = new GenericObjectPoolConfig();
-		cfg.setMaxIdle(30);
+		cfg.setMaxIdle(60);
 		cfg.setMinIdle(5);
 		cfg.setMaxTotal(200);
 		cfg.setTestWhileIdle(false);
