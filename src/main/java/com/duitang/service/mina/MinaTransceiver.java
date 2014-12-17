@@ -46,16 +46,10 @@ public class MinaTransceiver extends Transceiver implements Validation {
 	}
 
 	static public MinaEpoll getEngine() {
-//		int iid = MinaEngine.rr.getAndIncrement();
-//		iid = Math.abs(iid) % MinaEngine.epoll_size;
-//		System.out.println("getEninge@MinaTransceiver get...." + iid);
-//		return engine.get(iid);
-		MinaEpoll m = new MinaEpoll();
-		m.epoll.getSessionConfig().setTcpNoDelay(true);
-		m.epoll.getSessionConfig().setKeepAlive(true);
-		m.epoll.getFilterChain().addLast("codec", new ProtocolCodecFilter(new AvroCodecFactory()));
-		m.epoll.setHandler(new MinaRPCHandler(m));
-		return m;
+		int iid = MinaEngine.rr.getAndIncrement();
+		iid = Math.abs(iid) % MinaEngine.epoll_size;
+		System.out.println("getEninge@MinaTransceiver get...." + iid);
+		return engine.get(iid);
 	}
 
 	protected String remoteName;
@@ -95,11 +89,7 @@ public class MinaTransceiver extends Transceiver implements Validation {
 		System.out.println("about to connect " + addr);
 		this.connection = this.epoll.epoll.connect(new InetSocketAddress(host, port));
 		System.out.println("after to connect " + addr);
-
-		try {
-			this.connection.await(timeout, TimeUnit.MILLISECONDS);
-		} catch (InterruptedException e) {
-		}
+		this.connection.awaitUninterruptibly(timeout, TimeUnit.MILLISECONDS);
 
 		if (!this.connection.isConnected()) {
 			this.lost = true;
