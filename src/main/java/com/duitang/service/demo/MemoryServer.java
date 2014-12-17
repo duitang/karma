@@ -7,8 +7,10 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.PatternLayout;
+import org.slf4j.Logger;
 
 import com.duitang.service.base.ClientFactory;
 import com.duitang.service.base.MetricCenter;
@@ -60,6 +62,7 @@ public class MemoryServer {
 			console.setWriter(new OutputStreamWriter(System.out));
 			console.setLayout(new PatternLayout("%-5p [%t]: %m%n"));
 			LogManager.getRootLogger().addAppender(console);
+			org.apache.log4j.Logger.getLogger("org.apache.commons.pool2.impl.GenericObjectPool").setLevel(Level.DEBUG);
 		}
 		String msg = "20000";
 		if (param.containsKey("msg")) {
