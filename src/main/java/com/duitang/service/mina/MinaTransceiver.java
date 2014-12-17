@@ -46,16 +46,10 @@ public class MinaTransceiver extends Transceiver implements Validation {
 	}
 
 	static public MinaEpoll getEngine() {
-//		int iid = MinaEngine.rr.getAndIncrement();
-//		iid = Math.abs(iid) % MinaEngine.epoll_size;
-//		System.out.println("getEninge@MinaTransceiver get...." + iid);
-//		return engine.get(iid);
-		MinaEpoll m = new MinaEpoll();
-		m.epoll.getSessionConfig().setTcpNoDelay(true);
-		m.epoll.getSessionConfig().setKeepAlive(true);
-		m.epoll.getFilterChain().addLast("codec", new ProtocolCodecFilter(new AvroCodecFactory()));
-		m.epoll.setHandler(new MinaRPCHandler(m));
-		return m;		
+		int iid = MinaEngine.rr.getAndIncrement();
+		iid = Math.abs(iid) % MinaEngine.epoll_size;
+		System.out.println("getEninge@MinaTransceiver get...." + iid);
+		return engine.get(iid);
 	}
 
 	protected String remoteName;
@@ -68,14 +62,6 @@ public class MinaTransceiver extends Transceiver implements Validation {
 	protected Protocol remote;
 	protected boolean lost = false;
 
-	static protected String forceRemoteName(String hostAndPort) {
-		String[] uu = hostAndPort.split(":");
-		String host = uu[0];
-		int port = Integer.valueOf(uu[1]);
-		InetSocketAddress addr = new InetSocketAddress(host, port);
-		return addr.toString();
-	}
-
 	public long getTimeout() {
 		return timeout;
 	}
@@ -84,9 +70,13 @@ public class MinaTransceiver extends Transceiver implements Validation {
 		this.timeout = timeout;
 	}
 
-	public MinaTransceiver(String hostAndPort, long timeout) throws IOException {
+	public MinaTransceiver(String hostAndPort, long timeout) {
 		this.url = hostAndPort;
-		String[] uu = hostAndPort.split(":");
+		this.timeout = timeout;
+	}
+
+	public MinaTransceiver init() throws IOException {
+		String[] uu = url.split(":");
 		String host = uu[0];
 		int port = Integer.valueOf(uu[1]);
 		InetSocketAddress addr = new InetSocketAddress(host, port);
@@ -94,16 +84,22 @@ public class MinaTransceiver extends Transceiver implements Validation {
 		this.epoll = getEngine();
 		System.out.println("about to connect " + addr);
 		this.connection = this.epoll.epoll.connect(new InetSocketAddress(host, port));
+		try {
+			this.connection.await(timeout);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		System.out.println("after to connect " + addr);
-		this.connection.awaitUninterruptibly(timeout, TimeUnit.MILLISECONDS);
 
 		if (!this.connection.isConnected()) {
 			this.lost = true;
-			System.out.println("MinaTransceiver create connection to " + hostAndPort + " failed");
-			throw new IOException("create connection to " + hostAndPort + " failed!");
+			this.close();
+			System.out.println("MinaTransceiver create connection to " + url + " failed");
+			throw new IOException("create connection to " + url + " failed!");
 		}
 		this.session = connection.getSession();
 		System.out.println("MinaTransceiver ok " + this);
+		return this;
 	}
 
 	@Override
@@ -176,9 +172,12 @@ public class MinaTransceiver extends Transceiver implements Validation {
 	@Override
 	public void close() throws IOException {
 		// System.out.println("return mina socket: " + socket);
-		connection.cancel();
-		session.close(true);
-		epoll.epoll.dispose();
+		if (connection != null) {
+			connection.cancel();
+		}
+		if (session != null) {
+			session.close(true);
+		}
 	}
 
 	private IoBuffer getPackHeader(NettyDataPack dataPack) {

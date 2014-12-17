@@ -13,7 +13,8 @@ import org.slf4j.LoggerFactory;
 public class MinaRPCHandler extends IoHandlerAdapter {
 
 	static protected Logger logger = LoggerFactory.getLogger(MinaRPCHandler.class);
-//	static protected ExecutorService actionPool = Executors.newFixedThreadPool(100);
+	// static protected ExecutorService actionPool =
+	// Executors.newFixedThreadPool(100);
 
 	protected MinaEpoll epoll;
 
@@ -29,18 +30,13 @@ public class MinaRPCHandler extends IoHandlerAdapter {
 		if (callback == null) {// maybe timeout
 			throw new RuntimeException("Missing previous call info " + dataPack.getSerial());
 		}
-//		this.epoll.callbacks.remove(uuid);
-//		actionPool.submit(new WrapperCallback(callback, dataPack));
-//		new WrapperCallback(callback, dataPack).run();
+		// this.epoll.callbacks.remove(uuid);
+		// actionPool.submit(new WrapperCallback(callback, dataPack));
+		// new WrapperCallback(callback, dataPack).run();
 		runTask(callback, dataPack);
 	}
 
-	@Override
-	public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
-		super.exceptionCaught(session, cause);
-	}
-	
-	static void runTask(Callback<List<ByteBuffer>> cb, NettyDataPack data){
+	static void runTask(Callback<List<ByteBuffer>> cb, NettyDataPack data) {
 		try {
 			// System.out.println("with ====> " + data.getDatas().size());
 			cb.handleResult(data.getDatas());

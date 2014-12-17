@@ -163,7 +163,8 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 
 	class ReflectServiceFactory<T1 extends T> implements PooledObjectFactory<T> {
 
-		@Override
+		@SuppressWarnings("resource")
+        @Override
 		public PooledObject<T> makeObject() throws Exception {
 			System.out.println("wanted to create ..... ");
 			T ret = null;
@@ -178,7 +179,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 					MetricableHttpTransceiver.setTimeout(timeout);
 				} else {
 					System.out.println("wanted to minatrans ..... ");					
-					trans = new MinaTransceiver(u.getHost() + ":" + u.getPort(), timeout);
+					trans = new MinaTransceiver(u.getHost() + ":" + u.getPort(), timeout).init();
 					System.out.println("created minatrans ..... " + trans);					
 				}
 				ret = (T) MetricalReflectRequestor.getClient(getServiceType(), trans);
