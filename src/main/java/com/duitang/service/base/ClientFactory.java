@@ -184,8 +184,8 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 				}
 				ret = (T) MetricalReflectRequestor.getClient(getServiceType(), trans);
 			} catch (Exception e) {
-				e.printStackTrace();
 				err.error("create for service: " + url, e);
+				throw e;
 			}
 			System.out.println("created ...... " + ret);
 			return new DefaultPooledObject<T>(ret);
