@@ -151,11 +151,12 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 
 	protected GenericObjectPool<T> forceCreatePool() {
 		GenericObjectPoolConfig cfg = new GenericObjectPoolConfig();
-		cfg.setMaxIdle(10);
-		cfg.setMinIdle(3);
+		cfg.setMaxIdle(30);
+		cfg.setMinIdle(5);
 		cfg.setMaxTotal(200);
 		cfg.setTestWhileIdle(false);
-//		cfg.setBlockWhenExhausted(true);
+		cfg.setBlockWhenExhausted(true);
+		cfg.setMaxWaitMillis(timeout);
 //		cfg.setTestOnReturn(true); // may release it if error
 		GenericObjectPool<T> ret = new GenericObjectPool<T>(new ReflectServiceFactory<T>(), cfg);
 		return ret;
