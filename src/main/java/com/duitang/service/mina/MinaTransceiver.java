@@ -48,7 +48,6 @@ public class MinaTransceiver extends Transceiver implements Validation {
 	static public MinaEpoll getEngine() {
 		int iid = MinaEngine.rr.getAndIncrement();
 		iid = Math.abs(iid) % MinaEngine.epoll_size;
-		System.out.println("getEninge@MinaTransceiver get...." + iid);
 		return engine.get(iid);
 	}
 
@@ -82,23 +81,18 @@ public class MinaTransceiver extends Transceiver implements Validation {
 		InetSocketAddress addr = new InetSocketAddress(host, port);
 		this.remoteName = addr.toString();
 		this.epoll = getEngine();
-		System.out.println("about to connect " + addr);
 		this.connection = this.epoll.epoll.connect(new InetSocketAddress(host, port));
 		try {
 			this.connection.await(timeout);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
 		}
-		System.out.println("after to connect " + addr);
 
 		if (!this.connection.isConnected()) {
 			this.lost = true;
 			this.close();
-			System.out.println("MinaTransceiver create connection to " + url + " failed");
 			throw new IOException("create connection to " + url + " failed!");
 		}
 		this.session = connection.getSession();
-		System.out.println("MinaTransceiver ok " + this);
 		return this;
 	}
 

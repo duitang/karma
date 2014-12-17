@@ -164,37 +164,31 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 	class ReflectServiceFactory<T1 extends T> implements PooledObjectFactory<T> {
 
 		@SuppressWarnings("resource")
-        @Override
+		@Override
 		public PooledObject<T> makeObject() throws Exception {
-			System.out.println("wanted to create ..... ");
 			T ret = null;
 			try {
 				Integer iid = Math.abs(hashid.incrementAndGet()) % sz;
-				System.out.println("wanted to use ..... " + iid);
 				Transceiver trans = null;
 				URL u = serviceURL.get(iid);
-				System.out.println("wanted to url ..... " + u);
 				if (serviceHTTPProtocol.get(iid)) {
 					trans = new MetricableHttpTransceiver(clientid, u);
 					MetricableHttpTransceiver.setTimeout(timeout);
 				} else {
-					System.out.println("wanted to minatrans ..... ");					
 					trans = new MinaTransceiver(u.getHost() + ":" + u.getPort(), timeout).init();
-					System.out.println("created minatrans ..... " + trans);					
 				}
 				ret = (T) MetricalReflectRequestor.getClient(getServiceType(), trans);
 			} catch (Exception e) {
 				err.error("create for service: " + url, e);
 				throw e;
 			}
-			System.out.println("created ...... " + ret);
 			return new DefaultPooledObject<T>(ret);
 		}
 
 		@Override
 		public void destroyObject(PooledObject<T> p) throws Exception {
 			T obj = p.getObject();
-			System.out.println("destroy ..... " + obj);
+			// System.out.println("destroy ..... " + obj);
 			if (obj instanceof Closeable) {
 				((Closeable) obj).close();
 			}
@@ -203,7 +197,8 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		@Override
 		public boolean validateObject(PooledObject<T> p) {
 			T obj = p.getObject();
-			System.out.println("checking ..... " + ((Validation) obj).isValid() + " ---> " + obj);
+			// System.out.println("checking ..... " + ((Validation)
+			// obj).isValid() + " ---> " + obj);
 			if (obj instanceof Validation) {
 				return ((Validation) obj).isValid();
 			}
@@ -212,12 +207,10 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 
 		@Override
 		public void activateObject(PooledObject<T> p) throws Exception {
-			System.out.println("active ..... " + p.getObject());
 		}
 
 		@Override
 		public void passivateObject(PooledObject<T> p) throws Exception {
-			System.out.println("passivate ..... " + p.getObject());
 		}
 
 	}

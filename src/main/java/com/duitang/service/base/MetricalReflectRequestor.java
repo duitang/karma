@@ -104,13 +104,10 @@ public class MetricalReflectRequestor extends ReflectRequestor implements Closea
 		if (escapeMethodName.containsKey(method.getName())) {
 			Method mm = escapeMethodName.get(method.getName());
 			if (mm == null) {
-				System.out.println("skip native ............... " + method.getName());
 				return null;
 			}
-			System.out.println("invoked native ............... " + method.getName());
 			return method.invoke(this, args);
 		}
-		System.out.println("invoked ............... " + method.getName());
 
 		Object ret = null;
 		boolean fail = false;
@@ -159,8 +156,6 @@ public class MetricalReflectRequestor extends ReflectRequestor implements Closea
 		MetricalReflectRequestor req = new MetricalReflectRequestor(protocol, transciever, reflectData);
 		req.initClientName();
 		req.getRemote();
-		T ret = (T) Proxy.newProxyInstance(reflectData.getClassLoader(), new Class[] { iface, Closeable.class, Validation.class }, req);
-		System.out.println("getClient@MetricalReflectRequestor created .... " + req + " ----> return : " + ret);		
-		return ret;
+		return (T) Proxy.newProxyInstance(reflectData.getClassLoader(), new Class[] { iface, Closeable.class, Validation.class }, req);
 	}
 }
