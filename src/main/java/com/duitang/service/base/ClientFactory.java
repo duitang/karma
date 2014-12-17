@@ -172,10 +172,12 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 				System.out.println("wanted to use ..... " + iid);
 				Transceiver trans = null;
 				URL u = serviceURL.get(iid);
+				System.out.println("wanted to url ..... " + u);
 				if (serviceHTTPProtocol.get(iid)) {
 					trans = new MetricableHttpTransceiver(clientid, u);
 					MetricableHttpTransceiver.setTimeout(timeout);
 				} else {
+					System.out.println("wanted to minatrans ..... ");
 					trans = new MinaTransceiver(u.getHost() + ":" + u.getPort(), timeout);
 				}
 				ret = (T) MetricalReflectRequestor.getClient(getServiceType(), trans);
