@@ -155,7 +155,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		cfg.setMinIdle(3);
 		cfg.setMaxTotal(200);
 		cfg.setTestWhileIdle(false);
-		cfg.setBlockWhenExhausted(true);
+//		cfg.setBlockWhenExhausted(true);
 //		cfg.setTestOnReturn(true); // may release it if error
 		GenericObjectPool<T> ret = new GenericObjectPool<T>(new ReflectServiceFactory<T>(), cfg);
 		return ret;
