@@ -136,6 +136,14 @@ public class MemoryServer {
 			trace = Integer.valueOf(param.get("trace"));
 		}
 
+		if (param.containsKey("verbose")) {
+			ConsoleAppender console = new ConsoleAppender();
+			console.setWriter(new OutputStreamWriter(System.out));
+			console.setLayout(new PatternLayout("%-5p [%t]: %m%n"));
+			LogManager.getRootLogger().addAppender(console);
+			org.apache.log4j.Logger.getLogger("org.apache.commons.pool2.impl.GenericObjectPool").setLevel(Level.DEBUG);
+		}
+
 		ClientFactory<DemoService> fac = ClientFactory.createFactory(DemoService.class);
 		fac.setUrl(protocol + "://" + host + ":" + port);
 
