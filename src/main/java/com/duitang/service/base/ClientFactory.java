@@ -126,6 +126,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 			try {
 				cliPool.invalidateObject(client);
 			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
 	}
@@ -154,7 +155,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		cfg.setMinIdle(3);
 		cfg.setMaxTotal(200);
 		cfg.setTestWhileIdle(false);
-		cfg.setBlockWhenExhausted(true);
+		// cfg.setBlockWhenExhausted(true);
 		cfg.setTestOnReturn(true); // may release it if error
 		GenericObjectPool<T> ret = new GenericObjectPool<T>(new ReflectServiceFactory<T>(), cfg);
 		return ret;
@@ -176,18 +177,17 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 					trans = new MinaTransceiver(u.getHost() + ":" + u.getPort(), timeout);
 				}
 				ret = (T) MetricalReflectRequestor.getClient(getServiceType(), trans);
-				// force flush
 			} catch (Exception e) {
 				err.error("create for service: " + url, e);
 			}
-			// System.out.println("created ...... " + ret);
+			System.out.println("created ...... " + ret);
 			return new DefaultPooledObject<T>(ret);
 		}
 
 		@Override
 		public void destroyObject(PooledObject<T> p) throws Exception {
 			T obj = p.getObject();
-			// System.out.println("destroy ..... " + obj);
+			System.out.println("destroy ..... " + obj);
 			if (obj instanceof Closeable) {
 				((Closeable) obj).close();
 			}
@@ -196,8 +196,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		@Override
 		public boolean validateObject(PooledObject<T> p) {
 			T obj = p.getObject();
-			// System.out.println("checking ..... " + ((Validation)
-			// obj).isValid() + " ---> " + obj);
+			System.out.println("checking ..... " + ((Validation) obj).isValid() + " ---> " + obj);
 			if (obj instanceof Validation) {
 				return ((Validation) obj).isValid();
 			}
@@ -206,10 +205,12 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 
 		@Override
 		public void activateObject(PooledObject<T> p) throws Exception {
+			System.out.println("active ..... " + p.getObject());
 		}
 
 		@Override
 		public void passivateObject(PooledObject<T> p) throws Exception {
+			System.out.println("passivate ..... " + p.getObject());
 		}
 
 	}

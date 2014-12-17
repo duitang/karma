@@ -87,6 +87,7 @@ public class MinaTransceiver extends Transceiver implements Validation {
 		this.epoll = getEngine();
 		this.connection = this.epoll.epoll.connect(new InetSocketAddress(host, port));
 		if (!this.connection.await(timeout, TimeUnit.MILLISECONDS)) {
+			this.lost = true;
 			throw new IOException("create connection to " + hostAndPort + " failed!");
 		}
 		this.session = connection.getSession();
