@@ -13,6 +13,7 @@ import org.apache.avro.reflect.ReflectData;
 
 public class MetricalReflectRequestor extends ReflectRequestor implements Closeable, Validation {
 
+	final static protected boolean warning = false;
 	final static protected HashMap<String, Method> escapeMethodName = new HashMap<String, Method>();
 
 	protected String clientid;
@@ -31,7 +32,9 @@ public class MetricalReflectRequestor extends ReflectRequestor implements Closea
 				escapeMethodName.put(m.getName(), null);
 				nm = "skip local";
 			}
-			System.err.println(nm + " method .... " + m.getName() + " @MetricalReflectRequestor");
+			if (warning) {
+				System.err.println(nm + " method .... " + m.getName() + " @MetricalReflectRequestor");
+			}
 		}
 	}
 
@@ -101,13 +104,15 @@ public class MetricalReflectRequestor extends ReflectRequestor implements Closea
 		if (escapeMethodName.containsKey(method.getName())) {
 			Method mm = escapeMethodName.get(method.getName());
 			if (mm == null) {
-				System.out.println("skip native ............... " + method.getName());
+				// System.out.println("skip native ............... " +
+				// method.getName());
 				return null;
 			}
-			System.out.println("invoked native ............... " + method.getName());
+			// System.out.println("invoked native ............... " +
+			// method.getName());
 			return method.invoke(this, args);
 		}
-		System.out.println("invoked ............... " + method.getName());
+		// System.out.println("invoked ............... " + method.getName());
 
 		Object ret = null;
 		boolean fail = false;
