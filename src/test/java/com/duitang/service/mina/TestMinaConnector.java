@@ -38,7 +38,8 @@ public class TestMinaConnector {
 		while (true) {
 			MinaTransceiver trans = null;
 			try {
-				trans = new MinaTransceiver("s3:9999", 500).init();
+				trans = new MinaTransceiver("s3:9999", 500);
+				trans.init();
 			} catch (IOException e) {
 				e.printStackTrace();
 			} finally {
