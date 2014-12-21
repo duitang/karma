@@ -1,6 +1,5 @@
 package com.duitang.service.base;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 
@@ -39,8 +38,7 @@ public class TestMixinServices {
 			System.out.println(m1.getName());
 		}
 
-		NettyServer server = new NettyServer(new ReflectResponder(type, mixAllImpls(new Class[] { ServiceA.class,
-		        ServiceB.class }, new Object[] { new ServiceImplA(), new ServiceImplB() })),
+		NettyServer server = new NettyServer(new ReflectResponder(type, mixAllImpls(new Class[] { ServiceA.class, ServiceB.class }, new Object[] { new ServiceImplA(), new ServiceImplB() })),
 		        new InetSocketAddress(9999));
 		server.start();
 
@@ -61,8 +59,7 @@ public class TestMixinServices {
 	// @Test
 	public void test1() throws Exception {
 		ServerBootstrap boot = new ServerBootstrap();
-		boot.startUp(new Class[] { ServiceA.class, ServiceB.class }, new Object[] { new ServiceImplA(),
-		        new ServiceImplB() }, 9999, "netty");
+		boot.startUp(new Class[] { ServiceA.class, ServiceB.class }, new Object[] { new ServiceImplA(), new ServiceImplB() }, 9999, "netty");
 
 		ClientFactory<ServiceA> fac = ClientFactory.createFactory(ServiceA.class);
 		fac.setUrl("netty://localhost:9999");
@@ -93,7 +90,7 @@ public class TestMixinServices {
 	}
 
 	@Test
-	public void test3() throws IOException {
+	public void test3() throws Exception {
 		ServerBootstrap boot = new ServerBootstrap();
 		boot.addService(ServiceA.class, new ServiceImplA());
 		boot.addService(ServiceB.class, new ServiceImplB());

@@ -33,6 +33,7 @@ public class ReflectInvoker implements Invoker {
 		for (Method m : iface_methods) {
 			String name = m.getName();
 			m.setAccessible(true);
+			// FIXME: check no name duplication here
 			proxy1.put(name, m);
 			Class[] oldtt = m.getParameterTypes();
 			Class[] newtt = new Class[oldtt.length];

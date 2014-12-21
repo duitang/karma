@@ -1,7 +1,5 @@
 package com.duitang.service.demo;
 
-import java.io.IOException;
-
 import junit.framework.Assert;
 
 import org.junit.After;
@@ -21,13 +19,13 @@ public class CacheServiceTest {
 		MemoryCacheService impl = new MemoryCacheService(true);
 		boot = new ServerBootstrap();
 		try {
-			boot.startUp(DemoServiceSpec.class, impl, 9090);
-		} catch (IOException e) {
+			boot.startUp(new Class[] { DemoServiceSpec.class }, new Object[] { impl }, 9090, "");
+		} catch (Exception e) {
 			e.printStackTrace();
 			Assert.fail(e.getMessage());
 		}
 		fac = new MemoryCacheClientFactory();
-		fac.setUrl("http://127.0.0.1:9090");
+		fac.setUrl("127.0.0.1:9091");
 	}
 
 	@After

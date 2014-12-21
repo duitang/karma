@@ -1,6 +1,8 @@
 package com.duitang.service.demo;
 
 import java.nio.ByteBuffer;
+import java.util.Map;
+import java.util.Set;
 
 import com.duitang.service.data.MapData;
 
@@ -19,5 +21,9 @@ public interface DemoService {
 	MapData getmap(String name);
 
 	boolean setmap(String name, MapData data);
+
+	Set<String> noparam();
+
+	Map getM(Set s);
 
 }

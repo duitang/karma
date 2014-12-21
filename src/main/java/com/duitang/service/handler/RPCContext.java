@@ -13,13 +13,6 @@ public class RPCContext {
 	public Invoker invoker;
 	public Object ret;
 	public Throwable ex;
-	public Map attr;
-
-	public RPCContext(String name, String method, Object[] params) {
-		this.name = name;
-		this.method = method;
-		this.params = params;
-		this.attr = new HashMap();
-	}
+	public Map attr = new HashMap();
 
 }

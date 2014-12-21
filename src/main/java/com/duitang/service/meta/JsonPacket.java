@@ -1,5 +1,8 @@
 package com.duitang.service.meta;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
 
 /**
  * <pre>
@@ -16,6 +19,7 @@ package com.duitang.service.meta;
  * @author laurence
  * 
  */
+@JsonInclude(Include.NON_NULL)
 public class JsonPacket {
 
 	/**

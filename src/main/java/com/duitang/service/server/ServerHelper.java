@@ -6,6 +6,7 @@ import com.duitang.service.demo.MemoryCacheService;
 import com.duitang.service.handler.JsonRPCHandler;
 import com.duitang.service.handler.ReflectRPCHandler;
 import com.duitang.service.router.JsonRouter;
+import com.duitang.service.router.Router;
 
 public class ServerHelper implements RPCService {
 
@@ -16,6 +17,11 @@ public class ServerHelper implements RPCService {
 
 	protected HTTPServer httpServer;
 	protected TCPServer tcpServer;
+
+	@Override
+	public void setRouter(Router router) {
+		// not supported
+	}
 
 	public ServiceConfig getConf() {
 		return conf;
@@ -68,4 +74,5 @@ public class ServerHelper implements RPCService {
 		helper.setConf(conf);
 		helper.start();
 	}
+
 }

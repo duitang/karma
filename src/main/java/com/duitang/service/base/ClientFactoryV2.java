@@ -1,10 +1,12 @@
 package com.duitang.service.base;
 
 import java.io.Closeable;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.avro.ipc.Transceiver;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
@@ -12,33 +14,33 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.apache.log4j.Logger;
 
-import com.duitang.service.client.KarmaClient;
-import com.duitang.service.client.KarmaIoSession;
+import com.duitang.service.mina.MinaTransceiver;
 
-public abstract class ClientFactory<T> implements ServiceFactory<T> {
+public abstract class ClientFactoryV2<T> implements ServiceFactory<T> {
 
 	protected Logger err = Logger.getLogger("error");
 
 	protected String url;
-	protected List<String> serviceURL;
+	protected List<URL> serviceURL;
+	protected List<Boolean> serviceHTTPProtocol;
 	protected AtomicInteger hashid = new AtomicInteger(0);
 	protected int sz;
 	protected int timeout = 500;
 	protected String clientid;
 	protected GenericObjectPool<T> cliPool = forceCreatePool();
 
-	public ClientFactory() {
+	public ClientFactoryV2() {
 		this(null);
 	}
 
-	public ClientFactory(String clientid) {
+	public ClientFactoryV2(String clientid) {
 		this.clientid = clientid;
 		initClientName();
 		init();
 	}
 
 	protected void init() {
-		// MetricCenter.initMetric(getServiceType(), clientid);
+		MetricCenter.initMetric(getServiceType(), clientid);
 	}
 
 	protected void initClientName() {
@@ -63,9 +65,27 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 	public void setUrl(String url) {
 		this.url = url;
 		String[] urlitems = url.split(";");
-		this.serviceURL = new ArrayList<String>();
+		this.serviceURL = new ArrayList<URL>();
+		this.serviceHTTPProtocol = new ArrayList<Boolean>();
+		boolean isHttp = false;
+		URL ur = null;
 		for (String u : urlitems) {
-			this.serviceURL.add(u);
+			try {
+				if (u.startsWith("http")) {
+					isHttp = true;
+					ur = new URL(u);
+				} else {
+					isHttp = false;
+					if (u.contains("//")) {
+						u = u.replaceFirst(".*//", "");
+					}
+					ur = new URL("http://" + u);
+				}
+				this.serviceURL.add(ur);
+				this.serviceHTTPProtocol.add(isHttp);
+			} catch (Exception e) {
+				throw new RuntimeException("set url: " + u, e);
+			}
 		}
 		this.sz = this.serviceURL.size();
 	}
@@ -76,6 +96,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 
 	public void setTimeout(int timeout) {
 		this.timeout = timeout;
+		MetricableHttpTransceiver.setTimeout(timeout);
 	}
 
 	@Override
@@ -110,9 +131,9 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		}
 	}
 
-	public static <T1> ClientFactory<T1> createFactory(final Class<T1> clz) {
+	public static <T1> ClientFactoryV2<T1> createFactory(final Class<T1> clz) {
 		final String name = clz.getName();
-		ClientFactory<T1> ret = new ClientFactory<T1>() {
+		ClientFactoryV2<T1> ret = new ClientFactoryV2<T1>() {
 
 			@Override
 			public String getServiceName() {
@@ -148,10 +169,15 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 			T ret = null;
 			try {
 				Integer iid = Math.abs(hashid.incrementAndGet()) % sz;
-				String u = serviceURL.get(iid);
-				KarmaIoSession session = new KarmaIoSession(u, timeout);
-				ret = (T) KarmaClient.createKarmaClient(getServiceType(), session);
-				session.init();
+				Transceiver trans = null;
+				URL u = serviceURL.get(iid);
+				if (serviceHTTPProtocol.get(iid)) {
+					trans = new MetricableHttpTransceiver(clientid, u);
+					MetricableHttpTransceiver.setTimeout(timeout);
+				} else {
+					trans = new MinaTransceiver(u.getHost() + ":" + u.getPort(), timeout);
+				}
+				ret = (T) MetricalReflectRequestor.getClient(getServiceType(), trans);
 			} catch (Exception e) {
 				err.error("create for service: " + url, e);
 				throw e;

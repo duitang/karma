@@ -1,7 +1,5 @@
 package com.duitang.service.server;
 
-import java.io.IOException;
-
 import org.junit.Test;
 
 import com.duitang.service.KarmaException;
@@ -25,13 +23,13 @@ public class HTTPServerTest {
 		ReflectRPCHandler rpc = new ReflectRPCHandler();
 		rpc.setConf(conf);
 		rpc.init();
-		JsonRPCHandler jhl = new JsonRPCHandler(rpc);
 
-		JsonRouter router = new JsonRouter();
-		router.setHandler(jhl);
+		JsonRPCHandler jhl = new JsonRPCHandler(rpc);
+		JsonRouter rt = new JsonRouter();
+		rt.setHandler(jhl);
 
 		HTTPServer http = new HTTPServer();
-		http.setRouter(router);
+		http.setRouter(rt);
 		http.setPort(9999);
 		http.start();
 

@@ -1,8 +1,8 @@
 package com.duitang.service.server;
 
-import org.eclipse.jetty.server.handler.AbstractHandler;
-
 import com.duitang.service.KarmaException;
+import com.duitang.service.router.Router;
+import com.duitang.service.transport.JsonServlet;
 
 public class HTTPServer implements RPCService {
 
@@ -10,7 +10,7 @@ public class HTTPServer implements RPCService {
 
 	protected int port;
 	protected org.eclipse.jetty.server.Server server;
-	protected AbstractHandler router;
+	protected JsonServlet servlet = new JsonServlet();
 
 	public HTTPServer() {
 		this(DEFAULT_PORT);
@@ -28,19 +28,16 @@ public class HTTPServer implements RPCService {
 		this.port = port;
 	}
 
-	public AbstractHandler getRouter() {
-		return router;
-	}
-
-	public void setRouter(AbstractHandler router) {
-		this.router = router;
+	@Override
+	public void setRouter(Router router) {
+		this.servlet.setRouter(router);
 	}
 
 	@Override
 	public void start() throws KarmaException {
 		try {
 			this.server = new org.eclipse.jetty.server.Server(port);
-			this.server.setHandler(router);
+			this.server.setHandler(servlet);
 			this.server.start();
 		} catch (Exception e) {
 			throw new KarmaException(e);

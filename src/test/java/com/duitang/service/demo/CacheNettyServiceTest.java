@@ -1,6 +1,5 @@
 package com.duitang.service.demo;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 
 import junit.framework.Assert;
@@ -23,39 +22,23 @@ public class CacheNettyServiceTest {
 
 	ServerBootstrap boot = null;
 	ClientFactory<DemoService> fac = null;
-	ServerBootstrap bootHttp = null;
-	ClientFactory<DemoService> facHttp = null;
 
 	@Before
-	public void setUp() {
-		LogManager.getLogger("org.apache.avro.ipc").setLevel(Level.ALL);
+	public void setUp() throws Exception {
+		LogManager.getLogger("com.duitang.service").setLevel(Level.ALL);
 		MemoryCacheService impl = new MemoryCacheService(true);
 		boot = new ServerBootstrap();
 		boot.addService(DemoService.class, impl);
-		try {
-			boot.startUp(9090, "netty");
-		} catch (IOException e) {
-			Assert.fail(e.getMessage());
-		}
-		bootHttp = new ServerBootstrap();
-		bootHttp.addService(DemoService.class, impl);
-		try {
-			bootHttp.startUp(9091, "http");
-		} catch (IOException e) {
-			Assert.fail(e.getMessage());
-		}
+		boot.startUp(9090);
 
 		fac = ClientFactory.createFactory(DemoService.class);
-		fac.setUrl("netty://127.0.0.1:9090");
+		fac.setUrl("127.0.0.1:9091");
 
-		facHttp = ClientFactory.createFactory(DemoService.class);
-		facHttp.setUrl("http://127.0.0.1:9091");
 	}
 
 	@After
 	public void destroy() {
 		boot.shutdown();
-		bootHttp.shutdown();
 	}
 
 	// @Test
@@ -68,7 +51,7 @@ public class CacheNettyServiceTest {
 		}
 	}
 
-	@Test
+	// @Test
 	public void testB() throws Exception {
 		MemoryCacheService impl = new MemoryCacheService();
 		MetricalReflectResponder responder = new MetricalReflectResponder(DemoService.class, impl);
@@ -95,7 +78,7 @@ public class CacheNettyServiceTest {
 		}
 	}
 
-	// @Test
+	@Test
 	public void testBoot() {
 		DemoService cli = fac.create();
 		try {

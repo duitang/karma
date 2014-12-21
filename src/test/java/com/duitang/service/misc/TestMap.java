@@ -1,6 +1,5 @@
 package com.duitang.service.misc;
 
-import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,7 +14,7 @@ import com.duitang.service.misc.domain.Tiny;
 public class TestMap {
 
 	@Test
-	public void testmaptype() throws IOException {
+	public void testmaptype() throws Exception {
 		ServerBootstrap boot = new ServerBootstrap();
 		boot.addService(E.class, new EImpl());
 		boot.startUp(9999, "netty");
@@ -26,10 +25,10 @@ public class TestMap {
 		Tiny oo = cli.get();
 		System.out.println(oo.getData());
 		System.out.println(oo.getSs());
-		
+
 		Map<String, Integer> ddd = cli.getMap();
 		System.out.println(ddd);
-		
+
 		fac.release(cli);
 
 		boot.shutdown();

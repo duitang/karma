@@ -2,7 +2,9 @@ package com.duitang.service.demo;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import com.duitang.service.data.MapData;
 
@@ -78,6 +80,20 @@ public class MemoryCacheService implements DemoService {
 		if (verbose) {
 			System.err.println(data);
 		}
+	}
+
+	@Override
+	public Set<String> noparam() {
+		HashSet ret = new HashSet();
+		ret.add("abcdef");
+		ret.add("abcdef1");
+		return ret;
+	}
+
+	@Override
+	public Map getM(Set s) {
+		System.out.println(s);
+		return new HashMap();
 	}
 
 }

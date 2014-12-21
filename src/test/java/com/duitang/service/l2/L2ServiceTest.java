@@ -21,7 +21,7 @@ public class L2ServiceTest {
 
 	@Before
 	public void setUp() throws Exception {
-		boot.startUp(L2Service.class, service, 9090);
+		boot.startUp(new Class[] { L2Service.class }, new Object[] { service }, 9090, "");
 		fac = new L2ServiceFactory();
 		fac.setUrl("http://localhost:9090");
 	}
@@ -46,7 +46,7 @@ public class L2ServiceTest {
 		m.put("hello", "world");
 		String lst = "1\n2\n";
 		Assert.assertEquals(m.toString(), cli.cat_mgetstring(lst).toString());
-//		Assert.assertFalse(cli.session_getsession("").isEmpty());
+		// Assert.assertFalse(cli.session_getsession("").isEmpty());
 		Assert.assertTrue(cli.session_setsession("", new HashMap()));
 		Assert.assertEquals("helloworld", cli.session_get("").toString());
 		Assert.assertTrue(cli.session_set("", ""));

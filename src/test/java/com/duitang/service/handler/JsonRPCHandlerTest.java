@@ -58,14 +58,20 @@ public class JsonRPCHandlerTest {
 		String domain = DemoService.class.getName().toLowerCase();
 		String method = "memory_setString".toLowerCase();
 		Object[] param = new Object[] { "[{\"v\":\"aaa\"}, {\"v\":\"bbb\"}, {\"v\":\"10000\"}]" };
-		RPCContext ctx = new RPCContext(domain, method, param);
+		RPCContext ctx = new RPCContext();
+		ctx.name = domain;
+		ctx.method = method;
+		ctx.params = param;
 		jik.lookUp(ctx);
 		jik.invoke(ctx);
 		System.out.println(ctx.ret);
 
 		method = "memory_getString";
 		param = new Object[] { "[{\"v\":\"aaa\"}]" };
-		ctx = new RPCContext(domain, method, param);
+		ctx = new RPCContext();
+		ctx.name = domain;
+		ctx.method = method;
+		ctx.params = param;
 		jik.lookUp(ctx);
 		jik.invoke(ctx);
 		System.out.println(ctx.ret);
@@ -85,7 +91,10 @@ public class JsonRPCHandlerTest {
 		String domain = "com.duitang.service.handler.ABCD".toLowerCase();
 		String method = "plaY";
 		Object[] param = new Object[] { "[{\"v\":\"fuck\"}, {\"v\":1.98, \"t\": \"java.lang.Long\"}]" };
-		RPCContext ctx = new RPCContext(domain, method, param);
+		RPCContext ctx = new RPCContext();
+		ctx.name = domain;
+		ctx.method = method;
+		ctx.params = param;
 		jik.lookUp(ctx);
 		jik.invoke(ctx);
 		System.out.println(ctx.ret);

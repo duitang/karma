@@ -26,7 +26,10 @@ public class ReflectRPCHandlerTest {
 		String domain = DemoService.class.getName();
 		String method = "memory_setString";
 		Object[] param = new Object[] { "aaa", "bbb", 10000 };
-		RPCContext ctx = new RPCContext(domain, method, param);
+		RPCContext ctx = new RPCContext();
+		ctx.name = domain;
+		ctx.method = method;
+		ctx.params = param;
 
 		service.lookUp(ctx);
 		service.invoke(ctx);
@@ -34,7 +37,9 @@ public class ReflectRPCHandlerTest {
 
 		method = "memory_getString";
 		param = new Object[] { "aaa" };
-		ctx = new RPCContext(domain, method, param);
+		ctx.name = domain;
+		ctx.method = method;
+		ctx.params = param;
 
 		service.lookUp(ctx);
 		service.invoke(ctx);

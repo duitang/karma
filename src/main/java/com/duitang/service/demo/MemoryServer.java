@@ -1,6 +1,5 @@
 package com.duitang.service.demo;
 
-import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.Map;
@@ -10,7 +9,6 @@ import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.PatternLayout;
-import org.slf4j.Logger;
 
 import com.duitang.service.base.ClientFactory;
 import com.duitang.service.base.MetricCenter;
@@ -77,7 +75,7 @@ public class MemoryServer {
 		try {
 			boot.addService(DemoService.class, impl);
 			boot.startUp(p, protocol);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(1);
 		}

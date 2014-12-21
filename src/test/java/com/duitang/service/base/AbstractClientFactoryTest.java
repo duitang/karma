@@ -1,6 +1,5 @@
 package com.duitang.service.base;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -29,17 +28,17 @@ public class AbstractClientFactoryTest {
 		fac = new MockFactory();
 		try {
 			folk1 = new ServerBootstrap();
-			folk1.startUp(Dummy.class, new DummyService1(), port1);
+			folk1.startUp(new Class[] { Dummy.class }, new Object[] { new DummyService1() }, port1, "");
 			StringBuilder sb = new StringBuilder();
 			sb.setLength(0);
 			folk1.serviceInfo(Dummy.class, sb, "http", port1);
 			System.out.println(sb.toString());
 			folk2 = new ServerBootstrap();
-			folk2.startUp(Dummy.class, new DummyService1(), port2);
+			folk2.startUp(new Class[] { Dummy.class }, new Object[] { new DummyService1() }, port2, "");
 			sb.setLength(0);
 			folk2.serviceInfo(Dummy.class, sb, "http", port2);
 			System.out.println(sb.toString());
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
