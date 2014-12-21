@@ -74,7 +74,7 @@ public class MemoryServer {
 		impl.memory_setString("aaa", msg, 50000);
 		try {
 			boot.addService(DemoService.class, impl);
-			boot.startUp(p, protocol);
+			boot.startUp(p - 1, protocol);
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(1);
@@ -144,7 +144,7 @@ public class MemoryServer {
 		}
 
 		ClientFactory<DemoService> fac = ClientFactory.createFactory(DemoService.class);
-		fac.setUrl(protocol + "://" + host + ":" + port);
+		fac.setUrl(host + ":" + port);
 
 		CountDownLatch latch = new CountDownLatch(t);
 		if (one) {
