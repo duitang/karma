@@ -21,12 +21,13 @@ class DuitangRemoteProxy:
 
     def __init__(self, config):
         self.server = {}
-        self.locations = config["locations"]
-        self.hostz = len(self.locations)
-        for sss in config["references"]:
-            sss['domain'] = sss['domain'].replace('.', '/')
-            self.server[sss["id"]] = sss
-            logger.info("init %s locations = %s,timeout = %s" % (sss['id'], ";".join(self.locations), sss.get('timeout', 500)))
+        for sname, sval in config.items():
+            for sss in sval['references']:
+                sss['domain'] = sss['domain'].replace('.', '/')
+                sss['locations'] = sval["locations"]
+                sss['hostz'] = len(sval["locations"])
+                self.server[sss["id"]] = sss
+                logger.info("init %s locations = %s,timeout = %s" % (sss['id'], ";".join(sss['locations']), sss.get('timeout', 500)))
             
     def getService(self, serviceName):
         return ServiceProxy(self, serviceName) 
@@ -36,10 +37,10 @@ class DuitangRemoteProxy:
         if not the_service:
             raise Exception("karma client Exception", "cant't find service,serviceName=%s" % serviceName)
             
-        iid = random.randint(0, self.hostz) % self.hostz
+        iid = random.randint(0, the_service['hostz']) % the_service['hostz']
         qry = urllib.quote(query)
         ur = "http://%s/%s/%s?q=%s" % (
-                                       self.locations[iid],
+                                       the_service['locations'][iid],
                                        the_service['domain'],
                                        method,
                                        qry)
@@ -98,15 +99,17 @@ def create_duitang_remote_proxy(config):
 
 if __name__ == "__main__":
     KARMA = {
-        "locations":["localhost:9998"],
-        "references":[
-            {
-                "id":"demoservice",
-                "domain":"com.duitang.service.demo.DemoService",
-                "timeout": 500,
-                "version":"1.0",
-            }
-        ]
+        "demo": {
+              "locations":["localhost:9998"],
+              "references":[
+                {
+                    "id":"demoservice",
+                    "domain":"com.duitang.service.demo.DemoService",
+                    "timeout": 500,
+                    "version":"1.0",
+                }
+              ]
+        }
     }
     from karma import create_duitang_remote_proxy
     proxy = create_duitang_remote_proxy(KARMA)
