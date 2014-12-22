@@ -4,8 +4,6 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.Set;
 
-import com.duitang.service.data.MapData;
-
 public interface DemoService {
 
 	String memory_getString(String key);
@@ -18,9 +16,9 @@ public interface DemoService {
 
 	String trace_msg(String key, long ttl);
 
-	MapData getmap(String name);
+	Map getmap(String name);
 
-	boolean setmap(String name, MapData data);
+	boolean setmap(String name, Map data);
 
 	Set<String> noparam();
 

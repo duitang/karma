@@ -13,11 +13,10 @@ import org.apache.log4j.PatternLayout;
 import com.duitang.service.base.ClientFactory;
 import com.duitang.service.base.MetricCenter;
 import com.duitang.service.base.ServerBootstrap;
-import com.duitang.service.data.MapData;
 
 public class MemoryServer {
 
-	final static String[] PARAMETER_KEYS = { "server", "client", "port", "host", "print", "thread", "loop", "msg", "protocol", "map", "one", "verbose", "trace" };
+	final static String[] PARAMETER_KEYS = { "server", "client", "port", "host", "print", "thread", "loop", "msg", "map", "one", "verbose", "trace" };
 
 	static protected void reloadLog4J() {
 		LogManager.resetConfiguration();
@@ -47,10 +46,6 @@ public class MemoryServer {
 		if (param.containsKey("print")) {
 			console_print = param.get("print");
 		}
-		String protocol = "http";
-		if (param.containsKey("protocol")) {
-			protocol = param.get("protocol");
-		}
 		int p = Integer.valueOf(port);
 		int s = Integer.valueOf(console_print);
 		boolean verbose = false;
@@ -74,7 +69,7 @@ public class MemoryServer {
 		impl.memory_setString("aaa", msg, 50000);
 		try {
 			boot.addService(DemoService.class, impl);
-			boot.startUp(p - 1, protocol);
+			boot.startUp(p - 1, "");
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(1);
@@ -111,10 +106,6 @@ public class MemoryServer {
 			msg = param.get("msg");
 		}
 		msg = genMsg(msg);
-		String protocol = "http";
-		if (param.containsKey("protocol")) {
-			protocol = param.get("protocol");
-		}
 
 		int t = Integer.valueOf(thread);
 		int s = Integer.valueOf(console_print);
@@ -233,8 +224,8 @@ class LoadRunner implements Runnable {
 			String val = null;
 			Map vvv = new HashMap();
 			vvv.put("aaa", msg);
-			MapData v = new MapData(vvv);
-			MapData vv = null;
+			Map v = new HashMap(vvv);
+			Map vv = null;
 			try {
 				cli = fac.create();
 				if (usemap) {
@@ -264,8 +255,8 @@ class LoadRunner implements Runnable {
 						}
 					} else if (usemap) {
 						vv = cli.getmap(name);
-						if (!vv.getData().containsKey("aaa") || vv.getData().get("aaa").toString().length() != msg.length()) {
-							throw new Exception("value error: " + vv.getData().toString());
+						if (!vv.containsKey("aaa") || vv.get("aaa").toString().length() != msg.length()) {
+							throw new Exception("value error: " + vv.toString());
 						}
 					} else {
 						val = cli.memory_getString(name);

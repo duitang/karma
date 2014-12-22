@@ -62,7 +62,7 @@ public class BinaryPacketData {
 		buffer.put(w_bytes);
 
 		// throwable
-		w_bytes = objToBytes(ex);
+		w_bytes = errToBytes(ex);
 		buffer.putInt(w_bytes.length);
 		buffer.put(w_bytes);
 
@@ -89,6 +89,13 @@ public class BinaryPacketData {
 		} catch (IOException e) {
 			throw new KarmaException(e);
 		}
+	}
+
+	protected byte[] errToBytes(Throwable t) throws KarmaException {
+		if (t == null) {
+			return EMPTY;
+		}
+		return t.getMessage().getBytes();
 	}
 
 }

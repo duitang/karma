@@ -38,7 +38,7 @@ public class ReflectRPCHandler implements RPCHandler {
 	public void lookUp(RPCContext ctx) throws KarmaException {
 		ReflectInvoker ret = services.get(ctx.name);
 		if (ret == null) {
-			throw new KarmaException("domain not found");
+			throw new KarmaException("domain[" + ctx.name + "] not found");
 		}
 		ctx.invoker = ret;
 	}

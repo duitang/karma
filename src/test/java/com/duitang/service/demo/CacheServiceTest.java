@@ -6,13 +6,14 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.duitang.service.base.ClientFactory;
 import com.duitang.service.base.MetricCenter;
 import com.duitang.service.base.ServerBootstrap;
 
 public class CacheServiceTest {
 
 	ServerBootstrap boot = null;
-	MemoryCacheClientFactory fac = null;
+	ClientFactory<DemoService> fac = null;
 
 	@Before
 	public void setUp() {
@@ -24,7 +25,7 @@ public class CacheServiceTest {
 			e.printStackTrace();
 			Assert.fail(e.getMessage());
 		}
-		fac = new MemoryCacheClientFactory();
+		fac = ClientFactory.createFactory(DemoService.class);
 		fac.setUrl("127.0.0.1:9091");
 	}
 
@@ -35,7 +36,7 @@ public class CacheServiceTest {
 
 	@Test
 	public void testBoot() {
-		DemoServiceSpec cli = fac.create();
+		DemoService cli = fac.create();
 		try {
 			String key = "aaaa";
 			String value = "bbbb";
@@ -68,7 +69,7 @@ public class CacheServiceTest {
 	// @Test
 	public void testMetric() throws Exception {
 		MetricCenter.enableConsoleReporter(1);
-		DemoServiceSpec cli = fac.create();
+		DemoService cli = fac.create();
 		for (int i = 0; i < 10; i++) {
 			System.out.println("----->" + cli.trace_msg("wait_100", 100));
 		}

@@ -1,10 +1,7 @@
 package com.duitang.service.demo;
 
-import java.net.InetSocketAddress;
-
 import junit.framework.Assert;
 
-import org.apache.avro.ipc.NettyServer;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.junit.After;
@@ -13,10 +10,7 @@ import org.junit.Test;
 
 import com.duitang.service.base.ClientFactory;
 import com.duitang.service.base.MetricCenter;
-import com.duitang.service.base.MetricalReflectRequestor;
-import com.duitang.service.base.MetricalReflectResponder;
 import com.duitang.service.base.ServerBootstrap;
-import com.duitang.service.mina.MinaTransceiver;
 
 public class CacheNettyServiceTest {
 
@@ -48,33 +42,6 @@ public class CacheNettyServiceTest {
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-	}
-
-	// @Test
-	public void testB() throws Exception {
-		MemoryCacheService impl = new MemoryCacheService();
-		MetricalReflectResponder responder = new MetricalReflectResponder(DemoService.class, impl);
-		responder.setClientid("unittesting");
-		NettyServer server = new NettyServer(responder, new InetSocketAddress(9099));
-		server.start();
-
-		// Transceiver tr = new NettyTransceiver(new
-		// InetSocketAddress("localhost", 9099));
-		MinaTransceiver tr = new MinaTransceiver("localhost:9090", 500);
-		DemoService cli = MetricalReflectRequestor.getClient(DemoService.class, tr);
-		try {
-			String key = "aaaa";
-			String value = "bbbb";
-			System.out.println(cli.memory_setString(key, value, 1111));
-			CharSequence sss = (CharSequence) cli.memory_getString(key);
-			Assert.assertEquals(value, String.valueOf(sss));
-			System.out.println(sss);
-		} catch (Exception e) {
-			e.printStackTrace();
-			Assert.fail();
-		} finally {
-			// fac.release(cli);
 		}
 	}
 

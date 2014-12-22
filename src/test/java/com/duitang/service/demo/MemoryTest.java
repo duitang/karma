@@ -5,15 +5,15 @@ import junit.framework.Assert;
 import org.junit.Test;
 
 import com.duitang.service.base.ClientFactory;
-import com.duitang.service.base.MetricalReflectRequestor;
-import com.duitang.service.mina.MinaTransceiver;
+import com.duitang.service.client.KarmaClient;
+import com.duitang.service.client.KarmaIoSession;
 
 public class MemoryTest {
 
 	// @Test
 	public void test0() throws Exception {
-		MinaTransceiver trans = new MinaTransceiver("localhost:9999", 500);
-		DemoService cli = (DemoService) MetricalReflectRequestor.getClient(DemoService.class, trans);
+		KarmaIoSession session = new KarmaIoSession("localhost:9999", 500);
+		DemoService cli = KarmaClient.createKarmaClient(DemoService.class, session);
 		long ts = System.currentTimeMillis();
 		String msg = cli.trace_msg("this will timeout ", 1000);
 		ts = System.currentTimeMillis() - ts;

@@ -6,13 +6,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.duitang.service.data.MapData;
-
 public class MemoryCacheService implements DemoService {
 
 	protected Map<String, String> memory = new HashMap();
 	protected Map<String, ByteBuffer> memoryB = new HashMap();
-	protected Map<String, MapData> mapA = new HashMap();
+	protected Map<String, Map> mapA = new HashMap();
 
 	protected boolean verbose = false;
 
@@ -64,13 +62,13 @@ public class MemoryCacheService implements DemoService {
 	}
 
 	@Override
-	public MapData getmap(String name) {
+	public Map getmap(String name) {
 		verbose("getmap: " + name);
 		return mapA.get(name);
 	}
 
 	@Override
-	public boolean setmap(String name, MapData data) {
+	public boolean setmap(String name, Map data) {
 		mapA.put(name, data);
 		verbose("setmap: " + data.toString());
 		return true;

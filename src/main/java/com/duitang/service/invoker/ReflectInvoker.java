@@ -71,7 +71,7 @@ public class ReflectInvoker implements Invoker {
 			// FIXME: add name + parameter support next time
 		}
 		if (ret == null) {
-			throw new KarmaException("not found method: " + name);
+			throw new KarmaException("not found method[" + name + "]");
 		}
 		return ret;
 	}

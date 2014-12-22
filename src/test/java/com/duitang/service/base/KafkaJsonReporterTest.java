@@ -16,28 +16,26 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.duitang.service.demo.DemoService;
-import com.duitang.service.demo.DemoServiceSpec;
-import com.duitang.service.demo.MemoryCacheClientFactory;
 import com.duitang.service.demo.MemoryCacheService;
 
 public class KafkaJsonReporterTest {
 
 	ServerBootstrap boot = null;
-	MemoryCacheClientFactory fac = null;
+	ClientFactory<DemoService> fac = null;
 
 	@Before
 	public void setUp() throws Exception {
 		MemoryCacheService impl = new MemoryCacheService();
 		boot = new ServerBootstrap();
 		try {
-//			boot.startUp(DemoService.class, impl, 9090);
+			// boot.startUp(DemoService.class, impl, 9090);
 			boot.addService(DemoService.class, impl);
-			boot.startUp(9090, "netty");
+			boot.startUp(9090, "");
 		} catch (IOException e) {
 			e.printStackTrace();
 			Assert.fail(e.getMessage());
 		}
-		fac = new MemoryCacheClientFactory();
+		fac = ClientFactory.createFactory(DemoService.class);
 		fac.setUrl("netty://127.0.0.1:9090");
 	}
 
@@ -68,7 +66,7 @@ public class KafkaJsonReporterTest {
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
-		DemoServiceSpec cli = fac.create();
+		DemoService cli = fac.create();
 		for (int i = 0; i < 10; i++) {
 			try {
 				System.out.println(cli.trace_msg("wait_500", 100));

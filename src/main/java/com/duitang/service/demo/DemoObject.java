@@ -1,9 +1,11 @@
 package com.duitang.service.demo;
 
+import java.io.Serializable;
 import java.util.Map;
 
-public class DemoObject {
+public class DemoObject implements Serializable {
 
+	private static final long serialVersionUID = 1L;
 	protected String domain;
 	protected String method;
 	protected int i_v;
