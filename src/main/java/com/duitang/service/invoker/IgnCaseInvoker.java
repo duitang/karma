@@ -12,6 +12,7 @@ public class IgnCaseInvoker implements Invoker {
 	protected ReflectInvoker proxy;
 	protected Map<String, Method> proxyNoCase;
 	protected Map<String, Class[]> typesNoCase;
+	protected Map<String, Class[]> ptypesNoCase;
 
 	public IgnCaseInvoker(ReflectInvoker invoker) {
 		this.proxy = invoker;
@@ -22,6 +23,10 @@ public class IgnCaseInvoker implements Invoker {
 		this.typesNoCase = new HashMap<String, Class[]>();
 		for (Entry<String, Class[]> en : invoker.types.entrySet()) {
 			this.typesNoCase.put(en.getKey().toLowerCase(), en.getValue());
+		}
+		this.ptypesNoCase = new HashMap<String, Class[]>();
+		for (Entry<String, Class[]> en : invoker.paramTypes.entrySet()) {
+			this.ptypesNoCase.put(en.getKey().toLowerCase(), en.getValue());
 		}
 	}
 
@@ -36,6 +41,16 @@ public class IgnCaseInvoker implements Invoker {
 	public Class[] lookupParameterTypes(String name) throws KarmaException {
 		name = name.toLowerCase();
 		Class[] ret = typesNoCase.get(name);
+		if (ret == null) {
+			throw new KarmaException("Not found method: " + name);
+		}
+		return ret;
+	}
+
+	@Override
+	public Class[] lookupParameterizedType(String name) throws KarmaException {
+		name = name.toLowerCase();
+		Class[] ret = ptypesNoCase.get(name);
 		if (ret == null) {
 			throw new KarmaException("Not found method: " + name);
 		}

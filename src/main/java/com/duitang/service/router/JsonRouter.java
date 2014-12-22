@@ -4,11 +4,9 @@ import com.duitang.service.KarmaException;
 import com.duitang.service.handler.RPCContext;
 import com.duitang.service.handler.RPCHandler;
 import com.duitang.service.meta.JsonPacket;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class JsonRouter implements Router<JsonPacket> {
 
-	static ObjectMapper mapper = new ObjectMapper();
 	protected RPCHandler handler;
 
 	@Override

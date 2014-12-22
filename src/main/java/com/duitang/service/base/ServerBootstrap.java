@@ -72,16 +72,42 @@ public class ServerBootstrap {
 	}
 
 	/**
-	 * 
+	 * @deprecated
+	 * @param serviceType
+	 * @param service
+	 * @param port
+	 * @throws Exception
+	 */
+	public void startUp(Class serviceType, Object service, int port) throws IOException {
+		try {
+			startUp(new Class[] { serviceType }, new Object[] { service }, port);
+		} catch (Exception e) {
+			throw new IOException(e);
+		}
+	}
+
+	/**
+	 * @deprecated
 	 * @param port
 	 * @param protocol
 	 * @throws IOException
 	 */
-	public void startUp(int port, String protocol) throws Exception {
-		startUp(port);
+	public void startUp(int port, String protocol) throws IOException {
+		try {
+	        startUp(port);
+        } catch (Exception e) {
+	        throw new IOException(e);
+        }
 	}
 
-	public void startUp(Class[] serviceType, Object[] service, int port, String protocol) throws Exception {
+	/**
+	 * 
+	 * @param serviceType
+	 * @param service
+	 * @param port
+	 * @throws Exception
+	 */
+	public void startUp(Class[] serviceType, Object[] service, int port) throws Exception {
 		if (serviceType.length != service.length) {
 			throw new Exception("not same length of interface and implements");
 		}
@@ -91,6 +117,18 @@ public class ServerBootstrap {
 		}
 
 		startUp(port);
+	}
+
+	/**
+	 * @deprecated
+	 * @param serviceType
+	 * @param service
+	 * @param port
+	 * @param protocol
+	 * @throws Exception
+	 */
+	public void startUp(Class[] serviceType, Object[] service, int port, String protocol) throws Exception {
+		startUp(serviceType, service, port);
 	}
 
 	public void shutdown() {

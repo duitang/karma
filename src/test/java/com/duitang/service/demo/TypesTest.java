@@ -5,9 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import junit.framework.Assert;
@@ -18,6 +16,12 @@ import org.junit.Test;
 
 import com.duitang.service.base.ClientFactory;
 import com.duitang.service.base.ServerBootstrap;
+import com.duitang.service.demo.domain.Demo1;
+import com.duitang.service.demo.domain.Demo1Impl;
+import com.duitang.service.demo.domain.Demo2;
+import com.duitang.service.demo.domain.Demo2Impl;
+import com.duitang.service.demo.domain.Demo3;
+import com.duitang.service.demo.domain.Demo3Impl;
 
 public class TypesTest {
 
@@ -35,92 +39,10 @@ public class TypesTest {
 	 * 
 	 * @throws Exception
 	 */
-	// @Test
+	@Test
 	public void test0() throws Exception {
 		ServerBootstrap server = new ServerBootstrap();
-		Demo1 service = new Demo1() {
-
-			@Override
-			public int m_a1(int p1, int[] p2) {
-				return p1 + p2[0] + p2[1];
-			}
-
-			@Override
-			public int[] m_a2(int p1, int[] p2) {
-				return new int[] { p1 + p2[0], p1 + p2[1] };
-			}
-
-			@Override
-			public boolean m_b1(boolean p1, boolean[] p2) {
-				return p1 || (p2[0] && p2[1]);
-			}
-
-			@Override
-			public boolean[] m_b2(boolean p1, boolean[] p2) {
-				return new boolean[] { p1 && p2[0], p1 && p2[1] };
-			}
-
-			@Override
-			public long m_c1(long p1, long[] p2) {
-				return p1 + p2[0] + p2[1];
-			}
-
-			@Override
-			public long[] m_c2(long p1, long[] p2) {
-				return new long[] { p1 + p2[0], p1 + p2[1] };
-			}
-
-			@Override
-			public float m_d1(float p1, float[] p2) {
-				return p1 + p2[0] + p2[1];
-			}
-
-			@Override
-			public float[] m_d2(float p1, float[] p2) {
-				return new float[] { p1 + p2[0], p1 + p2[1] };
-			}
-
-			@Override
-			public double m_e1(double p1, double[] p2) {
-				return p1 + p2[0] + p2[1];
-			}
-
-			@Override
-			public double[] m_e2(double p1, double[] p2) {
-				return new double[] { p1 + p2[0], p1 + p2[1] };
-			}
-
-			@Override
-			public short m_f1(short p1, short[] p2) {
-				return (short) (p1 + p2[0] + p2[1]);
-			}
-
-			@Override
-			public short[] m_f2(short p1, short[] p2) {
-				return new short[] { (short) (p1 + p2[0]), (short) (p1 + p2[1]) };
-			}
-
-			@Override
-			public char m_g1(char p1, char[] p2) {
-				return (char) (p1 + p2[0] + p2[1]);
-			}
-
-			@Override
-			public char[] m_g2(char p1, char[] p2) {
-				return new char[] { (char) (p1 + p2[0]), (char) (p1 + p2[1]) };
-			}
-
-			@Override
-			public byte m_h1(byte p1, byte[] p2) {
-				return (byte) (p1 + p2[0] + p2[1]);
-			}
-
-			@Override
-			public byte[] m_h2(byte p1, byte[] p2) {
-				return new byte[] { (byte) (p1 + p2[0]), (byte) (p1 + p2[1]) };
-			}
-
-		};
+		Demo1 service = new Demo1Impl();
 		server.addService(Demo1.class, service);
 		server.startUp(9998);
 		Thread.sleep(100);
@@ -182,45 +104,7 @@ public class TypesTest {
 	@Test
 	public void test1() throws Exception {
 		ServerBootstrap server = new ServerBootstrap();
-		Demo2 service = new Demo2() {
-
-			@Override
-			public Map<String, Long> m1(Map<String, Float> data) {
-				Map<String, Long> ret = new HashMap<String, Long>();
-				for (Entry<String, Float> en : data.entrySet()) {
-					ret.put(en.getKey(), en.getValue().longValue());
-				}
-				return ret;
-			}
-
-			@Override
-			public List<String> m2(List<Float> data) {
-				ArrayList<String> ret = new ArrayList<String>();
-				for (Float d : data) {
-					ret.add(d.toString());
-				}
-				return ret;
-			}
-
-			@Override
-			public Set<Float> m3(Set<Integer> data) {
-				HashSet<Float> ret = new HashSet<Float>();
-				for (Integer d : data) {
-					ret.add(d.floatValue());
-				}
-				return ret;
-			}
-
-			@Override
-			public Double[] m4(String[] data) {
-				Double[] ret = new Double[data.length];
-				for (int i = 0; i < data.length; i++) {
-					ret[i] = Double.valueOf(data[i]);
-				}
-				return ret;
-			}
-
-		};
+		Demo2 service = new Demo2Impl();
 
 		server.addService(Demo2.class, service);
 		server.startUp(9998);
@@ -236,7 +120,7 @@ public class TypesTest {
 		p1.put("bb", 3.4F);
 		Assert.assertTrue(comareMap(service.m1(p1), cli.m1(p1)));
 
-		List<Float> p2 = new ArrayList<Float>();
+		ArrayList<Float> p2 = new ArrayList<Float>();
 		p2.add(1.1F);
 		p2.add(2.2F);
 		p2.add(3.3F);
@@ -260,25 +144,10 @@ public class TypesTest {
 	 * 
 	 * @throws Exception
 	 */
-	// @Test
+	@Test
 	public void test2() throws Exception {
 		ServerBootstrap server = new ServerBootstrap();
-		Demo3 service = new Demo3() {
-
-			@Override
-			public DemoObject getObject(DemoObject obj) {
-				DemoObject ret = new DemoObject();
-				ret.b_v = obj.b_v && true;
-				ret.bs_v = "shit".getBytes();
-				ret.f_v = obj.f_v + 1.1f;
-				ret.i_v = obj.i_v + 2;
-				ret.l_v = obj.l_v + 11;
-				ret.m_v = new HashMap(obj.m_v);
-				ret.m_v.put("happy", "new year");
-				return ret;
-			}
-
-		};
+		Demo3 service = new Demo3Impl();
 		server.addService(Demo3.class, service);
 		server.startUp(9998);
 		Thread.sleep(100);
@@ -329,55 +198,5 @@ public class TypesTest {
 		}
 		return true;
 	}
-
-}
-
-interface Demo1 {
-	int m_a1(int p1, int[] p2);
-
-	int[] m_a2(int p1, int[] p2);
-
-	boolean m_b1(boolean p1, boolean[] p2);
-
-	boolean[] m_b2(boolean p1, boolean[] p2);
-
-	long m_c1(long p1, long[] p2);
-
-	long[] m_c2(long p1, long[] p2);
-
-	float m_d1(float p1, float[] p2);
-
-	float[] m_d2(float p1, float[] p2);
-
-	double m_e1(double p1, double[] p2);
-
-	double[] m_e2(double p1, double[] p2);
-
-	short m_f1(short p1, short[] p2);
-
-	short[] m_f2(short p1, short[] p2);
-
-	char m_g1(char p1, char[] p2);
-
-	char[] m_g2(char p1, char[] p2);
-
-	byte m_h1(byte p1, byte[] p2);
-
-	byte[] m_h2(byte p1, byte[] p2);
-}
-
-interface Demo2 {
-	Map<String, Long> m1(Map<String, Float> data);
-
-	List<String> m2(List<Float> data);
-
-	Set<Float> m3(Set<Integer> data);
-
-	Double[] m4(String[] data);
-}
-
-interface Demo3 {
-
-	DemoObject getObject(DemoObject obj);
 
 }

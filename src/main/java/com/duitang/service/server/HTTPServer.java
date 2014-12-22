@@ -36,7 +36,7 @@ public class HTTPServer implements RPCService {
 	@Override
 	public void start() throws KarmaException {
 		try {
-			this.server = new org.eclipse.jetty.server.Server(port);
+			this.server = new org.eclipse.jetty.server.Server(this.port);
 			this.server.setHandler(servlet);
 			this.server.start();
 		} catch (Exception e) {

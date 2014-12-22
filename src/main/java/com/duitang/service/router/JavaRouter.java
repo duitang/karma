@@ -15,6 +15,8 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
 	protected RPCHandler handler;
 	protected ExecutorService execPool = Executors.newCachedThreadPool();
 
+	// protected ExecutorService execPool = Executors.newFixedThreadPool(200);
+
 	@Override
 	public void setHandler(RPCHandler handler) {
 		this.handler = handler;
@@ -22,7 +24,7 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
 
 	@Override
 	public void route(RPCContext ctx, BinaryPacketRaw raw) throws KarmaException {
-		execPool.execute(new KarmaJobRunner(ctx, raw));
+		execPool.submit(new KarmaJobRunner(ctx, raw));
 	}
 
 	class KarmaJobRunner implements Runnable {
