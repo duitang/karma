@@ -4,11 +4,14 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.ClassUtils;
 
 import com.duitang.service.KarmaException;
@@ -108,7 +111,7 @@ public class JsonRPCHandler implements RPCHandler {
 						Class[] ts = ctx.invoker.lookupParameterizedType(ctx.method.toLowerCase());
 						if (ts[i] != null) {
 							// only 1 parameter type support!!!
-							Collection retCol = (Collection) clz.newInstance();
+							Collection retCol = newCollection(clz);
 							Collection vv = (Collection) v;
 							for (Object obj : vv) {
 								retCol.add(toTypeValue(obj, ts[i]));
@@ -117,14 +120,19 @@ public class JsonRPCHandler implements RPCHandler {
 						} else {
 							throw new KarmaException("d) not supported type: " + v.getClass().getName() + " && " + clz.getName());
 						}
-					} else if (Map.class.isAssignableFrom(clz)) {// map
 					} else { // ???
 						throw new KarmaException("a) not supported type: " + v.getClass().getName() + " && " + clz.getName());
 					}
 				} else if (clz.equals(v.getClass()) || clz.isAssignableFrom(v.getClass())) {
 					params[i] = v;
 				} else if (v instanceof String) {
-					params[i] = mapper.readValue((String) v, clz);
+					if (Collection.class.isAssignableFrom(clz)) {
+						params[i] = toCollectionObject(v, ctx, clz, i);
+					} else {
+						params[i] = mapper.readValue((String) v, clz);
+					}
+				} else if (Map.class.isAssignableFrom(v.getClass())) {// map
+					params[i] = v;
 				} else {
 					throw new KarmaException("b) not supported type: " + v.getClass().getName() + " && " + clz.getName());
 				}
@@ -188,4 +196,38 @@ public class JsonRPCHandler implements RPCHandler {
 		}
 		throw new KarmaException("c) not supported type: " + src.getClass().getName() + " && " + toClz.getName());
 	}
+
+	protected Collection newCollection(Class type) throws KarmaException {
+		Collection ret;
+		if (List.class.isAssignableFrom(type)) {
+			ret = new ArrayList();
+		} else if (Set.class.isAssignableFrom(type)) {
+			ret = new HashSet();
+		} else {
+			throw new KarmaException("e) not supported type: " + type.getName());
+		}
+		return ret;
+	}
+
+	protected Collection toCollectionObject(Object v, RPCContext ctx, Class clz, int param_pos) throws KarmaException {
+		Class[] ts = ctx.invoker.lookupParameterizedType(ctx.method.toLowerCase());
+		if (ts[param_pos] != null) {
+			// only 1 parameter type support!!!
+			Collection retCol = newCollection(clz);
+			Collection vv = (Collection) v;
+			for (Object obj : vv) {
+				retCol.add(toTypeValue(obj, ts[param_pos]));
+			}
+			return retCol;
+		} else {
+			throw new KarmaException("d) not supported type: " + v.getClass().getName() + " && " + clz.getName());
+		}
+	}
+
+	public <T> T fromMap(Map xdata, Class<T> clz) throws Exception {
+		T ret = clz.newInstance();
+		BeanUtils.populate(ret, xdata);
+		return ret;
+	}
+
 }
