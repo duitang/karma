@@ -84,7 +84,7 @@ class ServiceProxy:
                 param = param
             query.append(param)
         param = json.dumps(query)
-        return self.remoteProxy.invoke(self.serviceName, method, param)
+        return json.loads(self.remoteProxy.invoke(self.serviceName, method, param))
       
 class _Method:  
     def __init__(self, invoker, method):  
