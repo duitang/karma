@@ -1,6 +1,7 @@
 package com.duitang.service.demo;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Map;
 
 public class DemoObject implements Serializable {
@@ -77,6 +78,19 @@ public class DemoObject implements Serializable {
 
 	public void setM_v(Map<String, String> m_v) {
 		this.m_v = m_v;
+	}
+
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(domain).append("|");
+		sb.append(method).append("|");
+		sb.append(i_v).append("|");
+		sb.append(f_v).append("|");
+		sb.append(b_v).append("|");
+		sb.append(l_v).append("|");
+		sb.append(Arrays.toString(bs_v)).append("|");
+		sb.append(m_v).append("|");
+		return sb.toString();
 	}
 
 }

@@ -31,6 +31,8 @@ public class TCPServer implements RPCService {
 	@Override
 	public void start() throws KarmaException {
 		acceptor.setReuseAddress(true);
+		acceptor.getSessionConfig().setTcpNoDelay(true);
+		acceptor.getSessionConfig().setKeepAlive(true);
 		acceptor.getFilterChain().addLast("codec", new ProtocolCodecFilter(new KarmaBinaryCodecFactory()));
 		JavaServerHandler handler = new JavaServerHandler();
 		handler.setRouter(router);

@@ -87,6 +87,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		try {
 			return cliPool.borrowObject(timeout);
 		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		return null;
 	}

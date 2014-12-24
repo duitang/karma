@@ -27,6 +27,7 @@ public class KarmaClient<T> implements MethodInterceptor {
 		}
 
 		KarmaClient client = new KarmaClient(iface, iochannel);
+		client.setTimeout(iochannel.getTimeout());
 		Enhancer enhancer = new Enhancer();
 		enhancer.setSuperclass(iface);
 		enhancer.setCallback(client);
@@ -69,8 +70,8 @@ public class KarmaClient<T> implements MethodInterceptor {
 		Object ret = null;
 		try {
 			ret = latch.getResult();
-		} catch (Exception e) {
-			throw new KarmaException("call method[" + name + "] timeout ", e);
+		} catch (Throwable e) {
+			throw new KarmaException("call method[" + name + "] timeout / error ", e);
 		}
 		return ret;
 	}

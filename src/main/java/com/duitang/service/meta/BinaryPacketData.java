@@ -23,7 +23,7 @@ public class BinaryPacketData {
 	public Object ret;
 	public Throwable ex;
 
-	public IoBuffer getBytes() throws KarmaException {
+	public IoBuffer getBytes() {
 		IoBuffer buffer = IoBuffer.allocate(1024);
 		buffer.setAutoExpand(true);
 		byte[] w_bytes;
@@ -52,12 +52,26 @@ public class BinaryPacketData {
 		buffer.put(w_bytes);
 
 		// parameter
-		w_bytes = objToBytes(param);
+		try {
+			w_bytes = objToBytes(param);
+		} catch (Throwable t) {
+			w_bytes = EMPTY;
+			if (ex == null) {
+				ex = t;
+			}
+		}
 		buffer.putInt(w_bytes.length);
 		buffer.put(w_bytes);
 
 		// return
-		w_bytes = objToBytes(ret);
+		try {
+			w_bytes = objToBytes(ret);
+		} catch (Throwable e) {
+			w_bytes = EMPTY;
+			if (ex == null) {
+				ex = e;
+			}
+		}
 		buffer.putInt(w_bytes.length);
 		buffer.put(w_bytes);
 
@@ -91,7 +105,7 @@ public class BinaryPacketData {
 		}
 	}
 
-	protected byte[] errToBytes(Throwable t) throws KarmaException {
+	protected byte[] errToBytes(Throwable t) {
 		if (t == null) {
 			return EMPTY;
 		}

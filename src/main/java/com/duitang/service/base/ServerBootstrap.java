@@ -27,6 +27,8 @@ public class ServerBootstrap {
 
 	protected HTTPServer http;
 	protected TCPServer tcp;
+	
+	protected StringBuilder info = new StringBuilder();
 
 	protected void initRPCService(ServiceConfig conf) throws KarmaException {
 		rpc0 = new ReflectRPCHandler();
@@ -45,6 +47,7 @@ public class ServerBootstrap {
 
 	public void addService(Class serviceType, Object service) {
 		conf.addService(serviceType, service);
+		serviceInfo(serviceType, info, "", 0);
 	}
 
 	/**
@@ -64,11 +67,15 @@ public class ServerBootstrap {
 		http.setRouter(jsonRouter);
 		http.setPort(port);
 		http.start();
+		System.err.println("HTTP SERVER LISTENING AT PORT: " + port);
 
 		tcp = new TCPServer();
 		tcp.setRouter(javaRouter);
 		tcp.setPort(port + 1);
 		tcp.start();
+		System.err.println("TCP SERVER LISTENING AT PORT: " + (port + 1));
+		
+		System.err.println(info);
 	}
 
 	/**
@@ -94,10 +101,10 @@ public class ServerBootstrap {
 	 */
 	public void startUp(int port, String protocol) throws IOException {
 		try {
-	        startUp(port);
-        } catch (Exception e) {
-	        throw new IOException(e);
-        }
+			startUp(port);
+		} catch (Exception e) {
+			throw new IOException(e);
+		}
 	}
 
 	/**
@@ -161,13 +168,13 @@ public class ServerBootstrap {
 		return ret;
 	}
 
-	public void serviceInfo(Class serviceType, StringBuilder sb, String protocol, int port) {
+	static public void serviceInfo(Class serviceType, StringBuilder sb, String protocol, int port) {
 		if (serviceType == null) {
 			return;
 		}
 
 		try {
-			sb.append(serviceType.getName()).append("  ##############  ").append(protocol).append("@").append(port).append("\n");
+			sb.append(serviceType.getName()).append("  ##############  ").append("\n");
 			Method methlist[] = serviceType.getDeclaredMethods();
 			for (int i = 0; i < methlist.length; i++) {
 				Method m = methlist[i];

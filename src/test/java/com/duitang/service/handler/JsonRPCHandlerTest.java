@@ -1,6 +1,9 @@
 package com.duitang.service.handler;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Before;
@@ -10,6 +13,7 @@ import com.duitang.service.KarmaException;
 import com.duitang.service.demo.DemoObject;
 import com.duitang.service.demo.DemoService;
 import com.duitang.service.demo.MemoryCacheService;
+import com.duitang.service.demo.domain.SimpleObject;
 import com.duitang.service.server.ServiceConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -18,6 +22,7 @@ public class JsonRPCHandlerTest {
 	ServiceConfig conf;
 	DemoObject data;
 	ReflectRPCHandler service;
+	ObjectMapper mapper = new ObjectMapper();
 
 	@Before
 	public void setUp() throws Exception {
@@ -77,7 +82,7 @@ public class JsonRPCHandlerTest {
 		System.out.println(ctx.ret);
 	}
 
-	@Test
+	// @Test
 	public void test2() throws KarmaException {
 		ABCD ddd = new MyService();
 		ServiceConfig conf = new ServiceConfig();
@@ -127,6 +132,68 @@ public class JsonRPCHandlerTest {
 		return ret;
 	}
 
+	@Test
+	public void test4() throws KarmaException, Exception {
+
+		// mapper.configure(DeserializationFeature.., true);
+		MyTypeService mytp = new MyImpl();
+		ServiceConfig conf = new ServiceConfig();
+		conf.addService(MyTypeService.class, mytp);
+
+		ReflectRPCHandler service = new ReflectRPCHandler();
+		service.setConf(conf);
+		service.init();
+		JsonRPCHandler jik = new JsonRPCHandler(service);
+
+		SimpleObject a = new SimpleObject();
+		a.setA("hello");
+		a.setB(new ArrayList(Arrays.asList(new Float[] { 1.1f, 2.2f })));
+		a.setC(new HashMap());
+		a.getC().put("dd", 3.3d);
+		a.getC().put("ee", 4.4d);
+		ArrayList<Float> b = new ArrayList<Float>();
+		b.add(6.6f);
+		b.add(7.7f);
+
+		Object[] params = null;
+		params = new Object[] { a, new SimpleObject[] { a, a }, 55L, "laurence" };
+		String src = null;
+		src = mapper.writeValueAsString(params);
+		System.out.println(src);
+
+		// src =
+		// "[{\"a\": \"hello\", \"c\": {\"dd\": 23, \"aaa\": 12}, \"b\": [1.2, 2.2]}, [{\"a\": \"hello\", \"c\": {\"dd\": 23, \"aaa\": 3.3}, \"b\": [1, 2]}, {\"a\": \"hello\", \"c\": {\"dd\": 23, \"aaa\": 1.2}, \"b\": [1, 2]}], 111, \"laurence\"]";
+		// String src =
+		// "[{\"a\": \"hello\", \"c\": {\"dd\": 23, \"aaa\": 3.3}, \"b\": [1, 2]}, {\"a\": \"hello\", \"c\": {\"dd\": 23, \"aaa\": \"bbb\"}, \"b\": [1, 2]}]";
+		// SimpleObject[] lst = mapper.readValue(src, A.class);
+		// System.out.println(lst);
+		RPCContext ctx = new RPCContext();
+		ctx.name = MyTypeService.class.getName();
+		ctx.method = "get1";
+		ctx.params = new Object[] { src };
+		jik.lookUp(ctx);
+		jik.invoke(ctx);
+		// System.out.println(ctx.ret);
+
+		params = new Object[] { a, new SimpleObject[] { a, a }, 55L, "laurence", b };
+		src = mapper.writeValueAsString(params);
+		System.out.println(src);
+		ctx = new RPCContext();
+		ctx.name = MyTypeService.class.getName();
+		ctx.method = "get0";
+		ctx.params = new Object[] { src };
+		jik.lookUp(ctx);
+		jik.invoke(ctx);
+	}
+
+	// @Test
+	public void test5() throws Exception {
+		String src = "{\"a\": \"hello\", \"c\": {\"dd\": 23, \"aaa\": 3.3}, \"b\": [1, 2]}";
+		HashMap m = mapper.readValue(src, HashMap.class);
+		SimpleObject obj = mapper.convertValue(m, SimpleObject.class);
+		System.out.println(obj);
+		System.out.println(mapper.writeValueAsString(obj));
+	}
 }
 
 interface ABCD {
@@ -148,6 +215,37 @@ class MyService implements ABCD {
 		ret.setDomain(a);
 		ret.setMethod(a);
 		return ret;
+	}
+
+}
+
+interface MyTypeService {
+
+	SimpleObject get0(SimpleObject obj, List<SimpleObject> lst, Long id, String name, List<Float> score);
+
+	SimpleObject get1(SimpleObject obj, List<SimpleObject> lst, Long id, String name);
+
+}
+
+class MyImpl implements MyTypeService {
+
+	@Override
+	public SimpleObject get0(SimpleObject obj, List<SimpleObject> lst, Long id, String name, List<Float> score) {
+		System.out.println(obj);
+		System.out.println(lst);
+		System.out.println(id);
+		System.out.println(name);
+		System.out.println(score);
+		return obj;
+	}
+
+	@Override
+	public SimpleObject get1(SimpleObject obj, List<SimpleObject> lst, Long id, String name) {
+		System.out.println(obj);
+		System.out.println(lst);
+		System.out.println(id);
+		System.out.println(name);
+		return obj;
 	}
 
 }

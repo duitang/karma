@@ -94,4 +94,9 @@ public class MemoryCacheService implements DemoService {
 		return new HashMap();
 	}
 
+	@Override
+	public void getError() {
+		throw new NullPointerException("hello, by laurence");
+	}
+
 }

@@ -53,7 +53,7 @@ public class KarmaIoSession implements Closeable, Validation {
 		this.url = hostAndPort;
 		this.timeout = timeout;
 		cpu = new NioProcessor(execPool);
-		conn = new NioSocketConnector(execPool, cpu);
+		conn = new NioSocketConnector(4);
 		conn.getSessionConfig().setTcpNoDelay(true);
 		conn.getSessionConfig().setKeepAlive(true);
 		conn.getFilterChain().addLast("codec", new ProtocolCodecFilter(new KarmaBinaryCodecFactory()));

@@ -31,7 +31,7 @@ public class JavaServerHandler extends IoHandlerAdapter {
 		raw.iochannel = session;
 		try {
 			router.route(new RPCContext(), raw);
-		} catch (KarmaException e) {
+		} catch (Throwable e) {
 			raw.setError(ByteBuffer.wrap(e.getMessage().getBytes()));
 			BinaryPacketData data = null;
 			try {

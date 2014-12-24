@@ -26,12 +26,16 @@ public interface Demo1 {
 
 	short[] m_f2(short p1, short[] p2);
 
+	@Deprecated
 	char m_g1(char p1, char[] p2);
 
+	@Deprecated
 	char[] m_g2(char p1, char[] p2);
 
+	@Deprecated
 	byte m_h1(byte p1, byte[] p2);
 
+	@Deprecated
 	byte[] m_h2(byte p1, byte[] p2);
 
 }

@@ -15,8 +15,6 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
 	protected RPCHandler handler;
 	protected ExecutorService execPool = Executors.newCachedThreadPool();
 
-	// protected ExecutorService execPool = Executors.newFixedThreadPool(200);
-
 	@Override
 	public void setHandler(RPCHandler handler) {
 		this.handler = handler;
@@ -48,7 +46,7 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
 				handler.lookUp(ctx);
 				handler.invoke(ctx);
 				data.ret = ctx.ret;
-			} catch (KarmaException e) {
+			} catch (Throwable e) {
 				if (data == null) {
 					data = new BinaryPacketData();
 				}

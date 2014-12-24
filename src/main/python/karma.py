@@ -72,6 +72,7 @@ class ServiceProxy:
             return None
 
         query = []
+#         import pdb; pdb.set_trace()
         for param in params:
             if param is None:
                 param = param
@@ -80,8 +81,8 @@ class ServiceProxy:
             elif isinstance(param, datetime):
                 param = time.mktime(param.timetuple())
             else:
-                param = json.dumps(param)
-            query.append({'v': param})
+                param = param
+            query.append(param)
         param = json.dumps(query)
         return self.remoteProxy.invoke(self.serviceName, method, param)
       
@@ -100,11 +101,11 @@ def create_duitang_remote_proxy(config):
 if __name__ == "__main__":
     KARMA = {
         "demo": {
-              "locations":["localhost:9998"],
+              "locations":["localhost:9999"],
               "references":[
                 {
                     "id":"demoservice",
-                    "domain":"com.duitang.service.demo.DemoService",
+                    "domain":"com.duitang.service.demo.DemoJsonRPCService",
                     "timeout": 500,
                     "version":"1.0",
                 }
@@ -114,6 +115,22 @@ if __name__ == "__main__":
     from karma import create_duitang_remote_proxy
     proxy = create_duitang_remote_proxy(KARMA)
     demo = proxy.getService('demoservice')
-    ret = demo.memory_getString("aaa")
+    param1 = {
+              "a":"hello",
+              "b":[1.1,2.2],
+              "c":{"dd":3.3,"ee":4.4}
+              }
+    param2 = [
+              {"a":"hello",
+               "b":[1.1,2.2],
+               "c":{"dd":3.3,"ee":4.4}},
+              {"a":"hello",
+               "b":[1.1,2.2],
+               "c":{"dd":3.3,"ee":4.4}}
+              ]
+    param3 = 55
+    param4 = "idiot"
+    param5 = [6.6,7.7]
+    ret = demo.getObject0(param1, param2, param3, param4, param5)
     print ret
     print type(ret)

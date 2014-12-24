@@ -24,4 +24,6 @@ public interface DemoService {
 
 	Map getM(Set s);
 
+	void getError();
+
 }

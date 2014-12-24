@@ -1,6 +1,8 @@
 package com.duitang.service.demo.domain;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import com.duitang.service.demo.DemoObject;
 
@@ -16,6 +18,12 @@ public class Demo3Impl implements Demo3 {
 		ret.setL_v(obj.getL_v() + 11);
 		ret.setM_v(new HashMap(obj.getM_v()));
 		ret.getM_v().put("happy", "new year");
+		return ret;
+	}
+
+	@Override
+	public List<DemoObject> getObjects(List<DemoObject> obj) {
+		ArrayList<DemoObject> ret = new ArrayList<DemoObject>(obj);
 		return ret;
 	}
 

@@ -21,7 +21,7 @@ public class MemoryTest {
 		System.out.println("time elapsed: " + ts + " ms");
 	}
 
-	@Test
+//	@Test
 	public void test1() {
 		DemoService cli = null;
 		ClientFactory<DemoService> fac = ClientFactory.createFactory(DemoService.class);
@@ -130,6 +130,16 @@ public class MemoryTest {
 			System.out.println(rr);
 			fac.release(cli);
 		}
+	}
+	
+	@Test
+	public void testSomeError(){
+		ClientFactory<DemoService> fac = ClientFactory.createFactory(DemoService.class);
+		fac.setUrl("localhost:9999");
+		fac.setTimeout(100000);
+		DemoService cli = fac.create();
+		cli.getError();
+		fac.release(cli);
 	}
 
 }

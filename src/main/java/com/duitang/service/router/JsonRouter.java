@@ -1,6 +1,5 @@
 package com.duitang.service.router;
 
-import com.duitang.service.KarmaException;
 import com.duitang.service.handler.RPCContext;
 import com.duitang.service.handler.RPCHandler;
 import com.duitang.service.meta.JsonPacket;
@@ -23,7 +22,7 @@ public class JsonRouter implements Router<JsonPacket> {
 			handler.lookUp(ctx);
 			handler.invoke(ctx);
 			ret.setR(ctx.ret);
-		} catch (KarmaException e) {
+		} catch (Throwable e) {
 			ctx.ex = e;
 			ret.setE(e.getMessage());
 		}

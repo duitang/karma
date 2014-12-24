@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 public class Demo2Impl implements Demo2 {
 
@@ -20,7 +20,7 @@ public class Demo2Impl implements Demo2 {
 	}
 
 	@Override
-	public List<String> m2(ArrayList<Float> data) {
+	public List<String> m2(List<Float> data) {
 		ArrayList<String> ret = new ArrayList<String>();
 		for (Float d : data) {
 			ret.add(d.toString());

@@ -109,7 +109,7 @@ public class ReflectInvoker implements Invoker {
 		Object ret;
 		try {
 			ret = m.invoke(impl, parameters);
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			throw new KarmaException(e);
 		}
 		return ret;
