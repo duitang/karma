@@ -16,8 +16,11 @@ import org.apache.mina.filter.codec.ProtocolDecoderOutput;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.duitang.service.KarmaException;
 import com.duitang.service.demo.DemoService;
 import com.duitang.service.meta.BinaryPacketData;
+import com.duitang.service.meta.BinaryPacketHelper;
+import com.duitang.service.meta.BinaryPacketRaw;
 
 public class KarmaBinaryDecoderTest {
 
@@ -99,7 +102,7 @@ public class KarmaBinaryDecoderTest {
 		Random rnd = new Random();
 		char a = 'a';
 		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < size; i++) {
+		for (int i = 0; i < size + 1; i++) {
 			sb.append((char) ((int) a + rnd.nextInt(26)));
 		}
 		return sb.toString();
@@ -174,12 +177,18 @@ class OutObserver implements ProtocolDecoderOutput {
 
 	@Override
 	public void write(Object message) {
-		BinaryPacketData buf = (BinaryPacketData) message;
-		Assert.assertEquals(data.flag, buf.flag);
-		Assert.assertEquals(data.domain, buf.domain);
-		Assert.assertEquals(data.method, buf.method);
-		Assert.assertEquals(data.param.length, buf.param.length);
-		Assert.assertEquals(data.param[0], buf.param[0]);
+		BinaryPacketRaw buf = (BinaryPacketRaw) message;
+		BinaryPacketData data1 = null;
+		try {
+			data1 = BinaryPacketHelper.fromRawToData(buf);
+		} catch (KarmaException e) {
+			Assert.fail(e.getMessage());
+		}
+		Assert.assertEquals(data.flag, data1.flag);
+		Assert.assertEquals(data.domain, data1.domain);
+		Assert.assertEquals(data.method, data1.method);
+		Assert.assertEquals(data.param.length, data1.param.length);
+		Assert.assertEquals(data.param[0], data1.param[0]);
 		System.out.println("all field assert!");
 		KarmaBinaryDecoderTest.checkLock.incrementAndGet();
 		KarmaBinaryDecoderTest.finished.set(true);

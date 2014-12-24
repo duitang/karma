@@ -17,7 +17,6 @@ public class JavaClientHandler extends IoHandlerAdapter {
 
 	@Override
 	public void messageReceived(IoSession session, Object message) throws Exception {
-		System.err.println(message);
 		BinaryPacketRaw raw = (BinaryPacketRaw) message;
 		BinaryPacketData data = null;
 		data = BinaryPacketHelper.fromRawToData(raw);

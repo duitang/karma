@@ -7,6 +7,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import org.apache.mina.core.future.ConnectFuture;
+import org.apache.mina.core.service.SimpleIoProcessorPool;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.socket.nio.NioProcessor;
@@ -27,12 +28,12 @@ public class KarmaIoSession implements Closeable, Validation {
 
 	static final protected long default_timeout = 500; // 0.5s
 
-	static final protected Executor execPool = Executors.newFixedThreadPool(3);
+	static final protected Executor pool = Executors.newFixedThreadPool(100);
+	static final protected SimpleIoProcessorPool proc = new SimpleIoProcessorPool(NioProcessor.class, pool);
 
 	protected String url;
 	protected long timeout = default_timeout;
 
-	protected NioProcessor cpu;
 	protected NioSocketConnector conn;
 	protected ConnectFuture connection;
 	protected IoSession session;
@@ -52,8 +53,7 @@ public class KarmaIoSession implements Closeable, Validation {
 	public KarmaIoSession(String hostAndPort, long timeout) {
 		this.url = hostAndPort;
 		this.timeout = timeout;
-		cpu = new NioProcessor(execPool);
-		conn = new NioSocketConnector(4);
+		conn = new NioSocketConnector(pool, proc);
 		conn.getSessionConfig().setTcpNoDelay(true);
 		conn.getSessionConfig().setKeepAlive(true);
 		conn.getFilterChain().addLast("codec", new ProtocolCodecFilter(new KarmaBinaryCodecFactory()));

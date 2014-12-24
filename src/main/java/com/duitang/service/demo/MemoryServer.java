@@ -69,6 +69,7 @@ public class MemoryServer {
 		impl.memory_setString("aaa", msg, 50000);
 		try {
 			boot.addService(DemoService.class, impl);
+			boot.addService(DemoJsonRPCService.class, new DemoJsonRPCImpl());
 			boot.startUp(p - 1, "");
 		} catch (Exception e) {
 			e.printStackTrace();
