@@ -20,7 +20,7 @@ public class CacheServiceTest {
 		MemoryCacheService impl = new MemoryCacheService(true);
 		boot = new ServerBootstrap();
 		try {
-			boot.startUp(new Class[] { DemoServiceSpec.class }, new Object[] { impl }, 9090, "");
+			boot.startUp(new Class[] { DemoService.class }, new Object[] { impl }, 9090, "");
 		} catch (Exception e) {
 			e.printStackTrace();
 			Assert.fail(e.getMessage());
