@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Map;
 
-public class DemoObject implements Serializable {
+public class DemoObject implements Serializable, Comparable<DemoObject> {
 
 	private static final long serialVersionUID = 1L;
 	protected String domain;
@@ -91,6 +91,14 @@ public class DemoObject implements Serializable {
 		sb.append(Arrays.toString(bs_v)).append("|");
 		sb.append(m_v).append("|");
 		return sb.toString();
+	}
+
+	@Override
+	public int compareTo(DemoObject o) {
+		if (o == null) {
+			return -1;
+		}
+		return this.toString().compareTo(o.toString());
 	}
 
 }

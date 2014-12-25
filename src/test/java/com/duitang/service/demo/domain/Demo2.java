@@ -6,12 +6,12 @@ import java.util.Set;
 
 public interface Demo2 {
 
-	Map<String, Long> m1(Map<String, Float> data);
+	Map<String, Long> m1(Map<String, Number> data);
 
 	List<String> m2(List<Float> data);
 
-	Set<Float> m3(Set<Integer> data);
+	Set<Float> m3(List<Integer> data);
 
-	Double[] m4(String[] data);
+	Double[] m4(List<Boolean> data);
 
 }

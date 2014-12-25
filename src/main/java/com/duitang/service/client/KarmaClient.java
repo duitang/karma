@@ -15,7 +15,6 @@ import com.duitang.service.meta.BinaryPacketData;
 public class KarmaClient<T> implements MethodInterceptor {
 
 	protected KarmaIoSession iochannel;
-	protected T dummy;
 	protected String domainName;
 	protected Set<String> cutoffNames;
 	protected AtomicLong uuid = new AtomicLong(0);
@@ -31,9 +30,7 @@ public class KarmaClient<T> implements MethodInterceptor {
 		Enhancer enhancer = new Enhancer();
 		enhancer.setSuperclass(iface);
 		enhancer.setCallback(client);
-		T ret = (T) enhancer.create();
-		client.dummy = ret;
-		return ret;
+		return (T) enhancer.create();
 	}
 
 	KarmaClient(Class<T> iface, KarmaIoSession io) throws KarmaException {

@@ -11,9 +11,9 @@ import java.util.Set;
 public class Demo2Impl implements Demo2 {
 
 	@Override
-	public Map<String, Long> m1(Map<String, Float> data) {
+	public Map<String, Long> m1(Map<String, Number> data) {
 		Map<String, Long> ret = new HashMap<String, Long>();
-		for (Entry<String, Float> en : data.entrySet()) {
+		for (Entry<String, Number> en : data.entrySet()) {
 			ret.put(en.getKey(), en.getValue().longValue());
 		}
 		return ret;
@@ -29,7 +29,7 @@ public class Demo2Impl implements Demo2 {
 	}
 
 	@Override
-	public Set<Float> m3(Set<Integer> data) {
+	public Set<Float> m3(List<Integer> data) {
 		HashSet<Float> ret = new HashSet<Float>();
 		for (Integer d : data) {
 			ret.add(d.floatValue());
@@ -38,10 +38,10 @@ public class Demo2Impl implements Demo2 {
 	}
 
 	@Override
-	public Double[] m4(String[] data) {
-		Double[] ret = new Double[data.length];
-		for (int i = 0; i < data.length; i++) {
-			ret[i] = Double.valueOf(data[i]);
+	public Double[] m4(List<Boolean> data) {
+		Double[] ret = new Double[data.size()];
+		for (int i = 0; i < data.size(); i++) {
+			ret[i] = data.get(i) ? 1.0d : 0;
 		}
 		return ret;
 	}

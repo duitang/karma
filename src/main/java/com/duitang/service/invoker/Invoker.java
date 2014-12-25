@@ -8,6 +8,6 @@ public interface Invoker {
 
 	public Class[] lookupParameterTypes(String name) throws KarmaException;
 
-	public Class[] lookupParameterizedType(String name) throws KarmaException;
+	public Class[][] lookupParameterizedType(String name) throws KarmaException;
 
 }

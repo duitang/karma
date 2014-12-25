@@ -14,6 +14,10 @@ import com.duitang.service.meta.BinaryPacketRaw;
 
 public class KarmaBinaryDecoder extends ProtocolDecoderAdapter {
 
+	// check:
+	// magic_code(2) + total(4) + checksum(8) + float(4) + flag(4) + uuid(8)
+	static final int HEADER = 30;
+
 	protected BinaryPacketRaw rawPack;
 	protected int state = 0;
 	protected int[] szBuf = new int[1];
@@ -26,11 +30,24 @@ public class KarmaBinaryDecoder extends ProtocolDecoderAdapter {
 			if (rawPack == null) {
 				rawPack = setUpRawPacket(in);
 				if (rawPack != null) { // built already
-					state = 5;
+					state = 3;
 				}
 				continue; // anyway check if has remaining
 			}
 			switch (state) {
+			case 3: // CONFIG_SIZE
+				flag = readSize(in, szBuf);
+				if (flag) {
+					rawPack.setSzConf(szBuf[0]);
+				}
+				break;
+			case 4: // CONFIG
+				if (rawPack.getConf() == null && rawPack.getSzConf() > 0) {
+					rawPack.setConf(ByteBuffer.allocate(rawPack.getSzConf()));
+				}
+				buf = rawPack.getConf();
+				flag = readBytes(in, rawPack.getSzConf(), buf);
+				break;
 			case 5: // DOMAIN_SIZE
 				flag = readSize(in, szBuf);
 				if (flag) {
@@ -112,8 +129,7 @@ public class KarmaBinaryDecoder extends ProtocolDecoderAdapter {
 	}
 
 	protected BinaryPacketRaw setUpRawPacket(IoBuffer in) {
-		// check: magic_code(2) + total(4) + checksum(8) + flag(4) + uuid(8)
-		if (in.remaining() < 26) {
+		if (in.remaining() < HEADER) {
 			return null;
 		}
 		int pos = in.position();
@@ -123,6 +139,7 @@ public class KarmaBinaryDecoder extends ProtocolDecoderAdapter {
 			// magic code
 			int total = in.getInt();
 			long cksum = in.getLong();
+			float version = in.getFloat();
 			int flag = in.getInt();
 			long uuid = in.getLong();
 			Checksum ck = new Adler32();
@@ -131,6 +148,7 @@ public class KarmaBinaryDecoder extends ProtocolDecoderAdapter {
 				// bingo
 				BinaryPacketRaw ret = new BinaryPacketRaw();
 				ret.setTotal(total);
+				ret.setVersion(version);
 				ret.setFlag(flag);
 				ret.setUuid(uuid);
 				return ret;

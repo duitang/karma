@@ -37,7 +37,6 @@ public class KarmaIoSession implements Closeable, Validation {
 	protected NioSocketConnector conn;
 	protected ConnectFuture connection;
 	protected IoSession session;
-	protected boolean lost = false;
 
 	// not thread-safe
 	protected boolean initialed = false;
@@ -60,7 +59,7 @@ public class KarmaIoSession implements Closeable, Validation {
 		conn.setHandler(new JavaClientHandler());
 		String[] uu = url.split(":");
 		String host = uu[0];
-		int port = Integer.valueOf(uu[1]);
+		int port = Integer.valueOf(uu[1]).intValue();
 		this.connection = this.conn.connect(new InetSocketAddress(host, port));
 	}
 
@@ -77,13 +76,11 @@ public class KarmaIoSession implements Closeable, Validation {
 		}
 
 		if (!this.connection.isConnected()) {
-			this.lost = true;
 			this.close();
 			throw new IOException("create connection to " + url + " failed!");
 		}
 		this.session = connection.getSession();
 		this.initialed = true;
-		return;
 	}
 
 	public boolean isConnected() {

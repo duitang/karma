@@ -12,11 +12,13 @@ import com.duitang.service.KarmaException;
 
 public class BinaryPacketData {
 
-	public final static byte[] EMPTY = new byte[0];
+	public final static byte[] EMPTY = {};
 	public final static byte[] MAGIC_CODE = { 11, 18 };
 
+	public float version;
 	public int flag;
 	public long uuid;
+	public RPCConfig conf;
 	public String domain;
 	public String method;
 	public Object[] param;
@@ -35,11 +37,27 @@ public class BinaryPacketData {
 		buffer.putInt(0); // for total, take a seat
 		buffer.putLong(0); // for checksum, take a seat
 
+		// version
+		buffer.putFloat(version);
+
 		// flag
 		buffer.putInt(flag);
 
 		// uuid
 		buffer.putLong(uuid);
+
+		// config
+		try {
+			// at version 1 we ignore flag and using default
+			w_bytes = objToBytes(conf);
+		} catch (Throwable t) {
+			w_bytes = EMPTY;
+			if (ex == null) {
+				ex = t;
+			}
+		}
+		buffer.putInt(w_bytes.length);
+		buffer.put(w_bytes);
 
 		// domain
 		w_bytes = domain.getBytes();

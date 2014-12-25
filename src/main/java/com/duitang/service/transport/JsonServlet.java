@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class JsonServlet extends AbstractHandler {
 
-	static protected String[] EMPTY = new String[0];
+	final static protected String[] EMPTY = new String[0];
 	static ObjectMapper mapper = new ObjectMapper();
 	protected Router<JsonPacket> router;
 

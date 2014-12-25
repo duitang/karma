@@ -34,14 +34,9 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 	public ClientFactory(String clientid) {
 		this.clientid = clientid;
 		initClientName();
-		init();
 	}
 
-	protected void init() {
-		// MetricCenter.initMetric(getServiceType(), clientid);
-	}
-
-	protected void initClientName() {
+	private void initClientName() {
 		if (clientid == null) {
 			StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
 			for (int i = 0; i < stacktrace.length; i++) {
@@ -138,26 +133,24 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		cfg.setBlockWhenExhausted(true);
 		cfg.setMaxWaitMillis(timeout);
 		// cfg.setTestOnReturn(true); // may release it if error
-		GenericObjectPool<T> ret = new GenericObjectPool<T>(new ReflectServiceFactory<T>(), cfg);
-		return ret;
+		return new GenericObjectPool<T>(new ReflectServiceFactory<T>(), cfg);
 	}
 
 	class ReflectServiceFactory<T1> implements PooledObjectFactory<T> {
 
 		@Override
 		public PooledObject<T> makeObject() throws Exception {
-			T ret = null;
 			try {
 				Integer iid = Math.abs(hashid.incrementAndGet()) % sz;
 				String u = serviceURL.get(iid);
 				KarmaIoSession session = new KarmaIoSession(u, timeout);
-				ret = (T) KarmaClient.createKarmaClient(getServiceType(), session);
+				T ret = (T) KarmaClient.createKarmaClient(getServiceType(), session);
 				session.init();
+				return new DefaultPooledObject<T>(ret);
 			} catch (Exception e) {
 				err.error("create for service: " + url, e);
 				throw e;
 			}
-			return new DefaultPooledObject<T>(ret);
 		}
 
 		@Override
@@ -182,10 +175,12 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 
 		@Override
 		public void activateObject(PooledObject<T> p) throws Exception {
+			// ignore, no active or check
 		}
 
 		@Override
 		public void passivateObject(PooledObject<T> p) throws Exception {
+			// ignore, no active or check
 		}
 
 	}

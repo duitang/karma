@@ -92,6 +92,7 @@ public class KarmaBinaryDecoderTest {
 			demodata.domain = genStr(rnd.nextInt(1000));
 			demodata.method = genStr(rnd.nextInt(1000));
 			demodata.uuid = rnd.nextLong();
+			demodata.version = rnd.nextFloat();
 			demodata.flag = rnd.nextInt();
 			demodata.param = new Object[] { genStr(rnd.nextInt(1000)) };
 			testNTcpPacket(demodata, 1000);
@@ -115,7 +116,7 @@ public class KarmaBinaryDecoderTest {
 
 		checkLock = new AtomicInteger(0);
 		int total = dbuf.length;
-		int firstHead = 26;
+		int firstHead = KarmaBinaryDecoder.HEADER;
 		int max_it = ((total - firstHead) / 4) + 1;
 		Random rnd = new Random();
 		for (int i = 0; i < loop; i++) {
@@ -185,6 +186,8 @@ class OutObserver implements ProtocolDecoderOutput {
 			Assert.fail(e.getMessage());
 		}
 		Assert.assertEquals(data.flag, data1.flag);
+		Assert.assertEquals(data.version, data1.version);
+		Assert.assertEquals(data.conf, data1.conf);
 		Assert.assertEquals(data.domain, data1.domain);
 		Assert.assertEquals(data.method, data1.method);
 		Assert.assertEquals(data.param.length, data1.param.length);

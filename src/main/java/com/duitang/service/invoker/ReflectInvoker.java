@@ -19,11 +19,22 @@ public class ReflectInvoker implements Invoker {
 	// parameter types
 	protected Map<String, Class[]> types;
 
-	// generic parameterized types
-	protected Map<String, Class[]> paramTypes;
-
-	// name + parameter lookup
-	protected Map<String, Method> proxy2;
+	/**
+	 * <pre>
+	 * generic parameterized types caution:
+	 * 
+	 * void aaa(Map<String, Float>, Map<Double, Boolean>) 
+	 * 
+	 * 	will =>
+	 * 
+	 *    Class[][] = { 
+	 *    				[String, Float], 
+	 *                  [Double, Boolean]
+	 * }
+	 * 
+	 * <pre>
+	 */
+	protected Map<String, Class[][]> paramTypes;
 
 	public ReflectInvoker(Class iface, Object impl) throws KarmaException {
 		this.iface = iface;
@@ -31,13 +42,13 @@ public class ReflectInvoker implements Invoker {
 		init();
 	}
 
-	protected void init() {
+	private void init() {
 		proxy1 = new HashMap<String, Method>();
 		types = new HashMap<String, Class[]>();
-		paramTypes = new HashMap<String, Class[]>();
+		paramTypes = new HashMap<String, Class[][]>();
 		Method[] iface_methods = iface.getMethods();
 		Type[] the_types = null;
-		Class[] ptypes;
+		Class[][] ptypes;
 		for (Method m : iface_methods) {
 			String name = m.getName();
 			m.setAccessible(true);
@@ -54,12 +65,19 @@ public class ReflectInvoker implements Invoker {
 			}
 			types.put(name, newtt);
 			the_types = m.getGenericParameterTypes();
-			ptypes = new Class[the_types.length];
+			ptypes = new Class[the_types.length][];
 			for (int ii = 0; ii < ptypes.length; ii++) {
 				if (the_types[ii] instanceof ParameterizedType) {
+					ptypes[ii] = new Class[2];
+					Type[] ata = ((ParameterizedType) the_types[ii]).getActualTypeArguments();
 					try {
-						String nm = ((ParameterizedType) the_types[ii]).getActualTypeArguments()[0].toString();
-						ptypes[ii] = Class.forName(nm.split(" ")[1]);
+						String nm1 = ata[0].toString();
+						ptypes[ii][0] = Class.forName(nm1.split(" ")[1]);
+						if (ata.length > 1) {
+							String nm2 = ata[1].toString();
+							ptypes[ii][1] = Class.forName(nm2.split(" ")[1]);
+
+						}
 					} catch (ClassNotFoundException e) {
 						e.printStackTrace();
 					}
@@ -67,9 +85,6 @@ public class ReflectInvoker implements Invoker {
 			}
 			paramTypes.put(name, ptypes);
 		}
-
-		// FIXME: name + parameter support next time
-		proxy2 = new HashMap<String, Method>();
 	}
 
 	@Override
@@ -87,7 +102,7 @@ public class ReflectInvoker implements Invoker {
 	}
 
 	@Override
-	public Class[] lookupParameterizedType(String name) throws KarmaException {
+	public Class[][] lookupParameterizedType(String name) throws KarmaException {
 		if (!paramTypes.containsKey(name)) {
 			throw new KarmaException("Not found method: " + name);
 		}
@@ -96,9 +111,6 @@ public class ReflectInvoker implements Invoker {
 
 	protected Method getMethod(String name) throws KarmaException {
 		Method ret = proxy1.get(name);
-		if (ret == null) {
-			// FIXME: add name + parameter support next time
-		}
 		if (ret == null) {
 			throw new KarmaException("not found method[" + name + "]");
 		}

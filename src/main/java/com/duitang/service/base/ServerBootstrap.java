@@ -16,7 +16,6 @@ import com.duitang.service.server.TCPServer;
 public class ServerBootstrap {
 
 	protected String clientid;
-	protected String hostname;
 	protected ServiceConfig conf = new ServiceConfig();
 
 	protected ReflectRPCHandler rpc0;
@@ -27,7 +26,7 @@ public class ServerBootstrap {
 
 	protected HTTPServer http;
 	protected TCPServer tcp;
-	
+
 	protected StringBuilder info = new StringBuilder();
 
 	protected void initRPCService(ServiceConfig conf) throws KarmaException {
@@ -74,7 +73,7 @@ public class ServerBootstrap {
 		tcp.setPort(port + 1);
 		tcp.start();
 		System.err.println("TCP SERVER LISTENING AT PORT: " + (port + 1));
-		
+
 		System.err.println(info);
 	}
 
@@ -151,7 +150,7 @@ public class ServerBootstrap {
 		return clientid;
 	}
 
-	protected String genServiceName(Object[] services) {
+	protected String genServiceName(Object... services) {
 		String ret = "";
 		if (services != null) {
 			StringBuilder sb = new StringBuilder();
@@ -192,6 +191,8 @@ public class ServerBootstrap {
 				sb.append(m.getReturnType()).append(" } ").append("\n");
 			}
 		} catch (Throwable e) {
+			// ignore
+			e.printStackTrace(System.err);
 		}
 
 	}

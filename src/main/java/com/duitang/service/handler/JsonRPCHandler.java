@@ -1,11 +1,14 @@
 package com.duitang.service.handler;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.lang.ClassUtils;
 
@@ -16,23 +19,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class JsonRPCHandler implements RPCHandler {
 
-	static protected ObjectMapper mapper = new ObjectMapper();
+	final static protected ObjectMapper mapper = new ObjectMapper();
 
-	protected ReflectRPCHandler handler;
 	protected Map<String, IgnCaseInvoker> lowercase;
 
 	public JsonRPCHandler(ReflectRPCHandler handler) {
-		this.handler = handler;
 		this.lowercase = new HashMap<String, IgnCaseInvoker>();
 		for (Entry<String, ReflectInvoker> en : handler.services.entrySet()) {
 			this.lowercase.put(en.getKey().toLowerCase(), new IgnCaseInvoker(en.getValue()));
 		}
-
 	}
 
 	@Override
 	public void lookUp(RPCContext ctx) throws KarmaException {
-		String name = ctx.name.toLowerCase();
+		String name = ctx.name.toLowerCase(Locale.ENGLISH);
 		ctx.invoker = this.lowercase.get(name);
 		if (ctx.invoker == null) {
 			throw new KarmaException("domain not found");
@@ -45,8 +45,8 @@ public class JsonRPCHandler implements RPCHandler {
 			String p = (String) ctx.params[0];
 			List mp = mapper.readValue(p, ArrayList.class);
 			Object[] params = new Object[mp.size()];
-			Class[] ptypes = ctx.invoker.lookupParameterTypes(ctx.method.toLowerCase());
-			Class[] rtypes = ctx.invoker.lookupParameterizedType(ctx.method.toLowerCase());
+			Class[] ptypes = ctx.invoker.lookupParameterTypes(ctx.method.toLowerCase(Locale.ENGLISH));
+			Class[][] rtypes = ctx.invoker.lookupParameterizedType(ctx.method.toLowerCase(Locale.ENGLISH));
 			Object v;
 			for (int i = 0; i < mp.size(); i++) {
 				v = mp.get(i);
@@ -55,7 +55,7 @@ public class JsonRPCHandler implements RPCHandler {
 			Object ret = ctx.invoker.invoke(ctx.method, params);
 			ctx.ret = mapper.writeValueAsString(ret);
 		} catch (Exception e) {
-			throw new KarmaException(e);
+			throw new KarmaException(ctx.name + "." + ctx.method + "(" + Arrays.toString(ctx.params) + ") error:", e);
 		}
 
 	}
@@ -82,13 +82,13 @@ public class JsonRPCHandler implements RPCHandler {
 		return v;
 	}
 
-	protected Object castToParameter(Object v, Class tClz, Class pType, int depth) throws Exception {
+	protected Object castToParameter(Object v, Class tClz, Class[] pType, int depth) throws Exception {
 		if (v == null) {
 			return null;
 		}
 		if (tClz.isPrimitive()) {
 			if (boolean.class.isAssignableFrom(tClz)) {
-				return Boolean.valueOf((boolean) v).booleanValue();
+				return Boolean.valueOf(v.toString()).booleanValue();
 			} else {
 				return getNumberValue(0, tClz);
 			}
@@ -98,10 +98,25 @@ public class JsonRPCHandler implements RPCHandler {
 			// FIXME: check if collection and array, ignore map
 			if (ClassUtils.isAssignable(v.getClass(), Collection.class)) {
 				Collection vv = (Collection) v;
-				ret = vv.getClass().newInstance();
-				for (Object vvv : vv) {
-					((Collection) ret).add(castToParameter(vvv, pType, null, depth + 1));
+				if (pType.length > 0) {
+					ret = vv.getClass().newInstance();
+					for (Object vvv : vv) {
+						((Collection) ret).add(castToParameter(vvv, pType[0], null, depth + 1));
+					}
+				} else {
+					ret = vv; // no generic type found, just return it
 				}
+			} else if (v instanceof Map) {
+				// FIXME check map key/value generic parameter type
+				Set<Entry> mm = ((Map) v).entrySet();
+				HashMap ret1 = new HashMap();
+				Object retK, retV;
+				for (Entry en : mm) {
+					retK = mapper.convertValue(en.getKey(), pType[0]);
+					retV = mapper.convertValue(en.getValue(), pType[1]);
+					ret1.put(retK, retV);
+				}
+				ret = ret1;
 			} else {
 				ret = v;
 			}
@@ -112,13 +127,17 @@ public class JsonRPCHandler implements RPCHandler {
 			ret = mapper.convertValue(mm, tClz);
 		} else if (v instanceof Collection) {
 			Collection vv = (Collection) v;
-			try {
-				ret = vv.getClass().newInstance();
-				for (Object vvv : vv) {
-					((Collection) ret).add(castToParameter(vvv, pType, null, depth + 1));
+			if (pType.length > 0) {
+				try {
+					ret = vv.getClass().newInstance();
+					for (Object vvv : vv) {
+						((Collection) ret).add(castToParameter(vvv, pType[0], null, depth + 1));
+					}
+				} catch (Exception e) {
+					throw new KarmaException(e);
 				}
-			} catch (Exception e) {
-				throw new KarmaException(e);
+			} else {
+				ret = vv;
 			}
 		} else {
 			throw new KarmaException("can't convert type " + v.getClass().getName() + " -> " + tClz.getName());

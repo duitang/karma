@@ -9,7 +9,8 @@ import org.apache.mina.core.session.IoSession;
  * 
  * 
  * <pre>
- * int = 4 bytes 
+ * int = 4 bytes
+ * float = 4 bytes 
  * bytes = variable length
  * field, state code
  * 
@@ -20,9 +21,15 @@ import org.apache.mina.core.session.IoSession;
  * --------------------------------------------------------- 
  * CHECKSUM(long)      |  1
  * ---------------------------------------------------------
+ * VERSION(float)      |  1
+ * ---------------------------------------------------------
  * FLAG(int)           |  1
  * --------------------------------------------------------- 
- * UUID(long)          |  4
+ * UUID(long)          |  1
+ * --------------------------------------------------------- 
+ * CONFIG_SIZE(int)    |  3
+ * ---------------------------------------------------------
+ * CONFIG(bytes)       |  4
  * --------------------------------------------------------- 
  * DOMAIN_SIZE(int)    |  5
  * ---------------------------------------------------------
@@ -51,8 +58,11 @@ import org.apache.mina.core.session.IoSession;
 public class BinaryPacketRaw implements Packet {
 
 	protected int total = -1;
+	protected float version = 1.0f;
 	protected int flag = -1;
 	protected long uuid = 0;
+	protected int szConf = -1;
+	protected ByteBuffer conf;
 	protected int szDomainName = -1;
 	protected ByteBuffer domainName;
 	protected int szMethodName = -1;
@@ -74,6 +84,14 @@ public class BinaryPacketRaw implements Packet {
 		this.total = total;
 	}
 
+	public float getVersion() {
+		return version;
+	}
+
+	public void setVersion(float version) {
+		this.version = version;
+	}
+
 	public int getFlag() {
 		return flag;
 	}
@@ -88,6 +106,22 @@ public class BinaryPacketRaw implements Packet {
 
 	public void setUuid(long uuid) {
 		this.uuid = uuid;
+	}
+
+	public int getSzConf() {
+		return szConf;
+	}
+
+	public void setSzConf(int szConf) {
+		this.szConf = szConf;
+	}
+
+	public ByteBuffer getConf() {
+		return conf;
+	}
+
+	public void setConf(ByteBuffer conf) {
+		this.conf = conf;
 	}
 
 	public int getSzDomainName() {
