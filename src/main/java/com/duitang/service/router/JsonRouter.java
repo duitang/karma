@@ -1,5 +1,7 @@
 package com.duitang.service.router;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import com.duitang.service.handler.RPCContext;
 import com.duitang.service.handler.RPCHandler;
 import com.duitang.service.meta.JsonPacket;
@@ -24,7 +26,7 @@ public class JsonRouter implements Router<JsonPacket> {
 			ret.setR(ctx.ret);
 		} catch (Throwable e) {
 			ctx.ex = e;
-			ret.setE(e.getMessage());
+			ret.setE(ExceptionUtils.getMessage(e) + "\n" + ExceptionUtils.getRootCauseMessage(e));
 		}
 	}
 

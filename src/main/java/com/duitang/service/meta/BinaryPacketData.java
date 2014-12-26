@@ -6,6 +6,7 @@ import java.io.ObjectOutputStream;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.mina.core.buffer.IoBuffer;
 
 import com.duitang.service.KarmaException;
@@ -94,7 +95,11 @@ public class BinaryPacketData {
 		buffer.put(w_bytes);
 
 		// throwable
-		w_bytes = errToBytes(ex);
+		try {
+			w_bytes = objToBytes(ex);
+		} catch (Throwable e) {
+			w_bytes = EMPTY;
+		}
 		buffer.putInt(w_bytes.length);
 		buffer.put(w_bytes);
 
@@ -127,7 +132,8 @@ public class BinaryPacketData {
 		if (t == null) {
 			return EMPTY;
 		}
-		return t.getMessage().getBytes();
+		String ret = ExceptionUtils.getStackTrace(t);
+		return ret.getBytes();
 	}
 
 }

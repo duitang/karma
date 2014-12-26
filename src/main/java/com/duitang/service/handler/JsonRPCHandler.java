@@ -11,6 +11,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.lang.ClassUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import com.duitang.service.KarmaException;
 import com.duitang.service.invoker.IgnCaseInvoker;
@@ -35,29 +36,41 @@ public class JsonRPCHandler implements RPCHandler {
 		String name = ctx.name.toLowerCase(Locale.ENGLISH);
 		ctx.invoker = this.lowercase.get(name);
 		if (ctx.invoker == null) {
-			throw new KarmaException("domain not found");
+			throw new KarmaException("domain not found: " + name);
 		}
 	}
 
 	@Override
 	public void invoke(RPCContext ctx) throws KarmaException {
+		Object[] params = null;
 		try {
 			String p = (String) ctx.params[0];
 			List mp = mapper.readValue(p, ArrayList.class);
-			Object[] params = new Object[mp.size()];
+			params = new Object[mp.size()];
 			Class[] ptypes = ctx.invoker.lookupParameterTypes(ctx.method.toLowerCase(Locale.ENGLISH));
 			Class[][] rtypes = ctx.invoker.lookupParameterizedType(ctx.method.toLowerCase(Locale.ENGLISH));
 			Object v;
+			if (mp.size() != ptypes.length) {
+				throw new KarmaException(ctx.name + "." + ctx.method + "(" + Arrays.toString(ctx.params) + ") parameter size error?");
+			}
 			for (int i = 0; i < mp.size(); i++) {
 				v = mp.get(i);
 				params[i] = castToParameter(v, ptypes[i], rtypes[i], 0);
 			}
-			Object ret = ctx.invoker.invoke(ctx.method, params);
+		} catch (Exception e) {
+			throwIt(ctx.name + "." + ctx.method + "(" + Arrays.toString(ctx.params) + ") parameter convert error: ", e);
+		}
+		Object ret = null;
+		try {
+			ret = ctx.invoker.invoke(ctx.method, params);
+		} catch (Exception e) {
+			throwIt(ctx.name + "." + ctx.method + "(" + Arrays.toString(ctx.params) + ") invoke error:", e);
+		}
+		try {
 			ctx.ret = mapper.writeValueAsString(ret);
 		} catch (Exception e) {
-			throw new KarmaException(ctx.name + "." + ctx.method + "(" + Arrays.toString(ctx.params) + ") error:", e);
+			throwIt(ctx.name + "." + ctx.method + "(" + Arrays.toString(ctx.params) + ") return convert error:", e);
 		}
-
 	}
 
 	protected Object getNumberValue(Number v, Class target) {
@@ -134,14 +147,23 @@ public class JsonRPCHandler implements RPCHandler {
 						((Collection) ret).add(castToParameter(vvv, pType[0], null, depth + 1));
 					}
 				} catch (Exception e) {
-					throw new KarmaException(e);
+					throwIt("", e);
+					throw e; // dummy
 				}
 			} else {
 				ret = vv;
 			}
 		} else {
-			throw new KarmaException("can't convert type " + v.getClass().getName() + " -> " + tClz.getName());
+			throwIt("can't convert type " + v.getClass().getName() + " -> " + tClz.getName(), new KarmaException("JsonRPC error:"));
+			throw new KarmaException(""); // dummy
 		}
 		return ret;
+	}
+
+	void throwIt(String msg, Throwable ex) throws KarmaException {
+		if (KarmaException.class.isAssignableFrom(ex.getClass())) {
+			throw (KarmaException) ex;
+		}
+		throw new KarmaException(msg, ExceptionUtils.getRootCause(ex));
 	}
 }

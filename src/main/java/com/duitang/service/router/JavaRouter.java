@@ -53,7 +53,7 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
 				data.ex = e;
 			} finally {
 				if (raw.iochannel != null) {
-					raw.iochannel.write(data);
+					raw.iochannel.write(data.getBytes());
 				}
 			}
 		}

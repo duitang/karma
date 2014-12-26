@@ -2,7 +2,10 @@ package com.duitang.service.transport;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -87,7 +90,7 @@ public class KarmaBinaryDecoderTest {
 	@Test
 	public void test3() throws Exception {
 		Random rnd = new Random();
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < 1000; i++) {
 			BinaryPacketData demodata = new BinaryPacketData();
 			demodata.domain = genStr(rnd.nextInt(1000));
 			demodata.method = genStr(rnd.nextInt(1000));
@@ -95,7 +98,7 @@ public class KarmaBinaryDecoderTest {
 			demodata.version = rnd.nextFloat();
 			demodata.flag = rnd.nextInt();
 			demodata.param = new Object[] { genStr(rnd.nextInt(1000)) };
-			testNTcpPacket(demodata, 1000);
+			testNTcpPacket(demodata, 10000);
 		}
 	}
 
@@ -166,6 +169,38 @@ public class KarmaBinaryDecoderTest {
 		Assert.assertEquals(loop, checkLock.get());
 	}
 
+	// @Test
+	public void testPacket() throws Exception {
+		List<String> names = new ArrayList<String>();
+		names.add("贡献度");
+		names.add("影响力");
+		names.add("活跃度");
+		String id = "549bf6df0cf22cbd4d6394f1";
+		BinaryPacketData data = new BinaryPacketData();
+		data.domain = "com.duitang.service.biz.IClubMemberBoardService";
+		data.method = "showMemberBoard";
+		data.param = new Object[] { names, id };
+		IoBuffer buffer;
+		buffer = data.getBytes();
+
+		KarmaBinaryDecoder dec = new KarmaBinaryDecoder();
+		dec.decode(null, buffer, new OnlyLog());
+
+		// ByteBuffer.allocate(-1);
+	}
+
+}
+
+class OnlyLog implements ProtocolDecoderOutput {
+
+	@Override
+	public void write(Object message) {
+		System.out.println(message);
+	}
+
+	@Override
+	public void flush(NextFilter nextFilter, IoSession session) {
+	}
 }
 
 class OutObserver implements ProtocolDecoderOutput {

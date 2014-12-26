@@ -24,7 +24,7 @@ final public class BinaryPacketHelper {
 			ret.param = new Object[0];
 		}
 		ret.ret = bufToObj(raw.ret);
-		ret.ex = bufToEx(raw.error);
+		ret.ex = (Throwable) bufToObj(raw.error);
 		return ret;
 	}
 
@@ -49,12 +49,12 @@ final public class BinaryPacketHelper {
 		}
 	}
 
-	static private KarmaException bufToEx(ByteBuffer buf) {
-		if (buf == null) {
-			return null;
-		}
-		String ret = new String(buf.array(), buf.arrayOffset(), buf.remaining());
-		return new KarmaException(ret);
-	}
+//	static private KarmaException bufToEx(ByteBuffer buf) {
+//		if (buf == null) {
+//			return null;
+//		}
+//		String ret = new String(buf.array(), buf.arrayOffset(), buf.remaining());
+//		return new KarmaException(ret);
+//	}
 
 }

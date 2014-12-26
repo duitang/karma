@@ -1,8 +1,8 @@
 package com.duitang.service.client;
 
 import java.lang.reflect.Method;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 import net.sf.cglib.proxy.Enhancer;
@@ -16,7 +16,7 @@ public class KarmaClient<T> implements MethodInterceptor {
 
 	protected KarmaIoSession iochannel;
 	protected String domainName;
-	protected Set<String> cutoffNames;
+	protected Map<String, Boolean> cutoffNames;
 	protected AtomicLong uuid = new AtomicLong(0);
 	protected long timeout = 500;
 
@@ -36,9 +36,15 @@ public class KarmaClient<T> implements MethodInterceptor {
 	KarmaClient(Class<T> iface, KarmaIoSession io) throws KarmaException {
 		this.iochannel = io;
 		this.domainName = iface.getName();
-		this.cutoffNames = new HashSet<String>();
+		this.cutoffNames = new HashMap<String, Boolean>();
+		Boolean useEx = false;
 		for (Method m : iface.getDeclaredMethods()) {
-			cutoffNames.add(m.getName());
+			for (Class eClz : m.getExceptionTypes()) {
+				if (KarmaException.class.isAssignableFrom(eClz)) {
+					useEx = true;
+				}
+			}
+			cutoffNames.put(m.getName(), useEx);
 		}
 	}
 
@@ -53,7 +59,7 @@ public class KarmaClient<T> implements MethodInterceptor {
 	@Override
 	public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
 		String name = method.getName();
-		if (!cutoffNames.contains(name)) {
+		if (!cutoffNames.containsKey(name)) {
 			return proxy.invokeSuper(obj, args);
 		}
 		BinaryPacketData data = new BinaryPacketData();

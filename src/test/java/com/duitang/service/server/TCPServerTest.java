@@ -10,6 +10,8 @@ import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.junit.Test;
 
 import com.duitang.service.KarmaException;
+import com.duitang.service.demo.DemoJsonRPCImpl;
+import com.duitang.service.demo.DemoJsonRPCService;
 import com.duitang.service.demo.DemoService;
 import com.duitang.service.demo.MemoryCacheService;
 import com.duitang.service.handler.ReflectRPCHandler;
@@ -29,9 +31,11 @@ public class TCPServerTest {
 	public void test1() throws KarmaException, InterruptedException {
 		ServiceConfig conf = new ServiceConfig();
 		MemoryCacheService mms = new MemoryCacheService();
+		DemoJsonRPCService demoJson = new DemoJsonRPCImpl();
 		mms.memory_setString("aaaa", "bbbb", 5000);
 		System.out.println("aaaa ---> " + mms.memory_getString("aaaa"));
 
+		conf.addService(DemoJsonRPCService.class, demoJson);
 		conf.addService(DemoService.class, mms);
 
 		ReflectRPCHandler rpc = new ReflectRPCHandler();

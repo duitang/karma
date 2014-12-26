@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class HTTPServerTest {
 
-	// @Test
+	@Test
 	public void test() throws KarmaException, InterruptedException {
 		ServiceConfig conf = new ServiceConfig();
 		MemoryCacheService mms = new MemoryCacheService();
@@ -41,7 +41,7 @@ public class HTTPServerTest {
 
 		HTTPServer http = new HTTPServer();
 		http.setRouter(rt);
-		http.setPort(9999);
+		http.setPort(9998);
 		http.start();
 
 		Thread.sleep(10000000);
@@ -80,7 +80,7 @@ public class HTTPServerTest {
 		Thread.sleep(10000000);
 	}
 
-	@Test
+//	@Test
 	public void test3() throws KarmaException, InterruptedException, Exception {
 		ServiceConfig conf = new ServiceConfig();
 		DemoJsonRPCService service = new DemoJsonRPCImpl();

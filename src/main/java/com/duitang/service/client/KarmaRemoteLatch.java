@@ -3,7 +3,7 @@ package com.duitang.service.client;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import com.duitang.service.KarmaException;
+import com.duitang.service.KarmaRuntimeException;
 
 public class KarmaRemoteLatch {
 
@@ -12,14 +12,20 @@ public class KarmaRemoteLatch {
 	protected Object result;
 	protected Throwable ex;
 	protected long timeout;
+	protected boolean canThrowIt;
 
 	public KarmaRemoteLatch() {
 		this(500);
 	}
 
 	public KarmaRemoteLatch(long timeout) {
+		this(timeout, false);
+	}
+
+	public KarmaRemoteLatch(long timeout, boolean canThrowIt) {
 		this.timeout = timeout;
 		this.latch = new CountDownLatch(1);
+		this.canThrowIt = canThrowIt;
 	}
 
 	public void offerResult(Object val) {
@@ -35,15 +41,29 @@ public class KarmaRemoteLatch {
 	public Object getResult() throws Throwable {
 		try {
 			if (!latch.await(timeout, TimeUnit.MILLISECONDS) || this.ex != null) {
-				if (ex != null) {
-					throw ex;
-				}
-				throw new KarmaException("rpc call timeout = " + timeout + "ms");
+				throwIt(ex);
 			}
 		} catch (InterruptedException e) {
-			throw e;
+			throwIt(null);
 		}
 		return result;
+	}
+
+	protected void throwIt(Throwable t) throws KarmaRuntimeException {
+		// if (!canThrowIt) {
+		// return;
+		// }
+		KarmaRuntimeException ret = null;
+		if (t == null) {
+			ret = new KarmaRuntimeException("rpc call timeout = " + timeout + "ms");
+		} else {
+			if (!KarmaRuntimeException.class.isAssignableFrom(t.getClass())) {
+				ret = new KarmaRuntimeException(t);
+			} else {
+				ret = (KarmaRuntimeException) t;
+			}
+		}
+		throw ret;
 	}
 
 }

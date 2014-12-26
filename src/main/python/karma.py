@@ -50,7 +50,11 @@ class DuitangRemoteProxy:
             if not data:
                 return None
             ret = json.loads(data)
-            return ret['r']
+            if 'e' in ret:
+                raise Exception(ret['e'])
+            if 'r' in ret:
+                return ret['r']
+            return None
         else:
             raise Exception('karma invoke ERROR: url =%s \r\n parameter=%s' % (ur, query))
         
@@ -84,7 +88,7 @@ class ServiceProxy:
                 param = param
             query.append(param)
         param = json.dumps(query)
-        return json.loads(self.remoteProxy.invoke(self.serviceName, method, param))
+        return self.remoteProxy.invoke(self.serviceName, method, param)
       
 class _Method:  
     def __init__(self, invoker, method):  
@@ -101,11 +105,17 @@ def create_duitang_remote_proxy(config):
 if __name__ == "__main__":
     KARMA = {
         "demo": {
-              "locations":["localhost:9999"],
+              "locations":["localhost:9998"],
               "references":[
                 {
                     "id":"demoservice",
                     "domain":"com.duitang.service.demo.DemoJsonRPCService",
+                    "timeout": 500,
+                    "version":"1.0",
+                },
+                {
+                    "id":"cacheservice",
+                    "domain":"com.duitang.service.demo.DemoService",
                     "timeout": 500,
                     "version":"1.0",
                 }
@@ -117,20 +127,27 @@ if __name__ == "__main__":
     demo = proxy.getService('demoservice')
     param1 = {
               "a":"hello",
-              "b":[1.1,2.2],
-              "c":{"dd":3.3,"ee":4.4}
+              "b":[1.1, 2.2],
+              "c":{"dd":3.3, "ee":4.4}
               }
     param2 = [
               {"a":"hello",
-               "b":[1.1,2.2],
-               "c":{"dd":3.3,"ee":4.4}},
+               "b":[1.1, 2.2],
+               "c":{"dd":3.3, "ee":4.4}},
               {"a":"hello",
-               "b":[1.1,2.2],
-               "c":{"dd":3.3,"ee":4.4}}
+               "b":[1.1, 2.2],
+               "c":{"dd":3.3, "ee":4.4}}
               ]
     param3 = 55
     param4 = "idiot"
-    param5 = [6.6,7.7]
+    param5 = [6.6, 7.7]
     ret = demo.getObject0(param1, param2, param3, param4, param5)
+    print ret
+    print type(ret)
+
+    print "........."
+
+    demo2 = proxy.getService('cacheservice')
+    ret = demo2.getError()
     print ret
     print type(ret)

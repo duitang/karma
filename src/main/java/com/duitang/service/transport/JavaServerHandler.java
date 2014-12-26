@@ -40,7 +40,7 @@ public class JavaServerHandler extends IoHandlerAdapter {
 				data = new BinaryPacketData();
 				data.ex = e;
 			}
-			session.write(data); // immediately error
+			session.write(data.getBytes()); // immediately error
 		}
 	}
 
