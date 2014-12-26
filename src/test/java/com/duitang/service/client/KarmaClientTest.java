@@ -22,10 +22,12 @@ public class KarmaClientTest {
 		System.out.println(client.getM(new HashSet()));
 		try {
 			System.out.println(client.trace_msg("laurence", 600));
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			e.printStackTrace();
 		}
-		session.close();
+		System.out.println(client.memory_setBytes("aaa", "fuck".getBytes(), 5000));
+		System.out.println(new String(client.memory_getBytes("aaa")));
+		cli.close();
 	}
 
 }

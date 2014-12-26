@@ -1,6 +1,5 @@
 package com.duitang.service.demo;
 
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -9,7 +8,7 @@ import java.util.Set;
 public class MemoryCacheService implements DemoService {
 
 	protected Map<String, String> memory = new HashMap();
-	protected Map<String, ByteBuffer> memoryB = new HashMap();
+	protected Map<String, byte[]> memoryB = new HashMap();
 	protected Map<String, Map> mapA = new HashMap();
 
 	protected boolean verbose = false;
@@ -36,13 +35,13 @@ public class MemoryCacheService implements DemoService {
 	}
 
 	@Override
-	public ByteBuffer memory_getBytes(String key) {
+	public byte[] memory_getBytes(String key) {
 		verbose("memory_getBytes: " + key);
 		return memoryB.get(key);
 	}
 
 	@Override
-	public boolean memory_setBytes(String key, ByteBuffer value, int ttl) {
+	public boolean memory_setBytes(String key, byte[] value, int ttl) {
 		memoryB.put(key, value);
 		verbose("memory_setBytes: " + key + " --> " + value);
 		return true;

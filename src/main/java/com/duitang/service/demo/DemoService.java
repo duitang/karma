@@ -1,6 +1,5 @@
 package com.duitang.service.demo;
 
-import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.Set;
 
@@ -10,9 +9,9 @@ public interface DemoService {
 
 	boolean memory_setString(String key, String value, int ttl);
 
-	ByteBuffer memory_getBytes(String key);
+	byte[] memory_getBytes(String key);
 
-	boolean memory_setBytes(String key, ByteBuffer value, int ttl);
+	boolean memory_setBytes(String key, byte[] value, int ttl);
 
 	String trace_msg(String key, long ttl);
 
