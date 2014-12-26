@@ -96,6 +96,7 @@ public class KarmaClient<T> implements MethodInterceptor, LifeCycle, KarmaClient
 		try {
 			ret = latch.getResult();
 		} catch (Throwable e) {
+			iochannel.reportError();
 			throw new KarmaRuntimeException("call method[" + name + "] timeout / error ", e);
 		}
 		return ret;

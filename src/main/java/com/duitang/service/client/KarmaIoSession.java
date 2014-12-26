@@ -37,6 +37,8 @@ public class KarmaIoSession implements LifeCycle {
 	protected ConnectFuture connection;
 	protected IoSession session;
 
+	protected volatile int errorCount = 0;
+
 	// not thread-safe
 	protected boolean initialed = false;
 
@@ -46,6 +48,10 @@ public class KarmaIoSession implements LifeCycle {
 
 	public void setTimeout(long timeout) {
 		this.timeout = timeout;
+	}
+
+	public void reportError() {
+		this.errorCount++;
 	}
 
 	public KarmaIoSession(String hostAndPort, long timeout) {
@@ -114,7 +120,7 @@ public class KarmaIoSession implements LifeCycle {
 
 	@Override
 	public boolean isAlive() {
-		return conn.isActive() && connection.isConnected();
+		return errorCount < 5 && conn.isActive();
 	}
 
 }
