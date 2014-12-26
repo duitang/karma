@@ -50,8 +50,8 @@ public class KarmaIoSession implements LifeCycle {
 		this.timeout = timeout;
 	}
 
-	public void reportError() {
-		this.errorCount++;
+	public int reportError() {
+		return ++this.errorCount;
 	}
 
 	public KarmaIoSession(String hostAndPort, long timeout) {
