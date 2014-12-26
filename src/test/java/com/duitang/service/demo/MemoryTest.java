@@ -13,7 +13,8 @@ public class MemoryTest {
 	// @Test
 	public void test0() throws Exception {
 		KarmaIoSession session = new KarmaIoSession("localhost:9999", 500);
-		DemoService cli = KarmaClient.createKarmaClient(DemoService.class, session);
+		KarmaClient<DemoService> client = KarmaClient.createKarmaClient(DemoService.class, session);
+		DemoService cli = client.getService();
 		long ts = System.currentTimeMillis();
 		String msg = cli.trace_msg("this will timeout ", 1000);
 		ts = System.currentTimeMillis() - ts;
@@ -21,7 +22,7 @@ public class MemoryTest {
 		System.out.println("time elapsed: " + ts + " ms");
 	}
 
-//	@Test
+	// @Test
 	public void test1() {
 		DemoService cli = null;
 		ClientFactory<DemoService> fac = ClientFactory.createFactory(DemoService.class);
@@ -131,9 +132,9 @@ public class MemoryTest {
 			fac.release(cli);
 		}
 	}
-	
+
 	@Test
-	public void testSomeError(){
+	public void testSomeError() {
 		ClientFactory<DemoService> fac = ClientFactory.createFactory(DemoService.class);
 		fac.setUrl("localhost:9999");
 		fac.setTimeout(100000);

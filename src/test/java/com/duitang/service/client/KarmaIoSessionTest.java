@@ -15,14 +15,14 @@ public class KarmaIoSessionTest {
 		ret = session.isConnected();
 		System.out.println(ret);
 		Assert.assertTrue(ret);
-		ret = session.isValid();
+		ret = session.isAlive();
 		System.out.println(ret);
 		Assert.assertTrue(ret);
 		session.close();
 		ret = session.isConnected();
 		System.out.println(ret);
 		Assert.assertFalse(ret);
-		ret = session.isValid();
+		ret = session.isAlive();
 		System.out.println(ret);
 		Assert.assertFalse(ret);
 	}

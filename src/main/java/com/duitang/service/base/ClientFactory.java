@@ -1,6 +1,5 @@
 package com.duitang.service.base;
 
-import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -25,7 +24,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 	protected int sz;
 	protected int timeout = 500;
 	protected String clientid;
-	protected GenericObjectPool<T> cliPool = forceCreatePool();
+	protected GenericObjectPool<KarmaClient<T>> cliPool = forceCreatePool();
 
 	public ClientFactory() {
 		this(null);
@@ -80,7 +79,8 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 			return null;
 		}
 		try {
-			return cliPool.borrowObject(timeout);
+			KarmaClient<T> client = cliPool.borrowObject(timeout);
+			return client.getService();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -91,15 +91,17 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		if (client == null) {
 			return;
 		}
-		boolean v = true;
-		if (client instanceof Validation) {
-			v = ((Validation) client).isValid();
+		if (!(client instanceof LifeCycle) && !(client instanceof KarmaClientInfo)) {
+			return;
 		}
+		boolean v = true;
+		v = ((LifeCycle) client).isAlive();
+
 		if (v) {
-			cliPool.returnObject(client);
+			cliPool.returnObject(((KarmaClientInfo) client).getProxy());
 		} else {
 			try {
-				cliPool.invalidateObject(client);
+				cliPool.invalidateObject(((KarmaClientInfo) client).getProxy());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -124,7 +126,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		return ret;
 	}
 
-	protected GenericObjectPool<T> forceCreatePool() {
+	protected GenericObjectPool<KarmaClient<T>> forceCreatePool() {
 		GenericObjectPoolConfig cfg = new GenericObjectPoolConfig();
 		cfg.setMaxIdle(60);
 		cfg.setMinIdle(5);
@@ -133,20 +135,20 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		cfg.setBlockWhenExhausted(true);
 		cfg.setMaxWaitMillis(timeout);
 		// cfg.setTestOnReturn(true); // may release it if error
-		return new GenericObjectPool<T>(new ReflectServiceFactory<T>(), cfg);
+		return new GenericObjectPool(new ReflectServiceFactory(), cfg);
 	}
 
-	class ReflectServiceFactory<T1> implements PooledObjectFactory<T> {
+	class ReflectServiceFactory implements PooledObjectFactory<KarmaClient<T>> {
 
 		@Override
-		public PooledObject<T> makeObject() throws Exception {
+		public PooledObject<KarmaClient<T>> makeObject() throws Exception {
 			try {
 				Integer iid = Math.abs(hashid.incrementAndGet()) % sz;
 				String u = serviceURL.get(iid);
 				KarmaIoSession session = new KarmaIoSession(u, timeout);
-				T ret = (T) KarmaClient.createKarmaClient(getServiceType(), session);
-				session.init();
-				return new DefaultPooledObject<T>(ret);
+				KarmaClient<T> ret = KarmaClient.createKarmaClient(getServiceType(), session);
+				ret.init();
+				return new DefaultPooledObject<KarmaClient<T>>(ret);
 			} catch (Exception e) {
 				err.error("create for service: " + url, e);
 				throw e;
@@ -154,33 +156,28 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		}
 
 		@Override
-		public void destroyObject(PooledObject<T> p) throws Exception {
-			T obj = p.getObject();
+		public void destroyObject(PooledObject<KarmaClient<T>> p) throws Exception {
+			KarmaClient<T> obj = p.getObject();
 			// System.out.println("destroy ..... " + obj);
-			if (obj instanceof Closeable) {
-				((Closeable) obj).close();
-			}
+			obj.close();
 		}
 
 		@Override
-		public boolean validateObject(PooledObject<T> p) {
-			T obj = p.getObject();
+		public boolean validateObject(PooledObject<KarmaClient<T>> p) {
+			KarmaClient<T> obj = p.getObject();
 			// System.out.println("checking ..... " + ((Validation)
 			// obj).isValid() + " ---> " + obj);
-			if (obj instanceof Validation) {
-				return ((Validation) obj).isValid();
-			}
-			return true;
+			return obj.isAlive();
 		}
 
 		@Override
-		public void activateObject(PooledObject<T> p) throws Exception {
-			// ignore, no active or check
+		public void activateObject(PooledObject<KarmaClient<T>> p) throws Exception {
+			// ignore
 		}
 
 		@Override
-		public void passivateObject(PooledObject<T> p) throws Exception {
-			// ignore, no active or check
+		public void passivateObject(PooledObject<KarmaClient<T>> p) throws Exception {
+			// ignore
 		}
 
 	}

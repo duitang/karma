@@ -14,7 +14,8 @@ public class KarmaClientTest {
 	public void test() throws KarmaException, IOException {
 		KarmaIoSession session = new KarmaIoSession("localhost:9999", 500);
 		session.init();
-		DemoService client = KarmaClient.createKarmaClient(DemoService.class, session);
+		KarmaClient<DemoService> cli = KarmaClient.createKarmaClient(DemoService.class, session);
+		DemoService client = cli.getService();
 		System.out.println(client.memory_getString("aaaa"));
 		System.out.println(client.trace_msg("laurence", 200));
 		System.out.println(client.noparam());

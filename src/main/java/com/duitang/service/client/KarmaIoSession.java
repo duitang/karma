@@ -1,6 +1,5 @@
 package com.duitang.service.client;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executor;
@@ -13,7 +12,7 @@ import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.socket.nio.NioProcessor;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
 
-import com.duitang.service.base.Validation;
+import com.duitang.service.base.LifeCycle;
 import com.duitang.service.meta.BinaryPacketData;
 import com.duitang.service.transport.JavaClientHandler;
 import com.duitang.service.transport.KarmaBinaryCodecFactory;
@@ -24,7 +23,7 @@ import com.duitang.service.transport.KarmaBinaryCodecFactory;
  * @author laurence
  * 
  */
-public class KarmaIoSession implements Closeable, Validation {
+public class KarmaIoSession implements LifeCycle {
 
 	static final protected long default_timeout = 500; // 0.5s
 
@@ -88,7 +87,7 @@ public class KarmaIoSession implements Closeable, Validation {
 	}
 
 	public void write(BinaryPacketData data) {
-		this.session.write(data);
+		this.session.write(data.getBytes());
 	}
 
 	public void setAttribute(KarmaRemoteLatch latch) {
@@ -114,8 +113,8 @@ public class KarmaIoSession implements Closeable, Validation {
 	}
 
 	@Override
-	public boolean isValid() {
-		return connection.isConnected();
+	public boolean isAlive() {
+		return conn.isActive() && connection.isConnected();
 	}
 
 }
