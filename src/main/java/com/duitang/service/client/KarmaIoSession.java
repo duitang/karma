@@ -26,6 +26,7 @@ import com.duitang.service.transport.KarmaBinaryCodecFactory;
 public class KarmaIoSession implements LifeCycle {
 
 	static final protected long default_timeout = 500; // 0.5s
+	static final protected int ERROR_WATER_MARK = 2;
 
 	static final protected Executor pool = Executors.newFixedThreadPool(100);
 	static final protected SimpleIoProcessorPool proc = new SimpleIoProcessorPool(NioProcessor.class, pool);
@@ -120,7 +121,7 @@ public class KarmaIoSession implements LifeCycle {
 
 	@Override
 	public boolean isAlive() {
-		return errorCount < 5 && conn.isActive();
+		return errorCount < ERROR_WATER_MARK && conn.isActive();
 	}
 
 }
