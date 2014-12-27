@@ -128,14 +128,15 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 
 	protected GenericObjectPool<KarmaClient<T>> forceCreatePool() {
 		GenericObjectPoolConfig cfg = new GenericObjectPoolConfig();
-		cfg.setMaxIdle(60);
+		cfg.setMaxIdle(30);
 		cfg.setMinIdle(5);
-		cfg.setMaxTotal(200);
+		cfg.setMaxTotal(150);
 		cfg.setTestWhileIdle(false);
-		cfg.setBlockWhenExhausted(true);
+		cfg.setBlockWhenExhausted(false);
 		cfg.setMaxWaitMillis(timeout);
-//		cfg.setTestOnReturn(true); // may release it if idle
-//		cfg.setTestOnBorrow(true); // may release it if idle
+		cfg.setMinEvictableIdleTimeMillis(120000);
+		// cfg.setTestOnReturn(true); // may release it if idle
+		cfg.setTestOnBorrow(true); // may release it if idle
 		return new GenericObjectPool(new ReflectServiceFactory(), cfg);
 	}
 
@@ -148,7 +149,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 				String u = serviceURL.get(iid);
 				KarmaIoSession session = new KarmaIoSession(u, timeout);
 				KarmaClient<T> ret = KarmaClient.createKarmaClient(getServiceType(), session);
-				ret.init();
+				// ret.init();
 				return new DefaultPooledObject<KarmaClient<T>>(ret);
 			} catch (Exception e) {
 				err.error("create for service: " + url, e);
@@ -174,6 +175,8 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		@Override
 		public void activateObject(PooledObject<KarmaClient<T>> p) throws Exception {
 			// ignore
+			KarmaClient<T> obj = p.getObject();
+			obj.init();
 		}
 
 		@Override

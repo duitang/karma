@@ -2,10 +2,7 @@ package com.duitang.service.server;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.concurrent.Executor;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executors;
 
 import org.apache.mina.core.service.SimpleIoProcessorPool;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
@@ -20,14 +17,8 @@ import com.duitang.service.transport.KarmaBinaryCodecFactory;
 public class TCPServer implements RPCService {
 
 	final static int DEFAULT_TCP_PORT = 7778;
-	// protected Executor pool1 = new ThreadPoolExecutor(2, 16, 60,
-	// TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
-	protected Executor pool = new ThreadPoolExecutor(5, 200, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
-	protected Executor pool2 = new ThreadPoolExecutor(2, 6, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
-	// protected Executor pool3 = new ThreadPoolExecutor(10, 150, 60,
-	// TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
-	protected SimpleIoProcessorPool proc = new SimpleIoProcessorPool(NioProcessor.class, pool2);
-	protected NioSocketAcceptor acceptor = new NioSocketAcceptor(pool, proc);
+	protected SimpleIoProcessorPool proc = new SimpleIoProcessorPool(NioProcessor.class, Executors.newCachedThreadPool());
+	protected NioSocketAcceptor acceptor = new NioSocketAcceptor(Executors.newCachedThreadPool(), proc);
 	protected Router router;
 
 	protected int port = DEFAULT_TCP_PORT;
@@ -47,6 +38,7 @@ public class TCPServer implements RPCService {
 		// acceptor.getSessionConfig().setKeepAlive(true);
 		acceptor.getFilterChain().addLast("codec", new ProtocolCodecFilter(new KarmaBinaryCodecFactory()));
 		JavaServerHandler handler = new JavaServerHandler();
+		handler.setProc(proc);
 		handler.setRouter(router);
 		acceptor.setHandler(handler);
 		try {

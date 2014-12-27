@@ -1,7 +1,9 @@
 package com.duitang.service.router;
 
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import com.duitang.service.KarmaException;
 import com.duitang.service.handler.RPCContext;
@@ -13,7 +15,7 @@ import com.duitang.service.meta.BinaryPacketRaw;
 public class JavaRouter implements Router<BinaryPacketRaw> {
 
 	protected RPCHandler handler;
-	protected ExecutorService execPool = Executors.newCachedThreadPool();
+	protected ExecutorService execPool = new ThreadPoolExecutor(5, 100, 300L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(10000));
 
 	@Override
 	public void setHandler(RPCHandler handler) {

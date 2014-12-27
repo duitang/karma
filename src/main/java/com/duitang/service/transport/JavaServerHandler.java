@@ -3,6 +3,7 @@ package com.duitang.service.transport;
 import java.nio.ByteBuffer;
 
 import org.apache.mina.core.service.IoHandlerAdapter;
+import org.apache.mina.core.service.IoProcessor;
 import org.apache.mina.core.session.IoSession;
 
 import com.duitang.service.KarmaException;
@@ -15,14 +16,21 @@ import com.duitang.service.router.Router;
 public class JavaServerHandler extends IoHandlerAdapter {
 
 	protected Router<BinaryPacketRaw> router;
+	protected IoProcessor proc;
 
 	public void setRouter(Router<BinaryPacketRaw> router) {
 		this.router = router;
 	}
 
+	public void setProc(IoProcessor proc) {
+		this.proc = proc;
+	}
+
 	@Override
 	public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
 		// FIXME
+		proc.remove(session);
+		super.exceptionCaught(session, cause);
 	}
 
 	@Override
@@ -47,6 +55,12 @@ public class JavaServerHandler extends IoHandlerAdapter {
 	@Override
 	public void messageSent(IoSession session, Object message) throws Exception {
 		// FIXME
+	}
+
+	@Override
+	public void sessionClosed(IoSession session) throws Exception {
+		proc.remove(session);
+		super.sessionClosed(session);
 	}
 
 }

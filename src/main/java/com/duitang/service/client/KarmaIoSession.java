@@ -2,7 +2,6 @@ package com.duitang.service.client;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import org.apache.mina.core.future.ConnectFuture;
@@ -28,10 +27,7 @@ public class KarmaIoSession implements LifeCycle {
 	static final protected long default_timeout = 500; // 0.5s
 	static final protected int ERROR_WATER_MARK = 2;
 
-	// static final protected Executor pool = new ThreadPoolExecutor(2, 8, 60,
-	// TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
-	static final protected Executor pool = Executors.newCachedThreadPool();
-	static final protected SimpleIoProcessorPool proc = new SimpleIoProcessorPool(NioProcessor.class, pool);
+	static final protected SimpleIoProcessorPool proc = new SimpleIoProcessorPool(NioProcessor.class, Executors.newCachedThreadPool());
 
 	protected String url;
 	protected long timeout = default_timeout;
@@ -60,11 +56,11 @@ public class KarmaIoSession implements LifeCycle {
 	public KarmaIoSession(String hostAndPort, long timeout) {
 		this.url = hostAndPort;
 		this.timeout = timeout;
-		conn = new NioSocketConnector(pool, proc);
+		conn = new NioSocketConnector(Executors.newCachedThreadPool(), proc);
 		conn.getSessionConfig().setTcpNoDelay(true);
 		// conn.getSessionConfig().setKeepAlive(true);
 		conn.getFilterChain().addLast("codec", new ProtocolCodecFilter(new KarmaBinaryCodecFactory()));
-		conn.setHandler(new JavaClientHandler());
+		conn.setHandler(new JavaClientHandler(proc));
 		String[] uu = url.split(":");
 		String host = uu[0];
 		int port = Integer.valueOf(uu[1]).intValue();
@@ -78,7 +74,7 @@ public class KarmaIoSession implements LifeCycle {
 		try {
 			// ensure connect stable, should > 1s
 			// so connect is very heavy action
-			long t = timeout >= 1000 ? timeout : 1000;
+			long t = timeout >= 2000 ? timeout : 2000;
 			this.connection.await(t);
 		} catch (InterruptedException e) {
 		}

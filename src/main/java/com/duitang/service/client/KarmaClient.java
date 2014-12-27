@@ -18,6 +18,7 @@ import com.duitang.service.meta.BinaryPacketData;
 
 public class KarmaClient<T> implements MethodInterceptor, LifeCycle, KarmaClientInfo {
 
+	final static public String CLINET_ATTR_NAME = "_KARMACLIENT_";
 	final static protected Map<String, Method> mgrCallbacks;
 
 	protected KarmaIoSession iochannel;
@@ -109,6 +110,7 @@ public class KarmaClient<T> implements MethodInterceptor, LifeCycle, KarmaClient
 	@Override
 	public void init() throws Exception {
 		iochannel.init();
+		iochannel.session.setAttributeIfAbsent(CLINET_ATTR_NAME, this);
 	}
 
 	@Override
