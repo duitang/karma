@@ -24,12 +24,22 @@ public class MemoryCacheService implements DemoService {
 	@Override
 	public String memory_getString(String key) {
 		verbose("memory_getString: " + key);
+		try {
+	        Thread.sleep(20);
+        } catch (InterruptedException e) {
+	        e.printStackTrace();
+        }
 		return memory.get(key);
 	}
 
 	@Override
 	public boolean memory_setString(String key, String value, int ttl) {
 		memory.put(key, value); // mock, so ignore ttl
+		try {
+	        Thread.sleep(20);
+        } catch (InterruptedException e) {
+	        e.printStackTrace();
+        }
 		verbose("memory_setString: " + key + " --> " + value);
 		return true;
 	}

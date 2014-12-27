@@ -28,7 +28,9 @@ public class KarmaIoSession implements LifeCycle {
 	static final protected long default_timeout = 500; // 0.5s
 	static final protected int ERROR_WATER_MARK = 2;
 
-	static final protected Executor pool = Executors.newFixedThreadPool(100);
+	// static final protected Executor pool = new ThreadPoolExecutor(2, 8, 60,
+	// TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+	static final protected Executor pool = Executors.newCachedThreadPool();
 	static final protected SimpleIoProcessorPool proc = new SimpleIoProcessorPool(NioProcessor.class, pool);
 
 	protected String url;
@@ -60,7 +62,7 @@ public class KarmaIoSession implements LifeCycle {
 		this.timeout = timeout;
 		conn = new NioSocketConnector(pool, proc);
 		conn.getSessionConfig().setTcpNoDelay(true);
-		conn.getSessionConfig().setKeepAlive(true);
+		// conn.getSessionConfig().setKeepAlive(true);
 		conn.getFilterChain().addLast("codec", new ProtocolCodecFilter(new KarmaBinaryCodecFactory()));
 		conn.setHandler(new JavaClientHandler());
 		String[] uu = url.split(":");
@@ -90,7 +92,7 @@ public class KarmaIoSession implements LifeCycle {
 	}
 
 	public boolean isConnected() {
-		return this.session.isConnected();
+		return this.conn.isActive();
 	}
 
 	public void write(BinaryPacketData data) {
@@ -121,7 +123,7 @@ public class KarmaIoSession implements LifeCycle {
 
 	@Override
 	public boolean isAlive() {
-		return errorCount < ERROR_WATER_MARK && conn.isActive();
+		return errorCount < ERROR_WATER_MARK && conn.isActive() && !conn.isDisposed() && !conn.isDisposing() && !connection.isCanceled() && !session.isClosing() && session.isConnected();
 	}
 
 }

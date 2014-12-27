@@ -7,7 +7,6 @@ import java.util.concurrent.Executors;
 
 import org.apache.mina.core.service.SimpleIoProcessorPool;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
-import org.apache.mina.transport.socket.SocketAcceptor;
 import org.apache.mina.transport.socket.nio.NioProcessor;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 
@@ -19,9 +18,15 @@ import com.duitang.service.transport.KarmaBinaryCodecFactory;
 public class TCPServer implements RPCService {
 
 	final static int DEFAULT_TCP_PORT = 7778;
-	protected Executor pool1 = Executors.newFixedThreadPool(100);
-	protected SimpleIoProcessorPool proc = new SimpleIoProcessorPool(NioProcessor.class, pool1);
-	protected SocketAcceptor acceptor = new NioSocketAcceptor(pool1, proc);
+	// protected Executor pool1 = new ThreadPoolExecutor(2, 16, 60,
+	// TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+	protected Executor pool = Executors.newCachedThreadPool();
+	// protected Executor pool2 = new ThreadPoolExecutor(2, 8, 300,
+	// TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+	// protected Executor pool3 = new ThreadPoolExecutor(10, 150, 60,
+	// TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+	protected SimpleIoProcessorPool proc = new SimpleIoProcessorPool(NioProcessor.class, pool);
+	protected NioSocketAcceptor acceptor = new NioSocketAcceptor(proc);
 	protected Router router;
 
 	protected int port = DEFAULT_TCP_PORT;
@@ -38,7 +43,9 @@ public class TCPServer implements RPCService {
 	public void start() throws KarmaException {
 		acceptor.setReuseAddress(true);
 		acceptor.getSessionConfig().setTcpNoDelay(true);
-		acceptor.getSessionConfig().setKeepAlive(true);
+		// acceptor.getSessionConfig().setKeepAlive(true);
+		// acceptor.getFilterChain().addLast("threadPool", new
+		// ExecutorFilter(pool));
 		acceptor.getFilterChain().addLast("codec", new ProtocolCodecFilter(new KarmaBinaryCodecFactory()));
 		JavaServerHandler handler = new JavaServerHandler();
 		handler.setRouter(router);

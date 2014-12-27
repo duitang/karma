@@ -13,6 +13,7 @@ public class JavaClientHandler extends IoHandlerAdapter {
 	@Override
 	public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
 		// FIXME
+		session.close(true);
 	}
 
 	@Override
