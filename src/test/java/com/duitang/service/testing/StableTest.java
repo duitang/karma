@@ -1,5 +1,7 @@
 package com.duitang.service.testing;
 
+import junit.framework.Assert;
+
 import org.junit.Test;
 
 import com.duitang.service.KarmaRuntimeException;
@@ -14,7 +16,7 @@ public class StableTest {
 	/**
 	 * remote exception behavier
 	 */
-	// @Test
+	@Test
 	public void test1() {
 		ClientFactory<DemoService> fac = ClientFactory.createFactory(DemoService.class);
 		fac.setUrl("localhost:9999");
@@ -22,12 +24,20 @@ public class StableTest {
 		long ts = System.currentTimeMillis();
 		try {
 			ts = System.currentTimeMillis();
-			cli.getError();
+			System.out.println(cli.memory_getString("aaaa"));
+			System.out.println(cli.memory_getString("aaaa"));
+			System.out.println(cli.memory_getString("aaaa"));
+			// cli.getError();
 		} catch (Exception e) {
 			System.out.println(e.getClass().getName());
 			e.printStackTrace();
 		} finally {
 			ts = System.currentTimeMillis() - ts;
+//			try {
+//				Thread.sleep(1000);
+//			} catch (InterruptedException e) {
+//			}
+//			Assert.fail("fuck");
 		}
 		System.out.println("time elapsed: " + ts + "ms");
 		ts = System.currentTimeMillis();
@@ -42,7 +52,7 @@ public class StableTest {
 	 * @throws Exception
 	 * 
 	 */
-	@Test
+	// @Test
 	public void test2() throws Exception {
 		ServerBootstrap server = new ServerBootstrap();
 		server.addService(DemoService.class, new MemoryCacheService());

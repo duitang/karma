@@ -1,12 +1,7 @@
 package com.duitang.service.server;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.Date;
 
-import org.apache.mina.core.service.IoHandlerAdapter;
-import org.apache.mina.core.session.IoSession;
-import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.junit.Test;
 
 import com.duitang.service.KarmaException;
@@ -21,10 +16,10 @@ public class TCPServerTest {
 
 	// @Test
 	public void test0() throws IOException, InterruptedException {
-		NioSocketAcceptor acceptor = new NioSocketAcceptor();
-		acceptor.setHandler(new LogOnly());
-		acceptor.bind(new InetSocketAddress(9999));
-		Thread.sleep(10000000);
+		// NioSocketAcceptor acceptor = new NioSocketAcceptor();
+		// acceptor.setHandler(new LogOnly());
+		// acceptor.bind(new InetSocketAddress(9999));
+		// Thread.sleep(10000000);
 	}
 
 	@Test
@@ -55,20 +50,20 @@ public class TCPServerTest {
 
 }
 
-class LogOnly extends IoHandlerAdapter {
-
-	@Override
-	public void messageReceived(IoSession session, Object message) throws Exception {
-		System.out.println("rec1: " + new Date());
-		Thread.sleep(5000);
-		System.out.println("rec2: " + new Date());
-		super.messageReceived(session, message);
-	}
-
-	@Override
-	public void messageSent(IoSession session, Object message) throws Exception {
-		// TODO Auto-generated method stub
-		super.messageSent(session, message);
-	}
-
-}
+//class LogOnly extends IoHandlerAdapter {
+//
+//	@Override
+//	public void messageReceived(IoSession session, Object message) throws Exception {
+//		System.out.println("rec1: " + new Date());
+//		Thread.sleep(5000);
+//		System.out.println("rec2: " + new Date());
+//		super.messageReceived(session, message);
+//	}
+//
+//	@Override
+//	public void messageSent(IoSession session, Object message) throws Exception {
+//		// TODO Auto-generated method stub
+//		super.messageSent(session, message);
+//	}
+//
+//}

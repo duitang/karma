@@ -1,5 +1,7 @@
 package com.duitang.service.client;
 
+import io.netty.util.AttributeKey;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -8,6 +10,7 @@ import com.duitang.service.KarmaRuntimeException;
 public class KarmaRemoteLatch {
 
 	final static public String LATCH_NAME = "KarmaRemoteLatch";
+	final static public AttributeKey<KarmaRemoteLatch> LATCH_KEY = AttributeKey.valueOf(LATCH_NAME);
 	protected CountDownLatch latch;
 	protected Object result;
 	protected Throwable ex;

@@ -1,8 +1,8 @@
 package com.duitang.service.meta;
 
-import java.nio.ByteBuffer;
+import io.netty.channel.ChannelHandlerContext;
 
-import org.apache.mina.core.session.IoSession;
+import java.nio.ByteBuffer;
 
 /***
  * Binary Packet Format:
@@ -74,7 +74,7 @@ public class BinaryPacketRaw implements Packet {
 	protected int szError = -1;
 	protected ByteBuffer error;
 
-	public IoSession iochannel;
+	public ChannelHandlerContext ctx;
 
 	public int getTotal() {
 		return total;

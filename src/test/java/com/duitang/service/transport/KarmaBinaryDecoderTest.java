@@ -2,7 +2,6 @@ package com.duitang.service.transport;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -41,7 +40,7 @@ public class KarmaBinaryDecoderTest {
 		ddd.method = "memory_getString";
 		ddd.flag = 1;
 		ddd.param = new Object[] { "aaa" };
-		IoBuffer buf = ddd.getBytes();
+		IoBuffer buf = IoBuffer.wrap(ddd.getBytes().nioBuffer());
 		FileOutputStream fos = new FileOutputStream(outfilename);
 		fos.write(buf.array(), buf.arrayOffset(), buf.limit());
 		fos.close();
@@ -113,7 +112,7 @@ public class KarmaBinaryDecoderTest {
 	}
 
 	public void testNTcpPacket(BinaryPacketData demodata, int loop) throws Exception {
-		IoBuffer bbbb = demodata.getBytes();
+		IoBuffer bbbb = IoBuffer.wrap(demodata.getBytes().nioBuffer());
 		byte[] dbuf = new byte[bbbb.remaining()];
 		bbbb.get(dbuf);
 
@@ -181,7 +180,7 @@ public class KarmaBinaryDecoderTest {
 		data.method = "showMemberBoard";
 		data.param = new Object[] { names, id };
 		IoBuffer buffer;
-		buffer = data.getBytes();
+		buffer = IoBuffer.wrap(data.getBytes().nioBuffer());
 
 		KarmaBinaryDecoder dec = new KarmaBinaryDecoder();
 		dec.decode(null, buffer, new OnlyLog());

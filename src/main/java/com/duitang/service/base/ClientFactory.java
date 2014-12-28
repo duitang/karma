@@ -132,10 +132,10 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		cfg.setMinIdle(5);
 		cfg.setMaxTotal(150);
 		cfg.setTestWhileIdle(false);
-		cfg.setBlockWhenExhausted(false);
+		cfg.setBlockWhenExhausted(true);
 		cfg.setMaxWaitMillis(timeout);
 		cfg.setMinEvictableIdleTimeMillis(120000);
-		// cfg.setTestOnReturn(true); // may release it if idle
+//		cfg.setTestOnReturn(true); // may release it if idle
 		cfg.setTestOnBorrow(true); // may release it if idle
 		return new GenericObjectPool(new ReflectServiceFactory(), cfg);
 	}
@@ -175,6 +175,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		@Override
 		public void activateObject(PooledObject<KarmaClient<T>> p) throws Exception {
 			// ignore
+			// System.out.println("...............active " + p.getObject());
 			KarmaClient<T> obj = p.getObject();
 			obj.init();
 		}

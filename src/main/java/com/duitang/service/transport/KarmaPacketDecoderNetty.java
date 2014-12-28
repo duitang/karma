@@ -140,8 +140,13 @@ public class KarmaPacketDecoderNetty {
 			float version = in.readFloat();
 			int flag = in.readInt();
 			long uuid = in.readLong();
+			int pos2 = in.readerIndex();
 			Checksum ck = new Adler32();
-			ck.update(in.array(), pos, 6);
+			byte[] ttt = new byte[6];
+			in.readerIndex(pos);
+			in.readBytes(ttt);
+			in.readerIndex(pos2);
+			ck.update(ttt, 0, 6);
 			if (cksum == ck.getValue()) {
 				// bingo
 				BinaryPacketRaw ret = new BinaryPacketRaw();
@@ -183,8 +188,10 @@ public class KarmaPacketDecoderNetty {
 		}
 		int readit = left <= in.readableBytes() ? left : in.readableBytes();
 		boolean ret = left <= in.readableBytes();
-		buf.put(in.array(), in.readerIndex(), readit);
-		in.readerIndex(in.readerIndex() + readit);
+		in.readBytes(buf.array(), buf.position(), readit);
+		// buf.put(in.array(), in.readerIndex(), readit);
+		// in.readerIndex(in.readerIndex() + readit);
+		buf.position(buf.position() + readit);
 		if (ret) {
 			buf.flip();
 			state++;

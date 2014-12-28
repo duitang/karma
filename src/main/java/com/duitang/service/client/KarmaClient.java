@@ -110,7 +110,7 @@ public class KarmaClient<T> implements MethodInterceptor, LifeCycle, KarmaClient
 	@Override
 	public void init() throws Exception {
 		iochannel.init();
-		iochannel.session.setAttributeIfAbsent(CLINET_ATTR_NAME, this);
+//		iochannel.session.setAttributeIfAbsent(CLINET_ATTR_NAME, this);
 	}
 
 	@Override
