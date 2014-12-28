@@ -15,8 +15,9 @@ final public class BinaryPacketHelper {
 		BinaryPacketData ret = new BinaryPacketData();
 		ret.flag = raw.flag;
 		ret.version = raw.version;
-		ret.conf = (RPCConfig) bufToObj(raw.conf); // current version 1 using
-		                                           // java default
+		// current version 1 using java default
+		ret.conf = (RPCConfig) bufToObj(raw.conf);
+		ret.uuid = raw.uuid;
 		ret.domain = bufToStr(raw.domainName);
 		ret.method = bufToStr(raw.methodName);
 		ret.param = (Object[]) bufToObj(raw.parameter);

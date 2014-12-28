@@ -1,5 +1,8 @@
 package com.duitang.service.meta;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -7,7 +10,6 @@ import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.mina.core.buffer.IoBuffer;
 
 import com.duitang.service.KarmaException;
 
@@ -26,26 +28,25 @@ public class BinaryPacketData {
 	public Object ret;
 	public Throwable ex;
 
-	public IoBuffer getBytes() {
-		IoBuffer buffer = IoBuffer.allocate(1024);
-		buffer.setAutoExpand(true);
+	public ByteBuf getBytes() {
+		ByteBuf buffer = Unpooled.buffer();
 		byte[] w_bytes;
 		int total = 0;
-		buffer.put(MAGIC_CODE[0]);
-		buffer.put(MAGIC_CODE[1]);
-		int total_pos = buffer.position();
+		buffer.writeByte(MAGIC_CODE[0]);
+		buffer.writeByte(MAGIC_CODE[1]);
+		int total_pos = buffer.writerIndex();
 
-		buffer.putInt(0); // for total, take a seat
-		buffer.putLong(0); // for checksum, take a seat
+		buffer.writeInt(0); // for total, take a seat
+		buffer.writeLong(0); // for checksum, take a seat
 
 		// version
-		buffer.putFloat(version);
+		buffer.writeFloat(version);
 
 		// flag
-		buffer.putInt(flag);
+		buffer.writeInt(flag);
 
 		// uuid
-		buffer.putLong(uuid);
+		buffer.writeLong(uuid);
 
 		// config
 		try {
@@ -57,18 +58,18 @@ public class BinaryPacketData {
 				ex = t;
 			}
 		}
-		buffer.putInt(w_bytes.length);
-		buffer.put(w_bytes);
+		buffer.writeInt(w_bytes.length);
+		buffer.writeBytes(w_bytes);
 
 		// domain
 		w_bytes = domain.getBytes();
-		buffer.putInt(w_bytes.length);
-		buffer.put(w_bytes);
+		buffer.writeInt(w_bytes.length);
+		buffer.writeBytes(w_bytes);
 
 		// method
 		w_bytes = method.getBytes();
-		buffer.putInt(w_bytes.length);
-		buffer.put(w_bytes);
+		buffer.writeInt(w_bytes.length);
+		buffer.writeBytes(w_bytes);
 
 		// parameter
 		try {
@@ -79,8 +80,8 @@ public class BinaryPacketData {
 				ex = t;
 			}
 		}
-		buffer.putInt(w_bytes.length);
-		buffer.put(w_bytes);
+		buffer.writeInt(w_bytes.length);
+		buffer.writeBytes(w_bytes);
 
 		// return
 		try {
@@ -91,8 +92,8 @@ public class BinaryPacketData {
 				ex = e;
 			}
 		}
-		buffer.putInt(w_bytes.length);
-		buffer.put(w_bytes);
+		buffer.writeInt(w_bytes.length);
+		buffer.writeBytes(w_bytes);
 
 		// throwable
 		try {
@@ -100,18 +101,20 @@ public class BinaryPacketData {
 		} catch (Throwable e) {
 			w_bytes = EMPTY;
 		}
-		buffer.putInt(w_bytes.length);
-		buffer.put(w_bytes);
+		buffer.writeInt(w_bytes.length);
+		buffer.writeBytes(w_bytes);
 
 		// last we fill total and checksum
-		total = buffer.position();
-		buffer.putInt(total_pos, total);
+		total = buffer.writerIndex();
+		buffer.writerIndex(total_pos);
+		buffer.writeInt(total);
 		Checksum ck = new Adler32();
-		// magic_code + long
+		// magic_code + int
 		ck.update(buffer.array(), total_pos - 2, 6);
-		buffer.putLong(total_pos + 4, ck.getValue());
+		// buffer.writerIndex(total_pos + 4);
+		buffer.writeLong(ck.getValue());
 
-		return buffer.flip();
+		return buffer.writerIndex(total);
 	}
 
 	protected byte[] objToBytes(Object src) throws KarmaException {

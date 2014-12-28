@@ -57,10 +57,4 @@ public class JavaServerHandler extends IoHandlerAdapter {
 		// FIXME
 	}
 
-	@Override
-	public void sessionClosed(IoSession session) throws Exception {
-		proc.remove(session);
-		super.sessionClosed(session);
-	}
-
 }

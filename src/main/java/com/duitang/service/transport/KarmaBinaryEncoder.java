@@ -12,8 +12,8 @@ public class KarmaBinaryEncoder extends ProtocolEncoderAdapter {
 	@Override
 	public void encode(IoSession session, Object message, ProtocolEncoderOutput out) throws Exception {
 		BinaryPacketData packet = (BinaryPacketData) message;
-		IoBuffer buf = packet.getBytes();
-		out.write(buf);
+//		IoBuffer buf = packet.getBytes();
+//		out.write(buf);
 	}
 
 }
