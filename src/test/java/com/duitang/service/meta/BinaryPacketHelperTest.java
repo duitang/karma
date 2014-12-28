@@ -69,14 +69,14 @@ public class BinaryPacketHelperTest {
 
 	}
 
-	 @Test
+	@Test
 	public void test1() throws KarmaException, IOException {
 		BinaryPacketData d = new BinaryPacketData();
 		d.domain = DemoService.class.getName();
 		d.method = "memory_getString";
 		d.flag = 0;
 		d.param = new Object[] { "aaa" };
-		IoBuffer buf = d.getBytes();
+		IoBuffer buf = IoBuffer.wrap(d.getBytes().nioBuffer());
 		FileOutputStream fos = new FileOutputStream("/tmp/a.dat");
 		fos.write(buf.array(), buf.arrayOffset(), buf.limit());
 		fos.close();
