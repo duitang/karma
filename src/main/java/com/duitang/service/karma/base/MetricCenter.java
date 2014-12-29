@@ -16,6 +16,8 @@ public class MetricCenter {
 
 	final public static boolean debug = false;
 
+	final static String[] NOT_IN_PACKAGE_NAME = { "com.duitang.webx", "com.duitang.service.karma" };
+
 	static MetricReportDaemon daemon = null;
 	static protected String hostname = null;
 	public static Map<String, MetricUnit> method_dur = new HashMap<String, MetricUnit>();
@@ -64,11 +66,15 @@ public class MetricCenter {
 	public static String genClientIdFromCode() {
 		StackTraceElement[] trac = Thread.currentThread().getStackTrace();
 		String ret = "";
+		String ss;
 		for (int i = 3; i < trac.length; i++) {
 			ret = trac[i].getClassName();
-			if (!ret.startsWith("com.duitang.service.karma") && ret.startsWith("com.duitang")) {
-				ret = trac[i].toString();
-				break;
+			ss = ret.toLowerCase();
+			for (String sss : NOT_IN_PACKAGE_NAME) {
+				if (!ret.startsWith(sss) && ss.contains("duitang")) {
+					ret = trac[i].toString();
+					return ret + "@" + getHostname();
+				}
 			}
 		}
 		return ret + "@" + getHostname();
