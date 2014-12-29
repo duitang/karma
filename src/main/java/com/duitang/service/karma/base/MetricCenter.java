@@ -10,13 +10,14 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 public class MetricCenter {
 
 	final public static boolean debug = false;
 
-	final static String[] NOT_IN_PACKAGE_NAME = { "com.duitang.webx", "com.duitang.service.karma" };
+	final static String[] NOT_IN_PACKAGE_NAME = { "com.duitang.service.karma" };// "com.duitang.webx",
 
 	static MetricReportDaemon daemon = null;
 	static protected String hostname = null;
@@ -67,14 +68,20 @@ public class MetricCenter {
 		StackTraceElement[] trac = Thread.currentThread().getStackTrace();
 		String ret = "";
 		String ss;
+		boolean flag = false;
 		for (int i = 3; i < trac.length; i++) {
 			ret = trac[i].getClassName();
 			ss = ret.toLowerCase();
+			flag = false;
 			for (String sss : NOT_IN_PACKAGE_NAME) {
-				if (!ret.startsWith(sss) && ss.contains("duitang")) {
-					ret = trac[i].toString();
-					return ret + "@" + getHostname();
+				if (ret.startsWith(sss)) {
+					flag = true;
+					break;
 				}
+			}
+			if (!flag && ss.contains("duitang")) {
+				ret = trac[i].toString();
+				break;
 			}
 		}
 		return ret + "@" + getHostname();
@@ -124,6 +131,20 @@ public class MetricCenter {
 
 	static public void addLoggerReporter(final Logger logR) {
 		Reporter logReport = new Reporter() {
+			@Override
+			public void report(Map data) {
+				logR.info(data.toString());
+			}
+		};
+		daemon.rps.add(logReport);
+	}
+
+	static public void addLoggerReporterByName(String name) {
+		final Logger logger = Logger.getLogger(name);
+		logger.setLevel(Level.INFO);
+		Reporter logReport = new Reporter() {
+			Logger logR = logger;
+
 			@Override
 			public void report(Map data) {
 				logR.info(data.toString());

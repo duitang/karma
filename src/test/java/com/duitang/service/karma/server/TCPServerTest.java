@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.junit.Test;
 
 import com.duitang.service.karma.KarmaException;
+import com.duitang.service.karma.base.MetricCenter;
 import com.duitang.service.karma.demo.DemoJsonRPCImpl;
 import com.duitang.service.karma.demo.DemoJsonRPCService;
 import com.duitang.service.karma.demo.DemoService;
@@ -26,6 +27,9 @@ public class TCPServerTest {
 
 	@Test
 	public void test1() throws KarmaException, InterruptedException {
+		MetricCenter.alterReportPeroid(30);
+		MetricCenter.addLoggerReporterByName("karma");
+		MetricCenter.enableConsoleReporter(true);
 		ServiceConfig conf = new ServiceConfig();
 		MemoryCacheService mms = new MemoryCacheService();
 		DemoJsonRPCService demoJson = new DemoJsonRPCImpl();
