@@ -98,13 +98,16 @@ public class KarmaClient<T> implements MethodInterceptor, LifeCycle, KarmaClient
 		iochannel.setAttribute(latch);
 		iochannel.write(data);
 		Object ret = null;
+		boolean flag = false;
 		try {
 			ret = latch.getResult();
+			flag = false;
 		} catch (Throwable e) {
+			flag = true;
 			throw new KarmaRuntimeException("call method[" + name + "] timeout / error @" + iochannel.reportError(), e);
 		} finally {
 			ts = System.nanoTime() - ts;
-			MetricCenter.methodMetric(this.clientid, name, ts);
+			MetricCenter.methodMetric(this.clientid, name, ts, flag);
 		}
 		return ret;
 	}
