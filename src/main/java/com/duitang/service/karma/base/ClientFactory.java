@@ -117,6 +117,11 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		return ret;
 	}
 
+	@SuppressWarnings("rawtypes")
+	static public ClientFactory createServiceFactory(String serviceName) throws Exception {
+		return ClientFactory.createFactory(Class.forName(serviceName));
+	}
+
 	protected GenericObjectPool<KarmaClient<T>> forceCreatePool() {
 		GenericObjectPoolConfig cfg = new GenericObjectPoolConfig();
 		cfg.setMaxIdle(30);
