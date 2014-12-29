@@ -9,8 +9,6 @@ import org.junit.Test;
 import com.duitang.service.karma.base.ClientFactory;
 import com.duitang.service.karma.base.MetricCenter;
 import com.duitang.service.karma.base.ServerBootstrap;
-import com.duitang.service.karma.demo.DemoService;
-import com.duitang.service.karma.demo.MemoryCacheService;
 
 public class CacheServiceTest {
 
@@ -70,7 +68,8 @@ public class CacheServiceTest {
 
 	// @Test
 	public void testMetric() throws Exception {
-		MetricCenter.enableConsoleReporter(1);
+		MetricCenter.alterReportPeroid(1);
+		MetricCenter.enableConsoleReporter(true);
 		DemoService cli = fac.create();
 		for (int i = 0; i < 10; i++) {
 			System.out.println("----->" + cli.trace_msg("wait_100", 100));

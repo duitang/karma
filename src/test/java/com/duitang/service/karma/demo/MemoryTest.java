@@ -5,16 +5,16 @@ import junit.framework.Assert;
 import org.junit.Test;
 
 import com.duitang.service.karma.base.ClientFactory;
+import com.duitang.service.karma.base.MetricCenter;
 import com.duitang.service.karma.client.KarmaClient;
 import com.duitang.service.karma.client.KarmaIoSession;
-import com.duitang.service.karma.demo.DemoService;
 
 public class MemoryTest {
 
 	// @Test
 	public void test0() throws Exception {
 		KarmaIoSession session = new KarmaIoSession("localhost:9999", 500);
-		KarmaClient<DemoService> client = KarmaClient.createKarmaClient(DemoService.class, session);
+		KarmaClient<DemoService> client = KarmaClient.createKarmaClient(DemoService.class, session, MetricCenter.genClientIdFromCode());
 		DemoService cli = client.getService();
 		long ts = System.currentTimeMillis();
 		String msg = cli.trace_msg("this will timeout ", 1000);

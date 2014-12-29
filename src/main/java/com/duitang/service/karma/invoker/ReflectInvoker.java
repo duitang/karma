@@ -112,7 +112,7 @@ public class ReflectInvoker implements Invoker {
 	protected Method getMethod(String name) throws KarmaException {
 		Method ret = proxy1.get(name);
 		if (ret == null) {
-			throw new KarmaException("not found method[" + name + "]");
+			throw new KarmaException("Not found method[" + name + "]");
 		}
 		return ret;
 	}
@@ -122,7 +122,15 @@ public class ReflectInvoker implements Invoker {
 		try {
 			ret = m.invoke(impl, parameters);
 		} catch (Throwable e) {
-			throw new KarmaException(e);
+			StringBuilder sb = new StringBuilder();
+			sb.append(m.getClass().getName()).append(".").append(m.getName()).append("(");
+			for (int i = 0; i < parameters.length; i++) {
+				if (!(parameters[i] == null)) {
+					sb.append(parameters[i].getClass().getName()).append(",");
+				}
+			}
+			sb.replace(sb.length() - 1, sb.length(), ")");
+			throw new KarmaException(sb.toString(), e);
 		}
 		return ret;
 	}

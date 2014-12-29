@@ -19,7 +19,7 @@ public class MetricUnit {
 		this.clientId = clientId;
 		this.name = name;
 		this.group = group;
-		this.server = clientId.split("\\|")[0];
+		this.server = clientId.split("@")[1];
 		stats = new LatencyStats();
 		histo = stats.getIntervalHistogram();
 	}

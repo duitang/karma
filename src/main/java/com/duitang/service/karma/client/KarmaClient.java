@@ -14,6 +14,7 @@ import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.KarmaRuntimeException;
 import com.duitang.service.karma.base.KarmaClientInfo;
 import com.duitang.service.karma.base.LifeCycle;
+import com.duitang.service.karma.base.MetricCenter;
 import com.duitang.service.karma.meta.BinaryPacketData;
 
 public class KarmaClient<T> implements MethodInterceptor, LifeCycle, KarmaClientInfo {
@@ -21,6 +22,7 @@ public class KarmaClient<T> implements MethodInterceptor, LifeCycle, KarmaClient
 	final static public String CLINET_ATTR_NAME = "_KARMACLIENT_";
 	final static protected Map<String, Method> mgrCallbacks;
 
+	protected String clientid;
 	protected KarmaIoSession iochannel;
 	protected String domainName;
 	protected Map<String, Boolean> cutoffNames;
@@ -38,12 +40,13 @@ public class KarmaClient<T> implements MethodInterceptor, LifeCycle, KarmaClient
 		}
 	}
 
-	static public <T> KarmaClient<T> createKarmaClient(Class<T> iface, KarmaIoSession iochannel) throws KarmaException {
+	static public <T> KarmaClient<T> createKarmaClient(Class<T> iface, KarmaIoSession iochannel, String clientid) throws KarmaException {
 		if (!iface.isInterface()) {
 			throw new KarmaException("not a valid interface: " + iface.getName());
 		}
 		KarmaClient client = new KarmaClient(iface, iochannel);
 		client.setTimeout(iochannel.getTimeout());
+		client.clientid = clientid;
 		client.dummy = (T) Enhancer.create(null, new Class[] { iface, LifeCycle.class, KarmaClientInfo.class }, client);
 		return client;
 	}
@@ -85,6 +88,7 @@ public class KarmaClient<T> implements MethodInterceptor, LifeCycle, KarmaClient
 			Method m = mgrCallbacks.get(name);
 			return m.invoke(this, args);
 		}
+		long ts = System.nanoTime();
 		BinaryPacketData data = new BinaryPacketData();
 		data.domain = domainName;
 		data.method = name;
@@ -98,6 +102,9 @@ public class KarmaClient<T> implements MethodInterceptor, LifeCycle, KarmaClient
 			ret = latch.getResult();
 		} catch (Throwable e) {
 			throw new KarmaRuntimeException("call method[" + name + "] timeout / error @" + iochannel.reportError(), e);
+		} finally {
+			ts = System.nanoTime() - ts;
+			MetricCenter.methodMetric(this.clientid, name, ts);
 		}
 		return ret;
 	}
@@ -110,7 +117,7 @@ public class KarmaClient<T> implements MethodInterceptor, LifeCycle, KarmaClient
 	@Override
 	public void init() throws Exception {
 		iochannel.init();
-//		iochannel.session.setAttributeIfAbsent(CLINET_ATTR_NAME, this);
+		// iochannel.session.setAttributeIfAbsent(CLINET_ATTR_NAME, this);
 	}
 
 	@Override

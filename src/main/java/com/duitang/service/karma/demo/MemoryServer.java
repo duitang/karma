@@ -77,7 +77,8 @@ public class MemoryServer {
 		}
 
 		if (s > 0) {
-			MetricCenter.enableConsoleReporter(s);
+			MetricCenter.alterReportPeroid(s);
+			MetricCenter.enableConsoleReporter(true);
 		}
 	}
 
@@ -149,7 +150,8 @@ public class MemoryServer {
 		}
 
 		if (s > 0) {
-			MetricCenter.enableConsoleReporter(s);
+			MetricCenter.alterReportPeroid(s);
+			MetricCenter.enableConsoleReporter(true);
 		}
 
 		try {

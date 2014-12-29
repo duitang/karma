@@ -15,10 +15,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.duitang.service.karma.base.ClientFactory;
-import com.duitang.service.karma.base.KafkaJsonReporter;
-import com.duitang.service.karma.base.MetricCenter;
-import com.duitang.service.karma.base.ServerBootstrap;
 import com.duitang.service.karma.demo.DemoService;
 import com.duitang.service.karma.demo.MemoryCacheService;
 
@@ -64,7 +60,8 @@ public class KafkaJsonReporterTest {
 		// props.put("queue.enqueue.timeout.ms", "20000");
 		// props.put("message.send.max.retries", "2");
 
-		MetricCenter.enableKafkaReporter(props, 1);
+		MetricCenter.alterReportPeroid(1);
+		MetricCenter.enableKafkaReporter(props);
 		try {
 			Thread.sleep(1000);
 		} catch (InterruptedException e1) {

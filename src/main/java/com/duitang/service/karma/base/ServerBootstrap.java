@@ -46,6 +46,7 @@ public class ServerBootstrap {
 
 	public void addService(Class serviceType, Object service) {
 		conf.addService(serviceType, service);
+		MetricCenter.initMetric(serviceType, MetricCenter.genClientIdFromCode());
 		serviceInfo(serviceType, info, "", 0);
 	}
 

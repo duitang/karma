@@ -37,16 +37,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 
 	private void initClientName() {
 		if (clientid == null) {
-			StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
-			for (int i = 0; i < stacktrace.length; i++) {
-				StackTraceElement e = stacktrace[i];
-				if (e.getMethodName() != null && !e.getClassName().startsWith("com.duitang.service.base")) {
-					clientid = MetricCenter.getHostname() + "|" + e.getFileName() + "@" + e.getLineNumber() + ":" + e.getMethodName();
-				}
-			}
-		}
-		if (clientid == null) {
-			clientid = "";
+			clientid = MetricCenter.genClientIdFromCode();
 		}
 	}
 
@@ -135,7 +126,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		cfg.setBlockWhenExhausted(true);
 		cfg.setMaxWaitMillis(timeout);
 		cfg.setMinEvictableIdleTimeMillis(120000);
-//		cfg.setTestOnReturn(true); // may release it if idle
+		// cfg.setTestOnReturn(true); // may release it if idle
 		cfg.setTestOnBorrow(true); // may release it if idle
 		return new GenericObjectPool(new ReflectServiceFactory(), cfg);
 	}
@@ -148,7 +139,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 				Integer iid = Math.abs(hashid.incrementAndGet()) % sz;
 				String u = serviceURL.get(iid);
 				KarmaIoSession session = new KarmaIoSession(u, timeout);
-				KarmaClient<T> ret = KarmaClient.createKarmaClient(getServiceType(), session);
+				KarmaClient<T> ret = KarmaClient.createKarmaClient(getServiceType(), session, clientid);
 				// ret.init();
 				return new DefaultPooledObject<KarmaClient<T>>(ret);
 			} catch (Exception e) {

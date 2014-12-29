@@ -3,11 +3,14 @@ package com.duitang.service.karma.base;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
 
 public class MetricCenter {
 
@@ -15,8 +18,21 @@ public class MetricCenter {
 
 	static MetricReportDaemon daemon = null;
 	static protected String hostname = null;
-
 	public static Map<String, MetricUnit> method_dur = new HashMap<String, MetricUnit>();
+
+	final static Reporter console = new Reporter() {
+		@Override
+		public void report(Map data) {
+			System.out.println(data);
+		}
+	};
+
+	static {
+		daemon = new MetricReportDaemon();
+		Thread t = new Thread(daemon);
+		t.setDaemon(true);
+		t.start();
+	}
 
 	public static void methodMetric(String clientId, String name, long elapse) {
 		methodMetric(clientId, name, elapse, false);
@@ -47,12 +63,15 @@ public class MetricCenter {
 
 	public static String genClientIdFromCode() {
 		StackTraceElement[] trac = Thread.currentThread().getStackTrace();
+		String ret = "";
 		for (int i = 3; i < trac.length; i++) {
-			if (!trac[i].getClassName().startsWith("com.duitang.service.karma")) {
-				return trac[i].toString();
+			ret = trac[i].getClassName();
+			if (!ret.startsWith("com.duitang.service.karma") && ret.startsWith("com.duitang")) {
+				ret = trac[i].toString();
+				break;
 			}
 		}
-		return Thread.currentThread().getStackTrace()[3].toString();
+		return ret + "@" + getHostname();
 	}
 
 	public static void initMetric(Class clazz) {
@@ -80,50 +99,46 @@ public class MetricCenter {
 		}
 	}
 
-	static public void enableConsoleReporter(final int peroid) {
-		Reporter console = new Reporter() {
+	static public void alterReportPeroid(long peroid) {
+		daemon.peroid = peroid;
+	}
+
+	static public void enableConsoleReporter(boolean openit) {
+		if (openit) {
+			daemon.rps.add(console);
+		} else {
+			daemon.rps.remove(console);
+		}
+	}
+
+	static public void enableKafkaReporter(Properties config) {
+		Reporter kafkaReporter = new KafkaJsonReporter(config);
+		daemon.rps.add(kafkaReporter);
+	}
+
+	static public void addLoggerReporter(final Logger logR) {
+		Reporter logReport = new Reporter() {
 			@Override
 			public void report(Map data) {
-				System.out.println(data);
+				logR.info(data.toString());
 			}
 		};
-		startDaemonOrAdd(peroid, console);
-	}
-
-	static public void enableKafkaReporter(Properties config, long peroid) {
-		Reporter kafkaReporter = new KafkaJsonReporter(config);
-		startDaemonOrAdd(peroid, kafkaReporter);
-	}
-
-	synchronized static void startDaemonOrAdd(long peroid, Reporter r) {
-		if (daemon != null) {
-			daemon.addReporter(r);
-			return;
-		}
-		LinkedList<Reporter> list = new LinkedList<Reporter>();
-		list.add(r);
-		daemon = new MetricReportDaemon(peroid, list);
-		Thread t = new Thread(daemon);
-		t.setDaemon(true);
-		t.start();
+		daemon.rps.add(logReport);
 	}
 
 	static class MetricReportDaemon implements Runnable {
 
-		protected long peroid;
-		protected List<Reporter> rps = new LinkedList<Reporter>();
-
-		public MetricReportDaemon(long peroid, List<Reporter> lst) {
-			this.peroid = peroid;
-			if (lst != null) {
-				this.rps.addAll(lst);
-			}
-		}
+		protected long peroid = 10; // 10 sencods
+		protected Set<Reporter> rps = Collections.synchronizedSet(new HashSet<Reporter>());
 
 		public void addReporter(Reporter r) {
 			if (r != null) {
 				this.rps.add(r);
 			}
+		}
+
+		public void setPeroid(long peroid) {
+			this.peroid = peroid;
 		}
 
 		@Override
@@ -132,6 +147,9 @@ public class MetricCenter {
 				try {
 					Thread.sleep(peroid * 1000);
 				} catch (Exception e) {
+				}
+				if (rps.isEmpty()) {
+					continue;
 				}
 				Map data;
 				for (MetricUnit u : method_dur.values()) {
