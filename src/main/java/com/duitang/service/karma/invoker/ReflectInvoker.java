@@ -88,6 +88,7 @@ public class ReflectInvoker implements Invoker {
 			}
 			paramTypes.put(name, ptypes);
 		}
+		MetricCenter.initMetric(this.iface, this.clientId);
 	}
 
 	@Override
