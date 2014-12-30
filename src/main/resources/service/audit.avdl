@@ -1,8 +1,0 @@
-@namespace("com.duitang.service.l2")
-protocol Audit {
-	void audit(string clientid, 
-			   string name, 
-			   boolean failed, 
-			   long ts, 
-			   long elapse);
-}
