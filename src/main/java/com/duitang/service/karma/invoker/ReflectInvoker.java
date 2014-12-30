@@ -7,9 +7,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.duitang.service.karma.KarmaException;
+import com.duitang.service.karma.base.MetricCenter;
 
 public class ReflectInvoker implements Invoker {
 
+	protected String clientId;
 	protected Class iface;
 	protected Object impl;
 
@@ -36,7 +38,8 @@ public class ReflectInvoker implements Invoker {
 	 */
 	protected Map<String, Class[][]> paramTypes;
 
-	public ReflectInvoker(Class iface, Object impl) throws KarmaException {
+	public ReflectInvoker(String clientId, Class iface, Object impl) throws KarmaException {
+		this.clientId = clientId;
 		this.iface = iface;
 		this.impl = impl;
 		init();
@@ -119,8 +122,11 @@ public class ReflectInvoker implements Invoker {
 
 	protected Object invokeMethod(Method m, Object[] parameters) throws KarmaException {
 		Object ret;
+		long ts = System.nanoTime();
+		boolean fail = false;
 		try {
 			ret = m.invoke(impl, parameters);
+			fail = false;
 		} catch (Throwable e) {
 			StringBuilder sb = new StringBuilder();
 			sb.append(m.getClass().getName()).append(".").append(m.getName()).append("(");
@@ -130,7 +136,11 @@ public class ReflectInvoker implements Invoker {
 				}
 			}
 			sb.replace(sb.length() - 1, sb.length(), ")");
+			fail = true;
 			throw new KarmaException(sb.toString(), e);
+		} finally {
+			ts = System.nanoTime() - ts;
+			MetricCenter.methodMetric(clientId, m.getName(), ts, fail);
 		}
 		return ret;
 	}

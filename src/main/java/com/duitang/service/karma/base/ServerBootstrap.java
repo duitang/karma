@@ -15,7 +15,6 @@ import com.duitang.service.karma.server.TCPServer;
 
 public class ServerBootstrap {
 
-	protected String clientid;
 	protected ServiceConfig conf = new ServiceConfig();
 
 	protected ReflectRPCHandler rpc0;
@@ -118,7 +117,6 @@ public class ServerBootstrap {
 		if (serviceType.length != service.length) {
 			throw new Exception("not same length of interface and implements");
 		}
-		clientid = MetricCenter.getHostname() + "|" + genServiceName(service);
 		for (int i = 0; i < serviceType.length; i++) {
 			conf.addService(serviceType[i], service[i]);
 		}
@@ -145,10 +143,6 @@ public class ServerBootstrap {
 		if (tcp != null) {
 			tcp.stop();
 		}
-	}
-
-	public String getClientid() {
-		return clientid;
 	}
 
 	protected String genServiceName(Object... services) {

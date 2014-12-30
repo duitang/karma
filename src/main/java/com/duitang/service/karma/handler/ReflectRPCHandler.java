@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.duitang.service.karma.KarmaException;
+import com.duitang.service.karma.base.MetricCenter;
 import com.duitang.service.karma.invoker.ReflectInvoker;
 import com.duitang.service.karma.server.ServiceConfig;
 
@@ -29,7 +30,8 @@ public class ReflectRPCHandler implements RPCHandler {
 		services = new HashMap<String, ReflectInvoker>();
 		for (Entry<Class, Object> en : conf.getServices().entrySet()) {
 			String name = en.getKey().getName();
-			ReflectInvoker impl = new ReflectInvoker(en.getKey(), en.getValue());
+			String clientid = en.getKey().getPackage().getName() + "@" + MetricCenter.getHostname();
+			ReflectInvoker impl = new ReflectInvoker(clientid, en.getKey(), en.getValue());
 			services.put(name, impl);
 		}
 	}
