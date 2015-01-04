@@ -70,7 +70,7 @@ public class MemoryServer {
 		try {
 			boot.addService(DemoService.class, impl);
 			boot.addService(DemoJsonRPCService.class, new DemoJsonRPCImpl());
-			boot.startUp(p - 1, "");
+			boot.startUp(p - 1);
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(1);
@@ -245,11 +245,11 @@ class LoadRunner implements Runnable {
 			} finally {
 				fac.release(cli);
 			}
+			cli = fac.create();
 			for (i = 0; i < loop; i++) {
 				try {
 					// cli = one;
 					// if (one == null) {
-					cli = fac.create();
 					// }
 					if (trace > 0) {
 						val = cli.trace_msg(name, trace);
@@ -273,10 +273,10 @@ class LoadRunner implements Runnable {
 					err++;
 				} finally {
 					// if (one == null) {
-					fac.release(cli);
 					// }
 				}
 			}
+			fac.release(cli);
 		} finally {
 			ts = System.currentTimeMillis() - ts;
 			System.out.println(name + " running elapsed: " + ts + "ms with loop=[" + loop + "] @" + i + ", error=" + err);

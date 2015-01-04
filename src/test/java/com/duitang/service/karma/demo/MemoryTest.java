@@ -1,5 +1,8 @@
 package com.duitang.service.karma.demo;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import junit.framework.Assert;
 
 import org.junit.Test;
@@ -13,8 +16,9 @@ public class MemoryTest {
 
 	// @Test
 	public void test0() throws Exception {
-		KarmaIoSession session = new KarmaIoSession("localhost:9999", 500);
-		KarmaClient<DemoService> client = KarmaClient.createKarmaClient(DemoService.class, session, MetricCenter.genClientIdFromCode());
+		List<String> urls = new ArrayList<String>();
+		urls.add("localhost:9999");
+		KarmaClient<DemoService> client = KarmaClient.createKarmaClient(DemoService.class, urls, MetricCenter.genClientIdFromCode());
 		DemoService cli = client.getService();
 		long ts = System.currentTimeMillis();
 		String msg = cli.trace_msg("this will timeout ", 1000);

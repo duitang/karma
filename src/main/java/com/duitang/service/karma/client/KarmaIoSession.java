@@ -11,9 +11,11 @@ import io.netty.util.Attribute;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.duitang.service.karma.base.LifeCycle;
 import com.duitang.service.karma.meta.BinaryPacketData;
+import com.duitang.service.karma.meta.BinaryPacketHelper;
 import com.duitang.service.karma.server.KarmaHandlerInitializer;
 import com.duitang.service.karma.transport.JavaClientHandler;
 
@@ -37,6 +39,7 @@ public class KarmaIoSession implements LifeCycle {
 	protected Bootstrap conn;
 	protected ChannelFuture cf;
 	protected Channel session;
+	protected AtomicLong uuid;
 
 	protected volatile int errorCount = 0;
 
@@ -55,7 +58,16 @@ public class KarmaIoSession implements LifeCycle {
 		return ++this.errorCount;
 	}
 
+	public void clearError() {
+		this.errorCount = 0;
+	}
+
+	public void hitError() {
+		this.errorCount = ERROR_WATER_MARK + 1;
+	}
+
 	public KarmaIoSession(String hostAndPort, long timeout) {
+		this.uuid = new AtomicLong(1);
 		this.url = hostAndPort;
 		this.timeout = timeout;
 		this.conn = new Bootstrap();
@@ -96,6 +108,25 @@ public class KarmaIoSession implements LifeCycle {
 
 	public void write(BinaryPacketData data) {
 		this.session.writeAndFlush(data.getBytes());
+	}
+
+	public boolean ping() {
+		if (!this.session.isActive()) {
+			hitError();
+			return false;
+		}
+		KarmaRemoteLatch latch = new KarmaRemoteLatch(timeout);
+		this.setAttribute(latch);
+		this.session.writeAndFlush(BinaryPacketHelper.karmaPingBytes(1.0f, uuid.incrementAndGet()));
+		try {
+			latch.getResult();
+			clearError();
+			return true;
+		} catch (Throwable e) {
+			hitError();
+			// direct out
+		}
+		return false;
 	}
 
 	public void setAttribute(KarmaRemoteLatch latch) {

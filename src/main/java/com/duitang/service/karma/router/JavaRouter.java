@@ -40,23 +40,28 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
 		@Override
 		public void run() {
 			BinaryPacketData data = null;
-			try {
-				data = BinaryPacketHelper.fromRawToData(raw);
-				ctx.name = data.domain;
-				ctx.method = data.method;
-				ctx.params = data.param;
-				handler.lookUp(ctx);
-				handler.invoke(ctx);
-				data.ret = ctx.ret;
-			} catch (Throwable e) {
-				if (data == null) {
-					data = new BinaryPacketData();
+			do {
+				try {
+					data = BinaryPacketHelper.fromRawToData(raw);
+					if (BinaryPacketHelper.isPing(data)) {
+						// fast return because of ping
+						break;
+					}
+					ctx.name = data.domain;
+					ctx.method = data.method;
+					ctx.params = data.param;
+					handler.lookUp(ctx);
+					handler.invoke(ctx);
+					data.ret = ctx.ret;
+				} catch (Throwable e) {
+					if (data == null) {
+						data = new BinaryPacketData();
+					}
+					data.ex = e;
 				}
-				data.ex = e;
-			} finally {
-				if (raw.ctx != null) {
-					raw.ctx.writeAndFlush(data.getBytes());
-				}
+			} while (false);
+			if (raw.ctx != null) {
+				raw.ctx.writeAndFlush(data.getBytes());
 			}
 		}
 	}

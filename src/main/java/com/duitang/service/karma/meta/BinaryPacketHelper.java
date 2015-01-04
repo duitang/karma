@@ -1,5 +1,7 @@
 package com.duitang.service.karma.meta;
 
+import io.netty.buffer.ByteBuf;
+
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 import java.nio.ByteBuffer;
@@ -10,6 +12,19 @@ final public class BinaryPacketHelper {
 
 	private BinaryPacketHelper() {
 	};
+
+	static public ByteBuf karmaPingBytes(float version, long uuid) {
+		BinaryPacketData data = new BinaryPacketData();
+		data.version = version;
+		data.uuid = uuid;
+		data.conf = null;
+		data.flag = 1; // PING
+		return data.getBytes();
+	}
+
+	static public boolean isPing(BinaryPacketData data) {
+		return data.flag == 1;
+	}
 
 	static public BinaryPacketData fromRawToData(BinaryPacketRaw raw) throws KarmaException {
 		BinaryPacketData ret = new BinaryPacketData();
@@ -50,12 +65,12 @@ final public class BinaryPacketHelper {
 		}
 	}
 
-//	static private KarmaException bufToEx(ByteBuffer buf) {
-//		if (buf == null) {
-//			return null;
-//		}
-//		String ret = new String(buf.array(), buf.arrayOffset(), buf.remaining());
-//		return new KarmaException(ret);
-//	}
+	// static private KarmaException bufToEx(ByteBuffer buf) {
+	// if (buf == null) {
+	// return null;
+	// }
+	// String ret = new String(buf.array(), buf.arrayOffset(), buf.remaining());
+	// return new KarmaException(ret);
+	// }
 
 }

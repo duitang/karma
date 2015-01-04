@@ -28,8 +28,8 @@ public class TCPServerTest {
 	@Test
 	public void test1() throws KarmaException, InterruptedException {
 		MetricCenter.alterReportPeroid(30);
-		MetricCenter.addLoggerReporterByName("karma");
-		MetricCenter.enableConsoleReporter(true);
+//		MetricCenter.addLoggerReporterByName("karma");
+		MetricCenter.enableConsoleReporter(false);
 		ServiceConfig conf = new ServiceConfig();
 		MemoryCacheService mms = new MemoryCacheService();
 		DemoJsonRPCService demoJson = new DemoJsonRPCImpl();

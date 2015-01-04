@@ -62,12 +62,20 @@ public class BinaryPacketData {
 		buffer.writeBytes(w_bytes);
 
 		// domain
-		w_bytes = domain.getBytes();
+		if (domain != null) {
+			w_bytes = domain.getBytes();
+		} else {
+			w_bytes = EMPTY;
+		}
 		buffer.writeInt(w_bytes.length);
 		buffer.writeBytes(w_bytes);
 
 		// method
-		w_bytes = method.getBytes();
+		if (method != null) {
+			w_bytes = method.getBytes();
+		} else {
+			w_bytes = EMPTY;
+		}
 		buffer.writeInt(w_bytes.length);
 		buffer.writeBytes(w_bytes);
 

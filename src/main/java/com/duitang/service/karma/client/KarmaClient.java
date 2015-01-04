@@ -1,14 +1,17 @@
 package com.duitang.service.karma.client;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.KarmaRuntimeException;
@@ -17,18 +20,20 @@ import com.duitang.service.karma.base.LifeCycle;
 import com.duitang.service.karma.base.MetricCenter;
 import com.duitang.service.karma.meta.BinaryPacketData;
 
-public class KarmaClient<T> implements MethodInterceptor, LifeCycle, KarmaClientInfo {
+public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 
 	final static public String CLINET_ATTR_NAME = "_KARMACLIENT_";
 	final static protected Map<String, Method> mgrCallbacks;
+	final static protected KarmaIOPool pool = new KarmaIOPool();
+	final static protected Logger error = LoggerFactory.getLogger(KarmaClient.class);
 
 	protected String clientid;
-	protected KarmaIoSession iochannel;
 	protected String domainName;
 	protected Map<String, Boolean> cutoffNames;
 	protected AtomicLong uuid = new AtomicLong(0);
 	protected long timeout = 500;
 	protected T dummy;
+	protected KarmaIORouter router;
 
 	static {
 		mgrCallbacks = new HashMap<String, Method>();
@@ -40,19 +45,18 @@ public class KarmaClient<T> implements MethodInterceptor, LifeCycle, KarmaClient
 		}
 	}
 
-	static public <T> KarmaClient<T> createKarmaClient(Class<T> iface, KarmaIoSession iochannel, String clientid) throws KarmaException {
+	static public <T> KarmaClient<T> createKarmaClient(Class<T> iface, List<String> urls, String clientid) throws KarmaException {
 		if (!iface.isInterface()) {
 			throw new KarmaException("not a valid interface: " + iface.getName());
 		}
-		KarmaClient client = new KarmaClient(iface, iochannel);
-		client.setTimeout(iochannel.getTimeout());
+		KarmaClient client = new KarmaClient(iface, urls);
 		client.clientid = clientid;
-		client.dummy = (T) Enhancer.create(null, new Class[] { iface, LifeCycle.class, KarmaClientInfo.class }, client);
+		client.dummy = (T) Enhancer.create(null, new Class[] { iface, KarmaClientInfo.class }, client);
 		return client;
 	}
 
-	KarmaClient(Class<T> iface, KarmaIoSession io) throws KarmaException {
-		this.iochannel = io;
+	KarmaClient(Class<T> iface, List<String> urls) throws KarmaException {
+		this.router = new KarmaIORouter(urls);
 		this.domainName = iface.getName();
 		this.cutoffNames = new HashMap<String, Boolean>();
 		Boolean useEx = false;
@@ -95,37 +99,34 @@ public class KarmaClient<T> implements MethodInterceptor, LifeCycle, KarmaClient
 		data.param = args;
 		data.uuid = uuid.incrementAndGet();
 		KarmaRemoteLatch latch = new KarmaRemoteLatch(timeout);
-		iochannel.setAttribute(latch);
-		iochannel.write(data);
 		Object ret = null;
 		boolean flag = false;
+		KarmaIoSession iosession = null;
+		String u = null;
+		boolean pong = false;
 		try {
+			u = this.router.next(null);
+			iosession = pool.getIOSession(u);
+			iosession.setTimeout(timeout);
+			iosession.setAttribute(latch);
+			iosession.write(data);
 			ret = latch.getResult();
 			flag = false;
 		} catch (Throwable e) {
 			flag = true;
-			throw new KarmaRuntimeException("call method[" + name + "] timeout / error @" + iochannel.reportError(), e);
+			if (iosession != null) {
+				pong = iosession.ping();
+				error.debug("ping " + u + " ok = " + pong);
+			}
+			throw new KarmaRuntimeException("call method[" + name + "] timeout / error: ", e);
 		} finally {
+			if (iosession != null) {
+				pool.releaseIOSession(iosession);
+			}
 			ts = System.nanoTime() - ts;
 			MetricCenter.methodMetric(this.clientid, name, ts, flag);
 		}
 		return ret;
-	}
-
-	@Override
-	public void close() throws IOException {
-		iochannel.close();
-	}
-
-	@Override
-	public void init() throws Exception {
-		iochannel.init();
-		// iochannel.session.setAttributeIfAbsent(CLINET_ATTR_NAME, this);
-	}
-
-	@Override
-	public boolean isAlive() {
-		return iochannel.isAlive();
 	}
 
 	@Override
