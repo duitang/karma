@@ -19,7 +19,7 @@ public class KarmaClientTest {
 	public void test() throws KarmaException, IOException, Exception {
 		Logger.getLogger(KarmaClient.class).setLevel(Level.DEBUG);
 		List<String> urls = Arrays.asList(new String[] { "localhost:9999" });
-		KarmaClient<DemoService> cli = KarmaClient.createKarmaClient(DemoService.class, urls, MetricCenter.genClientIdFromCode());
+		KarmaClient<DemoService> cli = KarmaClient.createKarmaClient(DemoService.class, urls, MetricCenter.genClientIdFromCode(), "dev1");
 		DemoService client = cli.getService();
 		System.out.println(client.memory_getString("aaaa"));
 		System.out.println(client.trace_msg("laurence", 200));
@@ -38,7 +38,7 @@ public class KarmaClientTest {
 		System.out.println(client.memory_setBytes("aaa", "fuck".getBytes(), 5000));
 		System.out.println(new String(client.memory_getBytes("aaa")));
 
-//		Thread.sleep(100000);
+		// Thread.sleep(100000);
 	}
 
 }

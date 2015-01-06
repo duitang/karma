@@ -4,8 +4,6 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-import com.duitang.service.karma.client.KarmaIoSession;
-
 public class KarmaIoSessionTest {
 
 	@Test

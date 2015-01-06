@@ -27,13 +27,15 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 	final static protected KarmaIOPool pool = new KarmaIOPool();
 	final static protected Logger error = LoggerFactory.getLogger(KarmaClient.class);
 
+	static String zkURL = null;
+
 	protected String clientid;
 	protected String domainName;
 	protected Map<String, Boolean> cutoffNames;
 	protected AtomicLong uuid = new AtomicLong(0);
 	protected long timeout = 500;
 	protected T dummy;
-	protected KarmaIORouter router;
+	protected IOBalance router;
 
 	static {
 		mgrCallbacks = new HashMap<String, Method>();
@@ -45,18 +47,20 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 		}
 	}
 
-	static public <T> KarmaClient<T> createKarmaClient(Class<T> iface, List<String> urls, String clientid) throws KarmaException {
+	static public <T> KarmaClient<T> createKarmaClient(Class<T> iface, List<String> urls, String clientid, String group) throws KarmaException {
 		if (!iface.isInterface()) {
 			throw new KarmaException("not a valid interface: " + iface.getName());
 		}
-		KarmaClient client = new KarmaClient(iface, urls);
+		// caution: fair load is a hint for there is a flushed version from ZK
+		ClusterZKRouter rt = ClusterZKRouter.createRouter(group, ClusterZKRouter.fairLoad(urls));
+		KarmaClient client = new KarmaClient(iface, rt);
 		client.clientid = clientid;
 		client.dummy = (T) Enhancer.create(null, new Class[] { iface, KarmaClientInfo.class }, client);
 		return client;
 	}
 
-	KarmaClient(Class<T> iface, List<String> urls) throws KarmaException {
-		this.router = new KarmaIORouter(urls);
+	KarmaClient(Class<T> iface, IOBalance bl) throws KarmaException {
+		this.router = bl;
 		this.domainName = iface.getName();
 		this.cutoffNames = new HashMap<String, Boolean>();
 		Boolean useEx = false;

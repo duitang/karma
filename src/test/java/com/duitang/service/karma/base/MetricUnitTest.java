@@ -6,8 +6,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.duitang.service.karma.base.MetricUnit;
-
 public class MetricUnitTest {
 
 	@Before

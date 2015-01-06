@@ -5,8 +5,6 @@ import org.junit.Test;
 
 import com.duitang.service.karma.demo.DemoService;
 import com.duitang.service.karma.demo.MemoryCacheService;
-import com.duitang.service.karma.handler.RPCContext;
-import com.duitang.service.karma.handler.ReflectRPCHandler;
 import com.duitang.service.karma.server.ServiceConfig;
 
 public class ReflectRPCHandlerTest {

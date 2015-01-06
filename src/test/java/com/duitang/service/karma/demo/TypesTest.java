@@ -18,7 +18,6 @@ import org.junit.Test;
 
 import com.duitang.service.karma.base.ClientFactory;
 import com.duitang.service.karma.base.ServerBootstrap;
-import com.duitang.service.karma.demo.DemoObject;
 import com.duitang.service.karma.demo.domain.Demo1;
 import com.duitang.service.karma.demo.domain.Demo1Impl;
 import com.duitang.service.karma.demo.domain.Demo2;

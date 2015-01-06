@@ -1,5 +1,7 @@
 package com.duitang.service.karma.client;
 
+import java.util.Map;
+
 public interface IOBalance {
 
 	/**
@@ -10,5 +12,7 @@ public interface IOBalance {
 	 * @return next token
 	 */
 	public String next(String token);
+
+	public void updateLoad(Map<String, Integer> load);
 
 }

@@ -23,9 +23,6 @@ import com.duitang.service.karma.demo.domain.Demo2;
 import com.duitang.service.karma.demo.domain.Demo2Impl;
 import com.duitang.service.karma.demo.domain.Demo3;
 import com.duitang.service.karma.demo.domain.Demo3Impl;
-import com.duitang.service.karma.handler.JsonRPCHandler;
-import com.duitang.service.karma.handler.RPCContext;
-import com.duitang.service.karma.handler.ReflectRPCHandler;
 import com.duitang.service.karma.server.ServiceConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

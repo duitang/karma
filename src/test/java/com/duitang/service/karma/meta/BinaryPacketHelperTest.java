@@ -11,7 +11,6 @@ import org.junit.Test;
 
 import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.demo.DemoService;
-import com.duitang.service.karma.meta.BinaryPacketData;
 
 public class BinaryPacketHelperTest {
 

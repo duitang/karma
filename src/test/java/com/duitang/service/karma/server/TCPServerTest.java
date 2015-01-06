@@ -12,8 +12,6 @@ import com.duitang.service.karma.demo.DemoService;
 import com.duitang.service.karma.demo.MemoryCacheService;
 import com.duitang.service.karma.handler.ReflectRPCHandler;
 import com.duitang.service.karma.router.JavaRouter;
-import com.duitang.service.karma.server.ServiceConfig;
-import com.duitang.service.karma.server.TCPServer;
 
 public class TCPServerTest {
 

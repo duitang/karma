@@ -18,8 +18,6 @@ import com.duitang.service.karma.demo.domain.SimpleObject;
 import com.duitang.service.karma.handler.JsonRPCHandler;
 import com.duitang.service.karma.handler.ReflectRPCHandler;
 import com.duitang.service.karma.router.JsonRouter;
-import com.duitang.service.karma.server.HTTPServer;
-import com.duitang.service.karma.server.ServiceConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class HTTPServerTest {

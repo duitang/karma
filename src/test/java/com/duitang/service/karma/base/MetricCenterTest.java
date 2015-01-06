@@ -6,9 +6,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.duitang.service.karma.base.MetricCenter;
-import com.duitang.service.karma.demo.DemoService;
-
 public class MetricCenterTest {
 
 	@Before

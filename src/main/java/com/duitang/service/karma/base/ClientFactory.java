@@ -20,6 +20,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 	protected int timeout = 500;
 	protected String clientid;
 	protected int sz = 0;
+	protected String group;
 
 	public ClientFactory() {
 		this(null);
@@ -58,6 +59,14 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		this.timeout = timeout;
 	}
 
+	public String getGroup() {
+		return group;
+	}
+
+	public void setGroup(String group) {
+		this.group = group;
+	}
+
 	@Override
 	public T create() { // for python performance issue no exception
 		if (sz == 0) {
@@ -66,7 +75,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		}
 		KarmaClient<T> ret;
 		try {
-			ret = KarmaClient.createKarmaClient(getServiceType(), serviceURL, clientid);
+			ret = KarmaClient.createKarmaClient(getServiceType(), serviceURL, clientid, group);
 			return ret.getService();
 		} catch (KarmaException e) {
 		}

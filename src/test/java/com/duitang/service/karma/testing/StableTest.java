@@ -1,7 +1,5 @@
 package com.duitang.service.karma.testing;
 
-import junit.framework.Assert;
-
 import org.junit.Test;
 
 import com.duitang.service.karma.KarmaRuntimeException;

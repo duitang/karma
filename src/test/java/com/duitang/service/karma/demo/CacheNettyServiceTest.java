@@ -11,8 +11,6 @@ import org.junit.Test;
 import com.duitang.service.karma.base.ClientFactory;
 import com.duitang.service.karma.base.MetricCenter;
 import com.duitang.service.karma.base.ServerBootstrap;
-import com.duitang.service.karma.demo.DemoService;
-import com.duitang.service.karma.demo.MemoryCacheService;
 
 public class CacheNettyServiceTest {
 

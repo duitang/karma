@@ -23,7 +23,6 @@ import com.duitang.service.karma.demo.DemoService;
 import com.duitang.service.karma.meta.BinaryPacketData;
 import com.duitang.service.karma.meta.BinaryPacketHelper;
 import com.duitang.service.karma.meta.BinaryPacketRaw;
-import com.duitang.service.karma.transport.KarmaBinaryDecoder;
 
 public class KarmaBinaryDecoderTest {
 
