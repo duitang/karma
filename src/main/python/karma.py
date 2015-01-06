@@ -3,7 +3,7 @@ import socket
 import urllib
 import inspect
 import time
-from random import shuffle, choice
+from random import shuffle, choice, uniform
 from datetime import datetime
 import struct
 import random
@@ -11,12 +11,90 @@ from json import  JSONEncoder
 import re
 import urllib2
 import json
+from kazoo.client import KazooClient
+import threading, time, random
+
+from bintrees import BinaryTree
 
 import logging
 logger = logging.getLogger("karma")
 slow_logger = logging.getLogger("karma_slow")
 
+ZK_GROUPS = ["dev", "japa", "vienna", "offline"]
+
+zk = None
+zk_exit = False
+KARMA_LOADS = {}
+
+def enable_loads_push(zkhost):
+    global zk
+    zk = KazooClient(hosts=zkhost)
+    zk.start()
+    LoadsUpdater("ZK_LB_UPDATOR").start()
+
+class LoadsUpdater(threading.Thread):
+    def __init__(self, threadName):
+        super(LoadUpdater, self).__init__(name=threadName)
+    
+    def run(self):
+        global zk_exit
+        global KARMA_LOADS
+        for xx in ZK_GROUPS:
+            lb_loads = fetch_group(xx)
+            if lb_loads:
+                KARMA_LOADS[xx] = lb_loads
             
+        while not zk_exit:
+            time.sleep(30)
+            for xx in ZK_GROUPS:
+                lb_loads = fetch_group(xx)
+                if lb_loads:
+                    KARMA_LOADS[xx] = lb_loads
+            
+    def fetch_group(self, group):
+        try:
+            sss = zk.get('/KARMA/LB/%s' % group)[0]
+            if not sss:
+                return None
+            lb_list = json.loads(sss)
+            return gen_iid(lb_list)
+        except Exception, e:
+            print e
+        return None
+    
+    def gen_iid(self, lb_loads):
+        lower = 0.7
+        upper = 1.3
+        total = 0.0
+        for x in lb_loads.values():
+            total += (1.0 / x)
+
+        delta0 = 1.0 / len(lb_loads.values()) * lower
+        delta1 = 1.0 / len(lb_loads.values()) * upper
+        
+        ret = BinaryTree()
+        v = 0.0
+        vv = 0.0
+        vvv = 0.0
+        for key, val in lb_loads.items():
+            ret[v] = key 
+            vv = (1.0 / val) / total + vvv
+            if vv > delta1:
+                vvv = vv - delta1
+                vv = delta1
+            elif vv < delta0:
+                vvv = vv - delta0
+                vv = delta0
+            v += vv
+        return ret     
+
+def get_lb_key(group):
+    tabs = KARMA_LOADS[group]
+    if tabs:
+        k = uniform(0, 1)
+        return tabs.floor_item(k)
+    return None
+           
 class DuitangRemoteProxy:
 
     def __init__(self, config):
@@ -26,6 +104,7 @@ class DuitangRemoteProxy:
                 sss['domain'] = sss['domain'].replace('.', '/')
                 sss['locations'] = sval["locations"]
                 sss['hostz'] = len(sval["locations"])
+                sss['group'] = sval.get('group', 'dev')
                 self.server[sss["id"]] = sss
                 logger.info("init %s locations = %s,timeout = %s" % (sss['id'], ";".join(sss['locations']), sss.get('timeout', 500)))
             
@@ -37,10 +116,13 @@ class DuitangRemoteProxy:
         if not the_service:
             raise Exception("karma client Exception", "cant't find service,serviceName=%s" % serviceName)
             
-        iid = random.randint(0, the_service['hostz']) % the_service['hostz']
+        lb_host = get_lb_key(the_service['group'])
+        if not lb_host:
+            iid = random.randint(0, the_service['hostz']) % the_service['hostz']
+            lb_host = the_service['locations'][iid]
         qry = urllib.quote(query)
         ur = "http://%s/%s/%s?q=%s" % (
-                                       the_service['locations'][iid],
+                                       lb_host,
                                        the_service['domain'],
                                        method,
                                        qry)
@@ -106,6 +188,7 @@ if __name__ == "__main__":
     KARMA = {
         "demo": {
               "locations":["localhost:9998"],
+              "group": 'dev',
               "references":[
                 {
                     "id":"demoservice",

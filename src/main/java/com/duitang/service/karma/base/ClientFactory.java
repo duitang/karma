@@ -20,7 +20,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 	protected int timeout = 500;
 	protected String clientid;
 	protected int sz = 0;
-	protected String group;
+	protected String group = "default";
 
 	public ClientFactory() {
 		this(null);
