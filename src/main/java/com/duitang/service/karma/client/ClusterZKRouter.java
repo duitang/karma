@@ -24,7 +24,6 @@ import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.utils.EnsurePath;
 import org.apache.curator.utils.ZKPaths;
-import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,8 +72,7 @@ public class ClusterZKRouter implements IOBalance {
 						EnsurePath ep = new EnsurePath(KARMA_CLUSTER_LOAD_NAME);
 						zkUtil.start();
 						try {
-							Stat stat = zkUtil.checkExists().forPath(KARMA_CLUSTER_LOAD_NAME);
-							System.out.println(stat);
+							// zkUtil.checkExists().forPath(KARMA_CLUSTER_LOAD_NAME);
 							ep.ensure(zkUtil.getZookeeperClient());
 						} catch (Exception e1) {
 						}
@@ -128,7 +126,9 @@ public class ClusterZKRouter implements IOBalance {
 					String fp = KARMA_CLUSTER_LOAD_NAME + "/" + p;
 					String group = ZKPaths.getNodeFromPath(fp);
 					HashMap load = mapper.readValue(zkUtil.getData().forPath(fp), HashMap.class);
-					defaultGroupLoads.put(group, load);
+					if (!load.isEmpty()) {
+						defaultGroupLoads.put(group, load);
+					}
 				} catch (Exception e) {
 					// ignore
 					err.error("initialization group loads: ", e);

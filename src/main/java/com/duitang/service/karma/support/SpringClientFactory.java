@@ -1,6 +1,7 @@
 package com.duitang.service.karma.support;
 
 import com.duitang.service.karma.base.ClientFactory;
+import com.duitang.service.karma.client.ClusterZKRouter;
 
 public class SpringClientFactory<T> {
 
@@ -8,6 +9,7 @@ public class SpringClientFactory<T> {
 	protected String url;
 	protected String group;
 	protected int timeout;
+	protected String zkURL;
 
 	public SpringClientFactory(Class<T> type) {
 		this.clientType = type;
@@ -25,11 +27,18 @@ public class SpringClientFactory<T> {
 		this.timeout = timeout;
 	}
 
+	public void setZkURL(String zkURL) {
+		this.zkURL = zkURL;
+	}
+
 	public ClientFactory<T> createClient() {
 		ClientFactory<T> ret = ClientFactory.createFactory(clientType);
 		ret.setUrl(url);
 		ret.setGroup(group);
 		ret.setTimeout(timeout);
+		if (zkURL != null) {
+			ClusterZKRouter.enableZK(zkURL);
+		}
 		return ret;
 	}
 
