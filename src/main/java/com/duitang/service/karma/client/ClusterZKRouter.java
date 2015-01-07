@@ -34,7 +34,7 @@ public class ClusterZKRouter implements IOBalance {
 	final static Logger err = LoggerFactory.getLogger("error");
 	final static float lower = 0.7f;
 	final static float upper = 1f + (1f - lower);
-	final static String KARMA_CLUSTER_LOAD_NAME = "/KARMA/LB";
+	final static String KARMA_CLUSTER_LOAD_NAME = "/trivial/rpc_lb/cobweb";
 	final static ObjectMapper mapper = new ObjectMapper();
 
 	final static Object tinyLock = new Object();
