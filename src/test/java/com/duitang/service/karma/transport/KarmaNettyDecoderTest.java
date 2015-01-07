@@ -144,7 +144,7 @@ public class KarmaNettyDecoderTest {
 
 		checkLock = new AtomicInteger(0);
 		int total = dbuf.length;
-		int firstHead = KarmaBinaryDecoder.HEADER;
+		int firstHead = KarmaPacketDecoderNetty.HEADER;
 		int max_it = ((total - firstHead) / 4) + 1;
 		Random rnd = new Random();
 		for (int i = 0; i < loop; i++) {

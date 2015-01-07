@@ -6,7 +6,6 @@ import java.nio.ByteBuffer;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 
-import org.apache.mina.core.buffer.IoBuffer;
 import org.junit.Test;
 
 import com.duitang.service.karma.KarmaException;
@@ -55,11 +54,11 @@ public class BinaryPacketHelperTest {
 		bb.putLong(11, 222);
 		System.out.println(bb.position());
 
-		IoBuffer buf = IoBuffer.allocate(1024);
-
-		buf.putLong(1111);
-		System.out.println(buf.position());
-		System.out.println(buf.arrayOffset());
+//		IoBuffer buf = IoBuffer.allocate(1024);
+//
+//		buf.putLong(1111);
+//		System.out.println(buf.position());
+//		System.out.println(buf.arrayOffset());
 
 		byte[] src = new byte[] { 12, 18, 0, 0, 0, 0, 0, 0, 0, (byte) 170 };
 		// System.out.println((byte) 170);
@@ -76,10 +75,10 @@ public class BinaryPacketHelperTest {
 		d.method = "memory_getString";
 		d.flag = 0;
 		d.param = new Object[] { "aaa" };
-		IoBuffer buf = IoBuffer.wrap(d.getBytes().nioBuffer());
-		FileOutputStream fos = new FileOutputStream("/tmp/a.dat");
-		fos.write(buf.array(), buf.arrayOffset(), buf.limit());
-		fos.close();
+//		IoBuffer buf = IoBuffer.wrap(d.getBytes().nioBuffer());
+//		FileOutputStream fos = new FileOutputStream("/tmp/a.dat");
+//		fos.write(buf.array(), buf.arrayOffset(), buf.limit());
+//		fos.close();
 	}
 
 }
