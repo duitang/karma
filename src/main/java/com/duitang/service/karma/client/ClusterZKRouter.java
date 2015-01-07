@@ -162,11 +162,16 @@ public class ClusterZKRouter implements IOBalance {
 			String group = StringUtils.substringAfterLast(data.getPath(), "/");
 			Map<String, Integer> loads = toLoadList(data.getData());
 
-			ClusterZKRouter router = groupRouter.get(group);
-			if (router == null) {
+			if (loads.isEmpty()) {
 				return;
 			}
-			router.updateLoad(loads);
+
+			ClusterZKRouter router = groupRouter.get(group);
+			if (router != null) {
+				router.updateLoad(loads);
+			}
+
+			defaultGroupLoads.put(group, loads);
 		}
 
 	}
@@ -197,10 +202,6 @@ public class ClusterZKRouter implements IOBalance {
 			ret = groupRouter.get(group);
 		}
 		return ret;
-	}
-
-	static public void addLBGroupMonitor(String group) {
-
 	}
 
 	/**

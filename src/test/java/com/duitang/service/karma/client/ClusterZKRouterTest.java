@@ -124,10 +124,10 @@ public class ClusterZKRouterTest {
 		System.out.println(ddd);
 	}
 
-	@Test
+//	@Test
 	public void test4() throws Exception {
 		ClusterZKRouter.enableZK("127.0.0.1:2181");
-		Thread.sleep(500); // disable this u see fair-load
+		Thread.sleep(1500); // disable this u see fair-load
 		Map<String, Integer> load = new HashMap<String, Integer>();
 		load.put("a", 1);
 		load.put("b", 1);
@@ -146,6 +146,15 @@ public class ClusterZKRouterTest {
 		System.out.println(stat);
 
 		System.out.println(router.iidMap);
+	}
+
+	@Test
+	public void test5() {
+		List<String> hosts = Arrays.asList(new String[] { "a" });
+		ClusterZKRouter router = ClusterZKRouter.createRouter("dev", ClusterZKRouter.fairLoad(hosts));
+		System.out.println(router.iidMap);
+		System.out.println(router.next(null));
+		System.out.println(router.next(null));
 	}
 
 }
