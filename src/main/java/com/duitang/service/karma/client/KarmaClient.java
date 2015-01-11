@@ -122,7 +122,7 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 				pong = iosession.ping();
 				error.debug("ping " + u + " ok = " + pong);
 			}
-			throw new KarmaRuntimeException("call method[" + name + "] timeout / error: ", e);
+			throw new KarmaRuntimeException(iosession + " call method[" + name + "] timeout / error pong = " + pong, e);
 		} finally {
 			if (iosession != null) {
 				pool.releaseIOSession(iosession);

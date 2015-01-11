@@ -153,4 +153,9 @@ public class KarmaIoSession implements LifeCycle {
 		return errorCount < ERROR_WATER_MARK && this.isConnected();
 	}
 
+	@Override
+	public String toString() {
+		return url + ", timeout=" + timeout + ", errorCount=" + errorCount + ", uuid=" + uuid;
+	}
+
 }
