@@ -16,6 +16,7 @@ public class KarmaRemoteLatch {
 	protected Throwable ex;
 	protected long timeout;
 	protected boolean canThrowIt;
+	protected long uuid;
 
 	public KarmaRemoteLatch() {
 		this(500);
@@ -29,6 +30,14 @@ public class KarmaRemoteLatch {
 		this.timeout = timeout;
 		this.latch = new CountDownLatch(1);
 		this.canThrowIt = canThrowIt;
+	}
+
+	public long getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(long uuid) {
+		this.uuid = uuid;
 	}
 
 	public void offerResult(Object val) {

@@ -103,6 +103,7 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 		data.param = args;
 		data.uuid = uuid.incrementAndGet();
 		KarmaRemoteLatch latch = new KarmaRemoteLatch(timeout);
+		latch.setUuid(data.uuid);
 		Object ret = null;
 		boolean flag = false;
 		KarmaIoSession iosession = null;
@@ -122,7 +123,7 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 				pong = iosession.ping();
 				error.debug("ping " + u + " ok = " + pong);
 			}
-			throw new KarmaRuntimeException(iosession + " call method[" + name + "] timeout / error pong = " + pong, e);
+			throw new KarmaRuntimeException(iosession + " call method[" + name + "]@" + u + " timeout / error pong = " + pong, e);
 		} finally {
 			if (iosession != null) {
 				pool.releaseIOSession(iosession);
