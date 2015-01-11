@@ -71,7 +71,7 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
 			if (raw.ctx != null) {
 				Attribute<Long> attr = raw.ctx.channel().attr(UUID_KEY);
 				Long uuid_checkpoint = attr.get();
-				if (uuid_checkpoint != null && uuid_checkpoint >= data.uuid){
+				if (uuid_checkpoint != null && uuid_checkpoint > data.uuid){
 					// uuid before ping checkpoint should be discard
 					return;
 				}
