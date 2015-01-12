@@ -8,10 +8,16 @@ import java.util.List;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.meta.BinaryPacketData;
 import com.duitang.service.karma.meta.BinaryPacketRaw;
 
 public class KarmaPacketDecoderNetty {
+
+	final static Logger error = LoggerFactory.getLogger(KarmaPacketDecoderNetty.class);
 
 	// check:
 	// magic_code(2) + total(4) + checksum(8) + float(4) + flag(4) + uuid(8)
@@ -20,6 +26,7 @@ public class KarmaPacketDecoderNetty {
 	protected BinaryPacketRaw rawPack;
 	protected int state = 0;
 	protected int[] szBuf = new int[1];
+	protected int suspect_loop = 0;
 
 	public void decode(ChannelHandlerContext ctx, ByteBuf in, List out) throws Exception {
 		ByteBuffer buf;
@@ -29,6 +36,10 @@ public class KarmaPacketDecoderNetty {
 				rawPack = setUpRawPacket(in);
 				if (rawPack != null) { // built already
 					state = 3;
+				}
+				if (suspect_loop > 10000) {
+					// caution: how to explain? brute cut off
+					throw new KarmaException("hit loop forever at setUpRawPacket");
 				}
 				continue; // anyway check if has remaining
 			}
@@ -154,12 +165,14 @@ public class KarmaPacketDecoderNetty {
 				ret.setVersion(version);
 				ret.setFlag(flag);
 				ret.setUuid(uuid);
+				suspect_loop = 0;
 				return ret;
 			}
 			// sticky! invalid packet
 			// ignore this magic code
 			in.resetReaderIndex(); // just skip, try later
 		}
+		suspect_loop++;
 		// not magic code? just skip, try later
 		return null;
 	}
