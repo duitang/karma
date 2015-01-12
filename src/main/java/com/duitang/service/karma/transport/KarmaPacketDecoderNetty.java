@@ -37,7 +37,7 @@ public class KarmaPacketDecoderNetty {
 				if (rawPack != null) { // built already
 					state = 3;
 				}
-				if (suspect_loop > 10) {
+				if (suspect_loop > 0) {
 					// caution: how to explain? brute cut off
 					throw new KarmaException("hit loop forever at setUpRawPacket");
 				}
