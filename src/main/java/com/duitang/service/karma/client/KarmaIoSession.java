@@ -117,8 +117,8 @@ public class KarmaIoSession implements LifeCycle {
 		}
 		// using 25% timeout for reduce cost
 		KarmaRemoteLatch latch = new KarmaRemoteLatch(timeout / 4);
-		this.setAttribute(latch);
 		latch.uuid = uuid.incrementAndGet();
+		this.setAttribute(latch);
 		this.session.writeAndFlush(BinaryPacketHelper.karmaPingBytes(1.0f, latch.uuid));
 		try {
 			latch.getResult();

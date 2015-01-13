@@ -1,6 +1,5 @@
 package com.duitang.service.karma.router;
 
-import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 
 import java.util.concurrent.ArrayBlockingQueue;
@@ -48,11 +47,6 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
 				try {
 					data = BinaryPacketHelper.fromRawToData(raw);
 					if (BinaryPacketHelper.isPing(data)) {
-						// fast return because of ping
-						if (raw.ctx != null) {
-							Attribute<Long> attr = raw.ctx.channel().attr(UUID_KEY);
-							attr.set(raw.getUuid());
-						}
 						break;
 					}
 					ctx.name = data.domain;
@@ -69,12 +63,6 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
 				}
 			} while (false);
 			if (raw.ctx != null) {
-				Attribute<Long> attr = raw.ctx.channel().attr(UUID_KEY);
-				Long uuid_checkpoint = attr.get();
-				if (uuid_checkpoint != null && uuid_checkpoint > data.uuid){
-					// uuid before ping checkpoint should be discard
-					return;
-				}
 				raw.ctx.writeAndFlush(data.getBytes());
 			}
 		}
