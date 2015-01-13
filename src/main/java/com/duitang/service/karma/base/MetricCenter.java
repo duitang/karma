@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 
 public class MetricCenter {
 
+	final static Logger out = Logger.getLogger(MetricCenter.class);
 	final public static boolean debug = false;
 
 	final static String[] NOT_IN_PACKAGE_NAME = { "com.duitang.service.karma" };// "com.duitang.webx",
@@ -79,7 +80,10 @@ public class MetricCenter {
 					break;
 				}
 			}
-			if (!flag && ss.contains("duitang")) {
+			if (flag){
+				continue;
+			}
+			if (ss.contains("duitang")) {
 				ret = trac[i].toString();
 				break;
 			}

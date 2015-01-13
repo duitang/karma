@@ -45,8 +45,9 @@ public class ServerBootstrap {
 
 	public void addService(Class serviceType, Object service) {
 		conf.addService(serviceType, service);
-		MetricCenter.initMetric(serviceType, MetricCenter.genClientIdFromCode());
-		serviceInfo(serviceType, info, "", 0);
+		String clientid = MetricCenter.genClientIdFromCode();
+//		MetricCenter.initMetric(serviceType, clientid);
+		serviceInfo(serviceType, info, clientid, 0);
 	}
 
 	/**
@@ -162,13 +163,13 @@ public class ServerBootstrap {
 		return ret;
 	}
 
-	static public void serviceInfo(Class serviceType, StringBuilder sb, String protocol, int port) {
+	static public void serviceInfo(Class serviceType, StringBuilder sb, String clientid, int port) {
 		if (serviceType == null) {
 			return;
 		}
 
 		try {
-			sb.append(serviceType.getName()).append("  ##############  ").append("\n");
+			sb.append(serviceType.getName()).append("  ##############  ").append(clientid).append("\n");
 			Method methlist[] = serviceType.getDeclaredMethods();
 			for (int i = 0; i < methlist.length; i++) {
 				Method m = methlist[i];

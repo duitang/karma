@@ -30,7 +30,7 @@ public class ReflectRPCHandler implements RPCHandler {
 		services = new HashMap<String, ReflectInvoker>();
 		for (Entry<Class, Object> en : conf.getServices().entrySet()) {
 			String name = en.getKey().getName();
-			String clientid = en.getKey().getPackage().getName() + "@" + MetricCenter.getHostname();
+			String clientid = en.getKey().getName() + "@" + MetricCenter.getHostname() + "-->ReflectInovker";
 			ReflectInvoker impl = new ReflectInvoker(clientid, en.getKey(), en.getValue());
 			services.put(name, impl);
 		}
