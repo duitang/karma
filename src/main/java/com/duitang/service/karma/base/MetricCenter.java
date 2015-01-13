@@ -80,7 +80,7 @@ public class MetricCenter {
 					break;
 				}
 			}
-			if (flag){
+			if (flag) {
 				continue;
 			}
 			if (ss.contains("duitang")) {
@@ -89,10 +89,6 @@ public class MetricCenter {
 			}
 		}
 		return ret + "@" + getHostname();
-	}
-
-	public static void initMetric(Class clazz) {
-		initMetric(clazz, genClientIdFromCode());
 	}
 
 	public static void initMetric(Class clazz, String clientid) {
