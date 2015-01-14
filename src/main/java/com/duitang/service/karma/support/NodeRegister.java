@@ -77,26 +77,36 @@ public class NodeRegister  implements Watcher, Runnable {
 	@Override
 	public void run() {
 		try {
-			InetAddress ia = InetAddress.getLocalHost();
-			String host = ia.getHostAddress();
-			String data = makeData();
 			String cs = connString;
 			if (isDev()) {
 				cs = connStringDev;
 			}
-			ACL acl = new ACL(Perms.ALL, Ids.ANYONE_ID_UNSAFE);
-			zk = new ZooKeeper(cs, 3000, this);
-			zk.create(
-				"/app/" + appName + '/' + host, 
-				data.getBytes(), 
-				Lists.newArrayList(acl), 
-				CreateMode.EPHEMERAL
-			);
+			while (true) {
+				Thread.sleep(1000);
+				if (zk == null || !zk.getState().isAlive()) {
+					resetZk(cs);
+				}
+			}
 		} catch (Exception e) {
 			log.error("NodeRegister_failed:", e);
 		}
 	}
 
+	private void resetZk(String cs) throws Exception {
+		InetAddress ia = InetAddress.getLocalHost();
+		String host = ia.getHostAddress();
+		String data = makeData();
+		ACL acl = new ACL(Perms.ALL, Ids.ANYONE_ID_UNSAFE);
+		if (zk != null) zk.close();
+		zk = new ZooKeeper(cs, 3000, this);
+		zk.create(
+			"/app/" + appName + '/' + host, 
+			data.getBytes(), 
+			Lists.newArrayList(acl), 
+			CreateMode.EPHEMERAL
+		);
+	}
+	
 	public void setConnString(String connString) {
 		this.connString = connString;
 	}
