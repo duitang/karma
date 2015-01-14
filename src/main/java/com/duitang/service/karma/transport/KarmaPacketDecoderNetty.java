@@ -18,6 +18,8 @@ import com.duitang.service.karma.meta.BinaryPacketRaw;
 public class KarmaPacketDecoderNetty {
 
 	final static Logger error = LoggerFactory.getLogger(KarmaPacketDecoderNetty.class);
+	
+	final static int EMPTY_READ_WATERMARK = 1000;
 
 	// check:
 	// magic_code(2) + total(4) + checksum(8) + float(4) + flag(4) + uuid(8)
@@ -27,6 +29,7 @@ public class KarmaPacketDecoderNetty {
 	protected int state = 0;
 	protected int[] szBuf = new int[1];
 	protected int suspect_loop = 0;
+	protected int empty_read = 0;
 
 	public void decode(ChannelHandlerContext ctx, ByteBuf in, List out) throws Exception {
 		ByteBuffer buf;
@@ -40,6 +43,9 @@ public class KarmaPacketDecoderNetty {
 				if (suspect_loop > 0) {
 					// caution: how to explain? brute cut off
 					throw new KarmaException("hit loop forever at setUpRawPacket");
+				}
+				if (empty_read > EMPTY_READ_WATERMARK){
+					throw new KarmaException("hit empty read at setUpRawPacket");
 				}
 				continue; // anyway check if has remaining
 			}
@@ -139,6 +145,7 @@ public class KarmaPacketDecoderNetty {
 
 	protected BinaryPacketRaw setUpRawPacket(ByteBuf in) {
 		if (in.readableBytes() < HEADER) {
+			empty_read++;
 			return null;
 		}
 		int pos = in.readerIndex();
