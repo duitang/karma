@@ -19,7 +19,7 @@ public class KarmaPacketDecoderNetty {
 
 	final static Logger error = LoggerFactory.getLogger(KarmaPacketDecoderNetty.class);
 	
-	final static int EMPTY_READ_WATERMARK = 1000;
+	final static int EMPTY_READ_WATERMARK = 100;
 
 	// check:
 	// magic_code(2) + total(4) + checksum(8) + float(4) + flag(4) + uuid(8)
@@ -173,6 +173,7 @@ public class KarmaPacketDecoderNetty {
 				ret.setFlag(flag);
 				ret.setUuid(uuid);
 				suspect_loop = 0;
+				empty_read = 0;
 				return ret;
 			}
 			// sticky! invalid packet
