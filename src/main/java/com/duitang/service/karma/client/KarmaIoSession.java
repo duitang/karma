@@ -19,13 +19,15 @@ import com.duitang.service.karma.server.KarmaHandlerInitializer;
 import com.duitang.service.karma.transport.JavaClientHandler;
 
 /**
- * for safety consideration, no connection, no session reused
+ * support logic ping but will be discard if too many ping happened
  * 
  * @author laurence
  * 
  */
 public class KarmaIoSession implements LifeCycle {
 
+	// discard it if too many ping
+	static final protected int PING_WATERMARK = 1000;
 	static final protected long default_timeout = 500; // 0.5s
 	static final protected int ERROR_WATER_MARK = 2;
 
@@ -38,6 +40,8 @@ public class KarmaIoSession implements LifeCycle {
 	protected Bootstrap conn;
 	protected ChannelFuture cf;
 	protected Channel session;
+
+	protected volatile int pingCount = 0;
 
 	protected volatile int errorCount = 0;
 
@@ -108,6 +112,7 @@ public class KarmaIoSession implements LifeCycle {
 	}
 
 	public boolean ping(long uuid) {
+		pingCount++;
 		if (!this.session.isActive()) {
 			hitError();
 			return false;
@@ -149,7 +154,7 @@ public class KarmaIoSession implements LifeCycle {
 
 	@Override
 	public boolean isAlive() {
-		return errorCount < ERROR_WATER_MARK && this.isConnected();
+		return pingCount < PING_WATERMARK && errorCount < ERROR_WATER_MARK && this.isConnected();
 	}
 
 	@Override
