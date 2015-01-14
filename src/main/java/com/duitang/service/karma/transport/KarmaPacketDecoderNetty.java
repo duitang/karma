@@ -19,7 +19,7 @@ public class KarmaPacketDecoderNetty {
 
 	final static Logger error = LoggerFactory.getLogger(KarmaPacketDecoderNetty.class);
 	
-	final static int EMPTY_READ_WATERMARK = 100;
+	final static int EMPTY_READ_WATERMARK = 50;
 
 	// check:
 	// magic_code(2) + total(4) + checksum(8) + float(4) + flag(4) + uuid(8)
