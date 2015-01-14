@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import com.duitang.service.karma.base.ServerBootstrap;
+import com.google.common.collect.Lists;
 
 
 /**
@@ -16,6 +17,8 @@ import com.duitang.service.karma.base.ServerBootstrap;
 public class ServicesExporter {
 
 	private List<Object> services;
+	private List<String> exportedInterfaces = Lists.newArrayList();
+	
 	private int port;
 	private ServerBootstrap boot;
 	
@@ -28,11 +31,17 @@ public class ServicesExporter {
 				//this should never happen
 				Class<?>[] allIntfce = svc.getClass().getInterfaces();
 				Class<?> itf = null;
+				//规则，优先取I打头的接口，若没有则取所实现的第一个接口
 				for (Class<?> intfce : allIntfce) {
 					if (intfce.getSimpleName().startsWith("I")) {
 						itf = intfce;
 					}
 				}
+				
+				if (itf == null) {
+					itf = allIntfce[0];
+				}
+				exportedInterfaces.add(itf.getName());
 				boot.addService(itf, svc);
 				log.warn("ServicesExporter_inited:" + itf.getName());
 			}
@@ -63,6 +72,9 @@ public class ServicesExporter {
 	public void setPort(int port) {
 		this.port = port;
 	}
-	
+
+	public List<String> getExportedInterfaces() {
+		return exportedInterfaces;
+	}
 	
 }

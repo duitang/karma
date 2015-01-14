@@ -16,7 +16,6 @@ import org.apache.zookeeper.ZooDefs.Perms;
 import org.apache.zookeeper.data.ACL;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -48,28 +47,12 @@ public class NodeRegister  implements Watcher, Runnable {
 	public void init() {
 		new Thread(this, "ZkRegister").start();
 	}
-
-	public String getInterface(Class<?>[] allIntfces) {
-		Class<?> itf = null;
-		for (Class<?> intfce : allIntfces) {
-			if (intfce.getSimpleName().startsWith("I")) {
-				itf = intfce;
-			}
-		}
-		return itf.getName();
-	}
 	
 	public String makeData() throws Exception {
-		List<Object> lst = servicesExporter.getServices();
+		List<String> all = servicesExporter.getExportedInterfaces();
 		Map<String, String> m = Maps.newHashMap();
-		if (lst != null) {
-			List<String> intfces = Lists.transform(lst, new Function<Object, String>() {
-				@Override
-				public String apply(Object o) {
-					return getInterface(o.getClass().getInterfaces());
-				}
-			});
-			m.put("rpc_interfaces", Joiner.on(';').join(intfces));
+		if (all.size() > 0) {
+			m.put("rpc_interfaces", Joiner.on(';').join(all));
 			m.put("rpc_port", String.valueOf(servicesExporter.getPort()));
 		}
 		return mapper.writeValueAsString(m);
