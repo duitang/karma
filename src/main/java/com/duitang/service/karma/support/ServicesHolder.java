@@ -5,14 +5,11 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.List;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-
+import java.util.Observable;
+import java.util.Observer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.data.Stat;
 
 import com.duitang.service.karma.base.ClientFactory;
@@ -24,14 +21,13 @@ import com.google.common.collect.Lists;
  * @author kevx
  * @since 5:24:24 PM Jan 13, 2015
  */
-public class ServicesHolder implements Watcher {
+public class ServicesHolder implements Observer {
 	
 	private RpcClientConfig rpcClientConfig;
 	
 	private String interfaceName;
 	private Class<Object> interfaceCls = null;
 	private ClientFactory<Object> cf = null;
-	private Timer timer;
 	private static final String zkGroupBase = "/rpc_groups";
 	
 	private static final Logger log = Logger.getLogger("main");
@@ -41,6 +37,7 @@ public class ServicesHolder implements Watcher {
 	public void init() {
 		try {
 			interfaceCls = (Class<Object>) Class.forName(interfaceName);
+			rpcClientConfig.addObserver(this);
 			createRpcStub();
 		} catch (ClassNotFoundException e) {
 			log.error("", e);
@@ -67,7 +64,6 @@ public class ServicesHolder implements Watcher {
 						} finally {
 							cf.release(rpc);
 						}
-						
 					}
 				}
 			);
@@ -81,10 +77,10 @@ public class ServicesHolder implements Watcher {
 		this.interfaceName = interfaceName;
 	}
 	
-	private List<String> getChildren(String path, boolean watch) {
+	private List<String> getChildren(String path) {
 		List<String> ret = null;
 		try {
-			ret = rpcClientConfig.getZk().getChildren(zkBase(), true);
+			ret = rpcClientConfig.getZk().getChildren(path, false);
 			return ret;
 		} catch (Exception e) {
 		}
@@ -104,8 +100,8 @@ public class ServicesHolder implements Watcher {
 	}
 	
 	private String dynamicBuildEndpoint() {
-		List<String> children = getChildren(zkBase(), true);
-		List<String> groupServers = getChildren(zkGroupBase + "/" + rpcClientConfig.getGroup(), false);
+		List<String> children = getChildren(zkBase());
+		List<String> groupServers = getChildren(zkGroupBase + "/" + rpcClientConfig.getGroup());
 		
 		StringBuilder sb = new StringBuilder();
 		for (String node : children) {
@@ -131,6 +127,7 @@ public class ServicesHolder implements Watcher {
 						sb.append(node);
 						sb.append(":" + port);
 						sb.append(';');
+						break;
 					}
 				}
 			} catch (Exception e) {
@@ -141,21 +138,11 @@ public class ServicesHolder implements Watcher {
 	}
 	
 	private void createRpcStub() {
-		/*
-		 * register myself as a watcher every time 
-		 * 'cause watcher is triggered only once by zk
-		 */
-		try {
-			rpcClientConfig.getZk().getChildren(zkBase(), this);
-		} catch (Exception e) {
-			log.warn("createRpcStub_failed");
-		}
-		
 		String endpoint = rpcClientConfig.getStaticRpcEndpoint();
 		if (!rpcClientConfig.isUsingStaticRpcEndpoint()) {
 			endpoint = dynamicBuildEndpoint();
 			if (endpoint.length() == 0) {
-				log.error("doomed!no_alived_service_provider");
+				log.error("doomed!no_alived_service_provider:" + interfaceName);
 				return;
 			}
 		} else {
@@ -163,10 +150,12 @@ public class ServicesHolder implements Watcher {
 		}
 		
 		ClientFactory<Object> cf0 = ClientFactory.createFactory(interfaceCls);
+		cf0.setGroup(rpcClientConfig.getAppName());
 		cf0.setUrl(endpoint);
 		cf0.setTimeout(3000);
 		cf = cf0;//atomic switch
 		log.warn("init_rpcstub_success:" + interfaceCls);
+		System.out.println("init_rpcstub_success:" + interfaceName);
 	}
 	
 	private String zkBase() {
@@ -178,18 +167,8 @@ public class ServicesHolder implements Watcher {
 	}
 
 	@Override
-	public void process(WatchedEvent event) {
-		//once get here we recreate the stub
-		if (timer == null) {
-			timer = new Timer();
-			timer.schedule(new TimerTask() {
-				@Override
-				public void run() {
-					createRpcStub();
-					timer = null;
-				}
-			}, 1000 * 10);
-		}
+	public void update(Observable o, Object arg) {
+		createRpcStub();
 	}
 
 }

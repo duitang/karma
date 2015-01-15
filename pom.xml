@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.duitang.service</groupId>
     <artifactId>karma</artifactId>
-    <version>0.8.5-SNAPSHOT</version>
+    <version>0.8.6-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>karma</name>
     <properties>
@@ -140,7 +140,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin><!--
             <plugin>
                 <groupId>org.sonatype.plugins</groupId>
                 <artifactId>nexus-staging-maven-plugin</artifactId>
@@ -159,7 +159,7 @@
                     <nexusUrl>http://maven.dev.duitang.com/nexus/</nexusUrl>
                     <skipStaging>true</skipStaging>
                 </configuration>
-            </plugin>
+            </plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>

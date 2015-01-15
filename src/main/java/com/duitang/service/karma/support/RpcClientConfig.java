@@ -1,6 +1,12 @@
 package com.duitang.service.karma.support;
 
+import java.util.List;
+import java.util.Observable;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
+
+import com.google.common.collect.Lists;
 
 /**
  * RPC配置
@@ -8,7 +14,7 @@ import org.apache.zookeeper.ZooKeeper;
  * @author kevx
  * @since 5:27:23 PM Jan 13, 2015
  */
-public class RpcClientConfig {
+public class RpcClientConfig extends Observable implements Watcher {
 
 	private String appName;
 	private String group;
@@ -16,17 +22,57 @@ public class RpcClientConfig {
 	private boolean usingStaticRpcEndpoint;
 	private String staticRpcEndpoint;
 	private ZooKeeper zk;
-	public void init() {
-		try {
-			zk = new ZooKeeper(connString, 3000, null);
-		} catch (Exception e) {
+	private List<String> children = null;
+	
+	boolean zkFailed() {
+		return zk == null || !zk.getState().isAlive();
+	}
+	
+	private void reset() {
+		if (zkFailed()) {
+			try {
+				zk = new ZooKeeper(connString, 3000, this);
+			} catch (Exception e) {
+			}
 		}
 	}
 	
+	
+	public void init() {
+		reset();
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				while (true) {
+					//每5秒检测一次zk是否挂掉，如果挂掉就重新生成
+					try {
+						Thread.sleep(1000 * 10);
+						if (zkFailed()) {
+							reset();
+						}
+						List<String> c = zk.getChildren("/app/" + appName, false);
+						if (c == null || c.size() == 0) continue;
+						if (children == null) {
+							children = Lists.newArrayList();
+							if (c != null) children.addAll(c);
+							continue;
+						}
+						if (c.size() != children.size() || !c.containsAll(children)) {
+							setChanged();
+							notifyObservers();
+							children.clear();
+							children.addAll(c);
+						}
+					} catch (Throwable e) {
+						System.out.println(e);
+					}
+					
+				}
+			}
+		}).start();
+	}
+	
 	public ZooKeeper getZk() {
-		if (zk == null || !zk.getState().isAlive()) {
-			init();
-		}
 		return zk;
 	}
 
@@ -68,6 +114,10 @@ public class RpcClientConfig {
 
 	public void setAppName(String appName) {
 		this.appName = appName;
+	}
+
+	@Override
+	public void process(WatchedEvent w) {
 	}
 
 }
