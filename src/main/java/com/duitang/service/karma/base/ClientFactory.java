@@ -17,7 +17,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 	protected String url;
 	protected List<String> serviceURL;
 	protected AtomicInteger hashid = new AtomicInteger(0);
-	protected int timeout = 500;
+	protected long timeout = 500;
 	protected String clientid;
 	protected int sz = 0;
 	protected String group = "default";
@@ -55,7 +55,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		return timeout;
 	}
 
-	public void setTimeout(int timeout) {
+	public void setTimeout(long timeout) {
 		this.timeout = timeout;
 	}
 
