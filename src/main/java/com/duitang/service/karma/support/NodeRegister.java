@@ -1,6 +1,8 @@
 package com.duitang.service.karma.support;
 
 import java.net.InetAddress;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -10,9 +12,9 @@ import org.apache.log4j.Logger;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooDefs.Perms;
+import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.ACL;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,7 +25,9 @@ import com.google.common.collect.Maps;
 /**
  * 服务自动发现机制
  * 
- * 每台机器启动后均将自身注册到zk中
+ * 每台机器启动后均将自身注册到zk中；
+ * 当机器失联后zk会自动删除相应节点
+ * 
  * @author kevx
  * @since 5:57:54 PM Jan 13, 2015
  */
@@ -49,11 +53,13 @@ public class NodeRegister  implements Watcher, Runnable {
 	}
 	
 	public String makeData() throws Exception {
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
 		List<String> all = servicesExporter.getExportedInterfaces();
 		Map<String, String> m = Maps.newHashMap();
 		if (all.size() > 0) {
 			m.put("rpc_interfaces", Joiner.on(';').join(all));
 			m.put("rpc_port", String.valueOf(servicesExporter.getPort()));
+			m.put("rpc_gmt_create", sdf.format(new Date()));
 		}
 		return mapper.writeValueAsString(m);
 	}

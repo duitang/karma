@@ -47,13 +47,23 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 		}
 	}
 
-	static public <T> KarmaClient<T> createKarmaClient(Class<T> iface, List<String> urls, String clientid, String group) throws KarmaException {
+	
+	static public <T> KarmaClient<T> createKarmaClient(
+			Class<T> iface, List<String> urls, String clientid, String group
+	) throws KarmaException {
+		return createKarmaClient(iface, urls, clientid, group, 500);
+	}
+	
+	static public <T> KarmaClient<T> createKarmaClient(
+			Class<T> iface, List<String> urls, String clientid, String group, long timeout
+	) throws KarmaException {
 		if (!iface.isInterface()) {
 			throw new KarmaException("not a valid interface: " + iface.getName());
 		}
 		// caution: fair load is a hint for there is a flushed version from ZK
 		ClusterZKRouter rt = ClusterZKRouter.createRouter(group, ClusterZKRouter.fairLoad(urls));
 		KarmaClient client = new KarmaClient(iface, rt);
+		client.timeout = timeout;
 		client.clientid = clientid;
 		client.dummy = (T) Enhancer.create(null, new Class[] { iface, KarmaClientInfo.class }, client);
 		return client;

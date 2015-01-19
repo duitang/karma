@@ -75,7 +75,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		}
 		KarmaClient<T> ret;
 		try {
-			ret = KarmaClient.createKarmaClient(getServiceType(), serviceURL, clientid, group);
+			ret = KarmaClient.createKarmaClient(getServiceType(), serviceURL, clientid, group, getTimeout());
 			return ret.getService();
 		} catch (KarmaException e) {
 		}
