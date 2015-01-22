@@ -39,24 +39,34 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 
 	static {
 		mgrCallbacks = new HashMap<String, Method>();
-		Class[] ifaces = new Class[] { LifeCycle.class, KarmaClientInfo.class };
+		Class[] ifaces = new Class[]
+			{
+			        LifeCycle.class,
+			        KarmaClientInfo.class };
 		for (Class clz : ifaces) {
 			for (Method m : clz.getDeclaredMethods()) {
 				mgrCallbacks.put(m.getName(), m);
 			}
 		}
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+
+			@Override
+			public void run() {
+				shutdownIOPool();
+			}
+
+		});
 	}
 
-	
-	static public <T> KarmaClient<T> createKarmaClient(
-			Class<T> iface, List<String> urls, String clientid, String group
-	) throws KarmaException {
+	public static void shutdownIOPool() {
+		pool.close();
+	}
+
+	static public <T> KarmaClient<T> createKarmaClient(Class<T> iface, List<String> urls, String clientid, String group) throws KarmaException {
 		return createKarmaClient(iface, urls, clientid, group, 500);
 	}
-	
-	static public <T> KarmaClient<T> createKarmaClient(
-			Class<T> iface, List<String> urls, String clientid, String group, long timeout
-	) throws KarmaException {
+
+	static public <T> KarmaClient<T> createKarmaClient(Class<T> iface, List<String> urls, String clientid, String group, long timeout) throws KarmaException {
 		if (!iface.isInterface()) {
 			throw new KarmaException("not a valid interface: " + iface.getName());
 		}
@@ -65,7 +75,10 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 		KarmaClient client = new KarmaClient(iface, rt);
 		client.timeout = timeout;
 		client.clientid = clientid;
-		client.dummy = (T) Enhancer.create(null, new Class[] { iface, KarmaClientInfo.class }, client);
+		client.dummy = (T) Enhancer.create(null, new Class[]
+			{
+			        iface,
+			        KarmaClientInfo.class }, client);
 		return client;
 	}
 
