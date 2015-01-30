@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 
 import com.duitang.service.karma.KarmaException;
+import com.duitang.service.karma.client.KarmaClient;
 import com.duitang.service.karma.handler.JsonRPCHandler;
 import com.duitang.service.karma.handler.RPCHandler;
 import com.duitang.service.karma.handler.ReflectRPCHandler;
@@ -138,6 +139,7 @@ public class ServerBootstrap {
 	}
 
 	public void shutdown() {
+		KarmaClient.shutdownIOPool();
 		if (http != null) {
 			http.stop();
 		}
