@@ -194,9 +194,10 @@ public class ClusterZKRouter implements IOBalance {
 		ClusterZKRouter ret = groupRouter.get(group);
 		if (ret == null) {
 			// try using load found from ZK
-			if (defaultGroupLoads.containsKey(group)) {
-				load = defaultGroupLoads.get(group);
-			}
+			//这里会有问题，所以注释掉
+//			if (defaultGroupLoads.containsKey(group)) {
+//				load = defaultGroupLoads.get(group);
+//			}
 			ret = new ClusterZKRouter(group, load);
 			groupRouter.putIfAbsent(group, ret);
 			ret = groupRouter.get(group);
