@@ -70,9 +70,9 @@ public class KarmaIOPool implements LifeCycle {
 
 	protected GenericObjectPool<KarmaIoSession> forceCreatePool(String url) {
 		GenericObjectPoolConfig cfg = new GenericObjectPoolConfig();
-		cfg.setMaxIdle(30);
+		cfg.setMaxIdle(100);
 		cfg.setMinIdle(0);
-		cfg.setMaxTotal(60);
+		cfg.setMaxTotal(300);
 		cfg.setTestWhileIdle(false);
 		cfg.setBlockWhenExhausted(true);
 		cfg.setMaxWaitMillis(timeout);
