@@ -4,6 +4,9 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import net.sf.cglib.proxy.Enhancer;
@@ -20,13 +23,15 @@ import com.duitang.service.karma.base.LifeCycle;
 import com.duitang.service.karma.base.MetricCenter;
 import com.duitang.service.karma.meta.BinaryPacketData;
 
+@SuppressWarnings("rawtypes")
 public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 
 	final static public String CLINET_ATTR_NAME = "_KARMACLIENT_";
 	final static protected Map<String, Method> mgrCallbacks;
 	final static protected KarmaIOPool pool = new KarmaIOPool();
 	final static protected Logger error = LoggerFactory.getLogger(KarmaClient.class);
-
+	final static AtomicBoolean needReset = new AtomicBoolean(false);
+	
 	static String zkURL = null;
 
 	protected String clientid;
@@ -58,6 +63,18 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 		});
 	}
 
+	public static void reset() {
+	    if (needReset.compareAndSet(false, true)) {
+	        pool.resetPool();
+            new Timer().schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    needReset.set(false); 
+                }
+            }, 6000);
+        }
+	}
+	
 	public static void shutdownIOPool() {
 		pool.close();
 	}
@@ -66,7 +83,8 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 		return createKarmaClient(iface, urls, clientid, group, 500);
 	}
 
-	static public <T> KarmaClient<T> createKarmaClient(Class<T> iface, List<String> urls, String clientid, String group, long timeout) throws KarmaException {
+	@SuppressWarnings("unchecked")
+    static public <T> KarmaClient<T> createKarmaClient(Class<T> iface, List<String> urls, String clientid, String group, long timeout) throws KarmaException {
 		if (!iface.isInterface()) {
 			throw new KarmaException("not a valid interface: " + iface.getName());
 		}
@@ -75,10 +93,11 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 		KarmaClient client = new KarmaClient(iface, rt);
 		client.timeout = timeout;
 		client.clientid = clientid;
-		client.dummy = (T) Enhancer.create(null, new Class[]
-			{
-			        iface,
-			        KarmaClientInfo.class }, client);
+		client.dummy = (T) Enhancer.create(
+		    null, 
+		    new Class[] {iface, KarmaClientInfo.class}, 
+		    client
+		);
 		return client;
 	}
 

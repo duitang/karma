@@ -1,7 +1,9 @@
 package com.duitang.service.karma.client;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.pool2.PooledObject;
@@ -13,6 +15,7 @@ import org.apache.log4j.Logger;
 
 import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.base.LifeCycle;
+import com.google.common.collect.Sets;
 
 public class KarmaIOPool implements LifeCycle {
 
@@ -29,6 +32,17 @@ public class KarmaIOPool implements LifeCycle {
 		this.timeout = timeout;
 	}
 
+	public void resetPool() {
+	    Set<Entry<String, GenericObjectPool<KarmaIoSession>>> set = Sets.newHashSet(ioPool.entrySet());
+	    ioPool.clear();//clear first
+	    for (Map.Entry<String, GenericObjectPool<KarmaIoSession>> e : set) {
+    	    GenericObjectPool<KarmaIoSession> pool = e.getValue();
+            if (pool != null) {
+                pool.close();
+            }
+	    }
+	}
+	
 	public KarmaIoSession getIOSession(String url) throws KarmaException {
 		if (closed) {
 			throw new KarmaException("closed pool: " + url);

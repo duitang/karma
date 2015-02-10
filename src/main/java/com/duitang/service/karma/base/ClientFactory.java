@@ -68,7 +68,8 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		this.group = group;
 	}
 
-	@Override
+	@SuppressWarnings("unchecked")
+    @Override
 	public T create() { // for python performance issue no exception
 		if (sz == 0) {
 			new KarmaRuntimeException("no remote url find? please setUrl(String url)").printStackTrace();
@@ -96,7 +97,8 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 				return name;
 			}
 
-			@Override
+			@SuppressWarnings("rawtypes")
+            @Override
 			public Class getServiceType() {
 				return clz;
 			}
@@ -106,10 +108,11 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		return ret;
 	}
 
-	public void resetRouter() {
+	public void reset() {
 	    if (ClusterZKRouter.setReset()) {
 	        ClusterZKRouter.reset(group, ClusterZKRouter.fairLoad(serviceURL));
 	    }
+	    KarmaClient.reset();
 	}
 	
 	@SuppressWarnings("rawtypes")

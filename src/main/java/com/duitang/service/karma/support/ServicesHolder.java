@@ -153,7 +153,7 @@ public class ServicesHolder implements Observer {
 		cf0.setGroup(rpcClientConfig.getAppName());
 		cf0.setUrl(endpoint);
 		cf0.setTimeout(rpcClientConfig.getTimeout());
-		cf0.resetRouter();
+		cf0.reset();
 		cf = cf0;//atomic switch
 		log.warn("init_rpcstub_success:" + interfaceCls);
 		System.out.println("init_rpcstub_success:" + interfaceName);
