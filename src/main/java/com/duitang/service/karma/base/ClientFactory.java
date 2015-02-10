@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 
 import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.KarmaRuntimeException;
+import com.duitang.service.karma.client.ClusterZKRouter;
 import com.duitang.service.karma.client.KarmaClient;
 
 public abstract class ClientFactory<T> implements ServiceFactory<T> {
@@ -105,6 +106,12 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		return ret;
 	}
 
+	public void resetRouter() {
+	    if (ClusterZKRouter.setReset()) {
+	        ClusterZKRouter.reset(group, ClusterZKRouter.fairLoad(serviceURL));
+	    }
+	}
+	
 	@SuppressWarnings("rawtypes")
 	static public ClientFactory createServiceFactory(String serviceName) throws Exception {
 		return ClientFactory.createFactory(Class.forName(serviceName));

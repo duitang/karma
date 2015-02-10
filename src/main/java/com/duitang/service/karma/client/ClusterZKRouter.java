@@ -9,9 +9,12 @@ import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.Random;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.curator.RetryPolicy;
@@ -48,6 +51,7 @@ public class ClusterZKRouter implements IOBalance {
 		helper.start();
 	}
 
+	final static AtomicBoolean needReset = new AtomicBoolean(false);
 	final static ConcurrentHashMap<String, ClusterZKRouter> groupRouter = new ConcurrentHashMap<String, ClusterZKRouter>();
 	final static ConcurrentHashMap<String, Map<String, Integer>> defaultGroupLoads = new ConcurrentHashMap<String, Map<String, Integer>>();
 	final static Semaphore helpLock = new Semaphore(0);
@@ -190,6 +194,25 @@ public class ClusterZKRouter implements IOBalance {
 		return ret;
 	}
 
+	static public boolean setReset() {
+	    return needReset.compareAndSet(false, true);
+	}
+	
+	/**
+	 * 在重新创建ClientFactory的时候调用
+	 */
+	static public void reset(String group, Map<String, Integer> load) {
+	    if (needReset.get()) {
+	        groupRouter.put(group, new ClusterZKRouter(group, load));
+	        new Timer().schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    needReset.compareAndSet(true, false); 
+                }
+            }, 6000);
+	    }
+	}
+	
 	static public ClusterZKRouter createRouter(String group, Map<String, Integer> load) {
 		ClusterZKRouter ret = groupRouter.get(group);
 		if (ret == null) {
