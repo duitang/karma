@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
@@ -57,10 +58,12 @@ public class ServicesHolder implements Observer {
 				new InvocationHandler() {
 					@Override
 					public Object invoke(Object proxy, Method method, Object[] args)
-							throws Throwable {
+							throws RuntimeException {
 						Object rpc = get();
 						try {
 							return method.invoke(rpc, args);
+						} catch (Throwable e) {
+						    throw new RuntimeException(e);
 						} finally {
 							cf.release(rpc);
 						}

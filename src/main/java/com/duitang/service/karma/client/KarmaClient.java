@@ -22,6 +22,9 @@ import com.duitang.service.karma.base.KarmaClientInfo;
 import com.duitang.service.karma.base.LifeCycle;
 import com.duitang.service.karma.base.MetricCenter;
 import com.duitang.service.karma.meta.BinaryPacketData;
+import com.duitang.service.karma.meta.RPCConfig;
+import com.duitang.service.karma.support.CCT;
+import com.duitang.service.karma.support.TraceChainDO;
 
 @SuppressWarnings("rawtypes")
 public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
@@ -139,11 +142,21 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 			return m.invoke(this, args);
 		}
 		long ts = System.nanoTime();
+		RPCConfig rpcConfig = new RPCConfig();
+		TraceChainDO tc = CCT.get();
+		if (tc != null) {
+		    tc = tc.clone();
+		    rpcConfig.addConf(CCT.RPC_CONF_KEY, tc);
+		}
+		rpcConfig.addConf("timebase", System.currentTimeMillis());
+		
 		BinaryPacketData data = new BinaryPacketData();
 		data.domain = domainName;
 		data.method = name;
 		data.param = args;
 		data.uuid = uuid.incrementAndGet();
+		data.conf = rpcConfig;
+		
 		KarmaRemoteLatch latch = new KarmaRemoteLatch(timeout);
 		latch.setUuid(data.uuid);
 		Object ret = null;
@@ -159,13 +172,17 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 			iosession.write(data);
 			ret = latch.getResult();
 			flag = false;
+			CCT.mergeTraceChain(latch.getRemoteTc());
 		} catch (Throwable e) {
 			flag = true;
+			boolean reachable = true;
 			if (iosession != null) {
 				pong = iosession.ping(uuid.incrementAndGet());
 				error.debug("ping " + u + " ok = " + pong);
+				if (!pong) reachable = iosession.reachable();
 			}
-			throw new KarmaRuntimeException(iosession + " call method[" + name + "]@" + u + " timeout / error pong = " + pong, e);
+			String err = String.format("%s call method[%s]@%s timeout/err_pong=%s,reachable=%s", iosession, name, u, pong, reachable);
+			throw new KarmaRuntimeException(err, e);
 		} finally {
 			if (iosession != null) {
 				pool.releaseIOSession(iosession);

@@ -10,7 +10,11 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.Attribute;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.duitang.service.karma.base.LifeCycle;
 import com.duitang.service.karma.meta.BinaryPacketData;
@@ -128,6 +132,18 @@ public class KarmaIoSession implements LifeCycle {
 		return false;
 	}
 
+	public boolean reachable() {
+	    String[] ss = StringUtils.split(this.url, ":");
+	    if (ss == null || ss.length != 2) return false;
+	    try {
+            InetAddress ia = InetAddress.getByName(ss[0]);
+            return ia.isReachable(10);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+	    return false;
+	}
+	
 	public void setAttribute(KarmaRemoteLatch latch) {
 		Attribute<KarmaRemoteLatch> attr = this.session.attr(KarmaRemoteLatch.LATCH_KEY);
 		attr.set(latch);

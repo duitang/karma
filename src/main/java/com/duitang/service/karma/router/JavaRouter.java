@@ -1,5 +1,6 @@
 package com.duitang.service.karma.router;
 
+import java.io.Serializable;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -14,6 +15,8 @@ import com.duitang.service.karma.handler.RPCHandler;
 import com.duitang.service.karma.meta.BinaryPacketData;
 import com.duitang.service.karma.meta.BinaryPacketHelper;
 import com.duitang.service.karma.meta.BinaryPacketRaw;
+import com.duitang.service.karma.support.CCT;
+import com.duitang.service.karma.support.TraceChainDO;
 
 public class JavaRouter implements Router<BinaryPacketRaw> {
 
@@ -57,11 +60,30 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
 						}
 						break;
 					}
+					if (data.conf != null && data.conf.isValid()) {
+    					TraceChainDO chain = (TraceChainDO) data.conf.getConf(CCT.RPC_CONF_KEY);
+    					if (chain != null) {
+    					    chain.reset();
+    					    long currtime = System.currentTimeMillis();
+    					    long timebase = currtime;
+    					    Serializable obj = data.conf.getConf("timebase");
+    					    if (obj != null && obj instanceof Long) {
+    					        timebase = (long) obj;
+    					        chain.setTimedelta(timebase - currtime);
+    					    }
+    					    CCT.setForcibly(chain);
+    					}
+					}
 					ctx.name = data.domain;
 					ctx.method = data.method;
 					ctx.params = data.param;
 					handler.lookUp(ctx);
-					handler.invoke(ctx);
+					try {
+					    CCT.call(data.domain + "::" + data.method, false);
+					    handler.invoke(ctx);
+					} finally {
+					    CCT.ret();
+					}
 					data.ret = ctx.ret;
 				} catch (Throwable e) {
 					if (data == null) {
