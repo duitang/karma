@@ -8,7 +8,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
@@ -33,7 +32,7 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 	final static protected Map<String, Method> mgrCallbacks;
 	final static protected KarmaIOPool pool = new KarmaIOPool();
 	final static protected Logger error = LoggerFactory.getLogger(KarmaClient.class);
-	final static AtomicBoolean needReset = new AtomicBoolean(false);
+	final static protected AtomicBoolean lock = new AtomicBoolean(false);
 	
 	static String zkURL = null;
 
@@ -66,34 +65,48 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 		});
 	}
 
-	public static void reset() {
-	    if (needReset.compareAndSet(false, true)) {
+	public static void reset(String group, List<String> urls) {
+	    if (lock.compareAndSet(false, true)) {
+	        System.out.println("obtained:" + group);
 	        pool.resetPool();
+            WRRBalancer.getInstance(group, urls).reload(urls);
             new Timer().schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    needReset.set(false); 
+                    lock.compareAndSet(true, false);
                 }
             }, 6000);
-        }
+	    }
 	}
 	
 	public static void shutdownIOPool() {
 		pool.close();
 	}
 
-	static public <T> KarmaClient<T> createKarmaClient(Class<T> iface, List<String> urls, String clientid, String group) throws KarmaException {
+	static public <T> KarmaClient<T> createKarmaClient(
+	    Class<T> iface, 
+	    List<String> urls, 
+	    String clientid, 
+	    String group
+	) throws KarmaException {
 		return createKarmaClient(iface, urls, clientid, group, 500);
 	}
 
 	@SuppressWarnings("unchecked")
-    static public <T> KarmaClient<T> createKarmaClient(Class<T> iface, List<String> urls, String clientid, String group, long timeout) throws KarmaException {
+    static public <T> KarmaClient<T> createKarmaClient(
+        Class<T> iface, 
+        List<String> urls, 
+        String clientid, 
+        String group, 
+        long timeout
+    ) throws KarmaException {
 		if (!iface.isInterface()) {
 			throw new KarmaException("not a valid interface: " + iface.getName());
 		}
 		// caution: fair load is a hint for there is a flushed version from ZK
-		ClusterZKRouter rt = ClusterZKRouter.createRouter(group, ClusterZKRouter.fairLoad(urls));
-		KarmaClient client = new KarmaClient(iface, rt);
+		//ClusterZKRouter rt = ClusterZKRouter.createRouter(group, ClusterZKRouter.fairLoad(urls));
+		IOBalance iob = WRRBalancer.getInstance(group, urls);
+		KarmaClient client = new KarmaClient(iface, iob);
 		client.timeout = timeout;
 		client.clientid = clientid;
 		client.dummy = (T) Enhancer.create(
@@ -174,6 +187,7 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 			flag = false;
 			CCT.mergeTraceChain(latch.getRemoteTc());
 		} catch (Throwable e) {
+		    router.fail(u);
 			flag = true;
 			boolean reachable = true;
 			if (iosession != null) {

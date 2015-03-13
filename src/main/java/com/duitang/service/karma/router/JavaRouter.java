@@ -2,7 +2,6 @@ package com.duitang.service.karma.router;
 
 import java.io.Serializable;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -23,7 +22,7 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
 	final static Logger out = Logger.getLogger(JavaRouter.class);
 
 	protected RPCHandler handler;
-	protected ExecutorService execPool = new ThreadPoolExecutor(5, 100, 300L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(10000));
+	protected ThreadPoolExecutor execPool = new ThreadPoolExecutor(5, 100, 300L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(10000));
 
 	protected AtomicLong pingCount = new AtomicLong(0);
 
@@ -35,21 +34,30 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
 	@Override
 	public void route(RPCContext ctx, BinaryPacketRaw raw) throws KarmaException {
 		execPool.submit(new KarmaJobRunner(ctx, raw));
+		int sz = execPool.getActiveCount();
+		if (sz >= 99) {
+		    out.warn("JavaRouter_threads_exceed:" + sz);
+		}
 	}
 
 	class KarmaJobRunner implements Runnable {
 
 		RPCContext ctx;
 		BinaryPacketRaw raw;
-
+		long submitTime;
+		long schdTime;
+		
 		public KarmaJobRunner(RPCContext ctx, BinaryPacketRaw rawPack) {
 			this.ctx = ctx;
 			this.raw = rawPack;
+			this.submitTime = System.currentTimeMillis();
+			this.schdTime = 0;
 		}
 
 		@Override
 		public void run() {
 			BinaryPacketData data = null;
+			schdTime = System.currentTimeMillis();
 			do {
 				try {
 					data = BinaryPacketHelper.fromRawToData(raw);
@@ -92,6 +100,10 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
 					data.ex = e;
 				}
 			} while (false);
+			long latency = this.schdTime - this.submitTime;
+			if (latency > 100L) {
+			    out.warn("JavaRouter_latency:" + latency);
+			}
 			if (raw.ctx != null) {
 				raw.ctx.writeAndFlush(data.getBytes());
 			}

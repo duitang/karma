@@ -45,9 +45,9 @@ public class RpcClientConfig extends Observable implements Watcher {
 			@Override
 			public void run() {
 				while (true) {
-					//每5秒检测一次zk是否挂掉，如果挂掉就重新生成
+					//每1秒检测一次zk是否挂掉，如果挂掉就重新生成
 					try {
-						Thread.sleep(1000 * 5);
+						Thread.sleep(1000 * 1);
 						if (zkFailed()) {
 							reset();
 						}
@@ -65,7 +65,7 @@ public class RpcClientConfig extends Observable implements Watcher {
 							children.addAll(c);
 						}
 					} catch (Throwable e) {
-						System.out.println(e);
+						e.printStackTrace();
 					}
 					
 				}

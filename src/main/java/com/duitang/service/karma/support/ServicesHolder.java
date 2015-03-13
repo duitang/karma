@@ -15,6 +15,7 @@ import org.apache.zookeeper.data.Stat;
 
 import com.duitang.service.karma.base.ClientFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
 /**
@@ -27,6 +28,7 @@ public class ServicesHolder implements Observer {
 	private RpcClientConfig rpcClientConfig;
 	
 	private String interfaceName;
+	private List<String> lastEndpoints;
 	private Class<Object> interfaceCls = null;
 	private ClientFactory<Object> cf = null;
 	private static final String zkGroupBase = "/rpc_groups";
@@ -148,6 +150,13 @@ public class ServicesHolder implements Observer {
 				log.error("doomed!no_alived_service_provider:" + interfaceName);
 				return;
 			}
+			
+			List<String> lst = Splitter.on(';').splitToList(endpoint);
+			if (lastEndpoints != null && lst.size() == lastEndpoints.size() && lst.containsAll(lastEndpoints)) {
+			    log.warn("nodelist_changed_but_no_change_for_group:" + rpcClientConfig.getGroup());
+			    return;
+			}
+			lastEndpoints = lst;
 		} else {
 			if (cf != null) return;
 		}

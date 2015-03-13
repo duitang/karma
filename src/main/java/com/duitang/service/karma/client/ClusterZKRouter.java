@@ -272,4 +272,8 @@ public class ClusterZKRouter implements IOBalance {
 		return ret;
 	}
 
+    @Override
+    public void fail(String token) {
+    }
+
 }

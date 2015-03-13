@@ -15,4 +15,5 @@ public interface IOBalance {
 
 	public void updateLoad(Map<String, Integer> load);
 
+	public void fail(String token);
 }

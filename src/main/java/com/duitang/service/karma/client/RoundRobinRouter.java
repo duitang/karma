@@ -29,4 +29,9 @@ public class RoundRobinRouter implements IOBalance {
 		// ignore
 	}
 
+    @Override
+    public void fail(String token) {
+        
+    }
+
 }
