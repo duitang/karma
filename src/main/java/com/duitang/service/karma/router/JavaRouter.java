@@ -1,7 +1,10 @@
 package com.duitang.service.karma.router;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -9,6 +12,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.log4j.Logger;
 
 import com.duitang.service.karma.KarmaException;
+import com.duitang.service.karma.KarmaOverloadException;
 import com.duitang.service.karma.handler.RPCContext;
 import com.duitang.service.karma.handler.RPCHandler;
 import com.duitang.service.karma.meta.BinaryPacketData;
@@ -20,22 +24,30 @@ import com.duitang.service.karma.support.TraceChainDO;
 public class JavaRouter implements Router<BinaryPacketRaw> {
 
 	final static Logger out = Logger.getLogger(JavaRouter.class);
-
+	final static int CORE_SIZE = 150;
+	
 	protected RPCHandler handler;
-	protected ThreadPoolExecutor execPool = new ThreadPoolExecutor(5, 100, 300L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(10000));
-
+	protected ThreadPoolExecutor execPool = new ThreadPoolExecutor(CORE_SIZE, 200, 300L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(10000));
+	
 	protected AtomicLong pingCount = new AtomicLong(0);
-
+	protected int maxQueuingLatency = 0;
+	
 	@Override
 	public void setHandler(RPCHandler handler) {
 		this.handler = handler;
 	}
 
-	@Override
+	public void setMaxQueuingLatency(int maxQueuingLatency) {
+        this.maxQueuingLatency = maxQueuingLatency;
+    }
+
+    @Override
 	public void route(RPCContext ctx, BinaryPacketRaw raw) throws KarmaException {
-		execPool.submit(new KarmaJobRunner(ctx, raw));
+        KarmaJobRunner k = new KarmaJobRunner(ctx, raw);
+        Future<?> future = execPool.submit(k);
+        k.future = future;
 		int sz = execPool.getActiveCount();
-		if (sz >= 99) {
+		if (sz >= CORE_SIZE) {
 		    out.warn("JavaRouter_threads_exceed:" + sz);
 		}
 	}
@@ -46,20 +58,31 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
 		BinaryPacketRaw raw;
 		long submitTime;
 		long schdTime;
+		SimpleDateFormat sdf;
+		Future<?> future;
 		
 		public KarmaJobRunner(RPCContext ctx, BinaryPacketRaw rawPack) {
 			this.ctx = ctx;
 			this.raw = rawPack;
 			this.submitTime = System.currentTimeMillis();
 			this.schdTime = 0;
+			this.sdf = new SimpleDateFormat("HH:mm:ss.S");
 		}
 
 		@Override
 		public void run() {
 			BinaryPacketData data = null;
 			schdTime = System.currentTimeMillis();
+			long latency = this.schdTime - this.submitTime;
 			do {
 				try {
+		            if (latency > 200L) {
+		                String info = String.format("%s_JavaRouter_latency:%d,Qsize:%d", 
+		                    sdf.format(new Date()), latency, execPool.getTaskCount()
+		                );
+		                out.warn(info);
+		            }
+		            
 					data = BinaryPacketHelper.fromRawToData(raw);
 					if (BinaryPacketHelper.isPing(data)) {
 						long g = pingCount.incrementAndGet();
@@ -82,6 +105,9 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
     					    CCT.setForcibly(chain);
     					}
 					}
+					//如果延迟超过maxQueuingLatency说明系统过载，直接报错不再执行业务逻辑
+                    if (latency >= maxQueuingLatency) throw new KarmaOverloadException();
+                    
 					ctx.name = data.domain;
 					ctx.method = data.method;
 					ctx.params = data.param;
@@ -100,10 +126,7 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
 					data.ex = e;
 				}
 			} while (false);
-			long latency = this.schdTime - this.submitTime;
-			if (latency > 100L) {
-			    out.warn("JavaRouter_latency:" + latency);
-			}
+			
 			if (raw.ctx != null) {
 				raw.ctx.writeAndFlush(data.getBytes());
 			}

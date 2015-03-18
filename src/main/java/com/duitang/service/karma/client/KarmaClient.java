@@ -8,6 +8,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
@@ -16,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.duitang.service.karma.KarmaException;
+import com.duitang.service.karma.KarmaOverloadException;
 import com.duitang.service.karma.KarmaRuntimeException;
 import com.duitang.service.karma.base.KarmaClientInfo;
 import com.duitang.service.karma.base.LifeCycle;
@@ -145,7 +147,7 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 	}
 
 	@Override
-	public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
+	public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws KarmaRuntimeException, Throwable {
 		String name = method.getName();
 		if (!cutoffNames.containsKey(name) && !mgrCallbacks.containsKey(name)) {
 			return proxy.invokeSuper(obj, args);
@@ -186,6 +188,8 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 			ret = latch.getResult();
 			flag = false;
 			CCT.mergeTraceChain(latch.getRemoteTc());
+		} catch (KarmaOverloadException e) {
+		    throw e;
 		} catch (Throwable e) {
 		    router.fail(u);
 			flag = true;

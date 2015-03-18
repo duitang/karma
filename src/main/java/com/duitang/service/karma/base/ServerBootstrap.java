@@ -28,7 +28,8 @@ public class ServerBootstrap {
 	protected TCPServer tcp;
 
 	protected StringBuilder info = new StringBuilder();
-
+	protected int maxQueuingLatency = 500;//请求最大等待时间（即从进入队列到真正被worker执行）
+	
 	protected void initRPCService(ServiceConfig conf) throws KarmaException {
 		rpc0 = new ReflectRPCHandler();
 		rpc0.setConf(conf);
@@ -39,12 +40,17 @@ public class ServerBootstrap {
 	protected void initRouter(RPCHandler rpc0, RPCHandler rpc1) {
 		javaRouter = new JavaRouter();
 		javaRouter.setHandler(rpc0);
-
+		javaRouter.setMaxQueuingLatency(maxQueuingLatency);
+		
 		jsonRouter = new JsonRouter();
 		jsonRouter.setHandler(rpc1);
 	}
 
-	public void addService(Class serviceType, Object service) {
+	public void setMaxQueuingLatency(int maxQueuingLatency) {
+        this.maxQueuingLatency = maxQueuingLatency;
+    }
+
+    public void addService(Class serviceType, Object service) {
 		conf.addService(serviceType, service);
 		String clientid = MetricCenter.genClientIdFromCode();
 //		MetricCenter.initMetric(serviceType, clientid);

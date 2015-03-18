@@ -20,6 +20,7 @@ public class ServicesExporter {
 	private List<String> exportedInterfaces = Lists.newArrayList();
 	
 	private int port;
+	private int maxQueuingLatency;
 	private ServerBootstrap boot;
 	
 	private final Logger log = Logger.getLogger("server");
@@ -43,6 +44,7 @@ public class ServicesExporter {
 				}
 				exportedInterfaces.add(itf.getName());
 				boot.addService(itf, svc);
+				boot.setMaxQueuingLatency(maxQueuingLatency);
 				log.warn("ServicesExporter_inited:" + itf.getName());
 			}
 			boot.startUp(port);
@@ -73,7 +75,11 @@ public class ServicesExporter {
 		this.port = port;
 	}
 
-	public List<String> getExportedInterfaces() {
+	public void setMaxQueuingLatency(int maxQueuingLatency) {
+        this.maxQueuingLatency = maxQueuingLatency;
+    }
+
+    public List<String> getExportedInterfaces() {
 		return exportedInterfaces;
 	}
 	

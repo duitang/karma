@@ -1,6 +1,7 @@
 package com.duitang.service.karma.support;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.List;
@@ -60,12 +61,12 @@ public class ServicesHolder implements Observer {
 				new InvocationHandler() {
 					@Override
 					public Object invoke(Object proxy, Method method, Object[] args)
-							throws RuntimeException {
+							throws Throwable {
 						Object rpc = get();
 						try {
 							return method.invoke(rpc, args);
-						} catch (Throwable e) {
-						    throw new RuntimeException(e);
+						} catch (InvocationTargetException e) {
+						    throw e.getTargetException();
 						} finally {
 							cf.release(rpc);
 						}
@@ -73,7 +74,7 @@ public class ServicesHolder implements Observer {
 				}
 			);
 		} catch (Exception e) {
-			log.error("", e);
+			log.error("ServicesHolder::create:failed", e);
 		}
 		return null;
 	}
