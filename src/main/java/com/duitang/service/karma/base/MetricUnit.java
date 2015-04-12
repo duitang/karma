@@ -53,7 +53,12 @@ public class MetricUnit {
         ret.put("p96", histo.getValueAtPercentile(96D));
         ret.put("p98", histo.getValueAtPercentile(98D));
         ret.put("p99", histo.getValueAtPercentile(99D));
+        ret.put("p996", histo.getValueAtPercentile(99.6D));
+        ret.put("p998", histo.getValueAtPercentile(99.8D));
         ret.put("p999", histo.getValueAtPercentile(99.9D));
+        ret.put("p9995", histo.getValueAtPercentile(99.95D));
+        ret.put("p9997", histo.getValueAtPercentile(99.97D));
+        ret.put("p9998", histo.getValueAtPercentile(99.98D));
         ret.put("p9999", histo.getValueAtPercentile(99.99D));
         ret.put("p99999", histo.getValueAtPercentile(99.999D));
         ret.put("p999999", histo.getValueAtPercentile(99.9999D));
