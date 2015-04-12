@@ -48,7 +48,7 @@ public class MetricCenter {
 		}
 		MetricUnit hist = method_dur.get(clientId + ":" + name);
 		if (hist != null) {
-			hist.metric(elapse);
+			hist.record(elapse);
 		}
 	}
 
