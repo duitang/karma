@@ -23,7 +23,7 @@ public class ServerStatPipe extends CloudPipeBase {
                 m.put("value", value.toString());
             }
         } else {
-            m.put("value", "");
+            m.put("value", "0");
         }
         pumpMap(m);
     }
