@@ -34,7 +34,6 @@ public class MetricCenterTest {
 				Thread.sleep(10);
 			}
 
-			stat.forceIntervalSample();
 			stat.getIntervalHistogramInto(hist);
 
 			// hist.outputPercentileDistribution(System.out, 1000000D);

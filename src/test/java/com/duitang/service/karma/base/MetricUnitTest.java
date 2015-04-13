@@ -21,7 +21,7 @@ public class MetricUnitTest {
 		MetricUnit u = new MetricUnit("mandala", "somemethod", "normal");
 
 		for (int i = 0; i < 100; i++) {
-			u.metric(i);
+			u.record(i);
 			try {
 				Thread.sleep(10);
 			} catch (InterruptedException e) {
