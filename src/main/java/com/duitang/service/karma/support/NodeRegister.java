@@ -6,8 +6,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.WatchedEvent;
@@ -67,12 +65,8 @@ public class NodeRegister  implements Watcher, Runnable {
 	public boolean isDev() {
 		try {
 			InetAddress ia = InetAddress.getLocalHost();
-			String ip = ia.getHostAddress();
-			if (ip.startsWith("192.168.172.")) {
-				String last = StringUtils.substringAfterLast(ip, ".");
-				if (NumberUtils.toInt(last) >= 12) {
-					return false;
-				}
+			if (IpRanges.isProduction(ia.getHostAddress())) {
+			    return false;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -90,6 +84,9 @@ public class NodeRegister  implements Watcher, Runnable {
 			while (true) {
 				Thread.sleep(1000);
 				if (zk == null || !zk.getState().isAlive()) {
+				    if (zk != null) {
+				        zk.close();
+				    }
 					resetZk(cs);
 				}
 			}
