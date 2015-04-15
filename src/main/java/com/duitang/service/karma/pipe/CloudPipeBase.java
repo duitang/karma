@@ -108,6 +108,6 @@ public abstract class CloudPipeBase {
     }
     
     protected String zkCommEndpoint() {
-        return "s44:3881,s45:3881,s46:3881";
+        return "192.168.172.44:3881,192.168.172.45:3881,192.168.172.46:3881";
     }
 }
