@@ -1,6 +1,8 @@
 package com.duitang.service.karma;
 
 public class KarmaOverloadControledException extends KarmaOverloadException {
+    private static final long serialVersionUID = -4730692929991321285L;
+
     public KarmaOverloadControledException() {
     }
 

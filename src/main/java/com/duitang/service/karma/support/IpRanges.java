@@ -3,7 +3,8 @@ package com.duitang.service.karma.support;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import junit.framework.Assert;
+import org.apache.commons.lang3.Validate;
+
 
 /**
  * 
@@ -28,14 +29,14 @@ public class IpRanges {
     }
     
     public static void main(String[] args) {
-        Assert.assertTrue(!isProduction("192.168.172.2"));
-        Assert.assertTrue(isProduction("192.168.172.12"));
-        Assert.assertTrue(isProduction("192.168.172.18"));
-        Assert.assertTrue(isProduction("192.168.172.42"));
+        Validate.isTrue(!isProduction("192.168.172.2"));
+        Validate.isTrue(isProduction("192.168.172.12"));
+        Validate.isTrue(isProduction("192.168.172.18"));
+        Validate.isTrue(isProduction("192.168.172.42"));
         
-        Assert.assertTrue(isProduction("10.0.1.10"));
-        Assert.assertTrue(isProduction("10.0.1.11"));
-        Assert.assertTrue(isProduction("10.0.3.10"));
+        Validate.isTrue(isProduction("10.0.1.10"));
+        Validate.isTrue(isProduction("10.0.1.11"));
+        Validate.isTrue(isProduction("10.0.3.10"));
         System.out.println("all done!");
     }
 }
