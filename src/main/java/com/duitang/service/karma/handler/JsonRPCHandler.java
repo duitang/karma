@@ -3,6 +3,7 @@ package com.duitang.service.karma.handler;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -91,6 +92,9 @@ public class JsonRPCHandler implements RPCHandler {
 		}
 		if (target.equals(Short.class)) {
 			return v.shortValue();
+		}
+		if (target.equals(Date.class)) {
+		    return new Date(v.longValue());
 		}
 		return v;
 	}
