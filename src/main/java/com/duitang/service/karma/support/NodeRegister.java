@@ -96,18 +96,22 @@ public class NodeRegister  implements Watcher, Runnable {
 	}
 
 	private void resetZk(String cs) throws Exception {
-		InetAddress ia = InetAddress.getLocalHost();
-		String host = ia.getHostAddress();
-		String data = makeData();
-		ACL acl = new ACL(Perms.ALL, Ids.ANYONE_ID_UNSAFE);
-		if (zk != null) zk.close();
-		zk = new ZooKeeper(cs, 3000, this);
-		zk.create(
-			"/app/" + appName + '/' + host, 
-			data.getBytes(), 
-			Lists.newArrayList(acl), 
-			CreateMode.EPHEMERAL
-		);
+		try {
+            InetAddress ia = InetAddress.getLocalHost();
+            String host = ia.getHostAddress();
+            String data = makeData();
+            ACL acl = new ACL(Perms.ALL, Ids.ANYONE_ID_UNSAFE);
+            if (zk != null) zk.close();
+            zk = new ZooKeeper(cs, 3000, this);
+            zk.create(
+            	"/app/" + appName + '/' + host, 
+            	data.getBytes(), 
+            	Lists.newArrayList(acl), 
+            	CreateMode.EPHEMERAL
+            );
+        } catch (Exception e) {
+            log.error("NodeRegister_resetZk_failed:", e);
+        }
 	}
 	
 	public void setConnString(String connString) {

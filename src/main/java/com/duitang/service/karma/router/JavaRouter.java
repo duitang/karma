@@ -18,6 +18,7 @@ import com.duitang.service.karma.handler.RPCHandler;
 import com.duitang.service.karma.meta.BinaryPacketData;
 import com.duitang.service.karma.meta.BinaryPacketHelper;
 import com.duitang.service.karma.meta.BinaryPacketRaw;
+import com.duitang.service.karma.pipe.RpcStatPipe;
 import com.duitang.service.karma.support.CCT;
 import com.duitang.service.karma.support.TraceChainDO;
 
@@ -81,6 +82,7 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
 		                    sdf.format(new Date()), latency, execPool.getTaskCount()
 		                );
 		                out.warn(info);
+		                RpcStatPipe.stat(RpcStatPipe.CAT_HIGH_LATENCY, latency);
 		            }
 		            
 					data = BinaryPacketHelper.fromRawToData(raw);
