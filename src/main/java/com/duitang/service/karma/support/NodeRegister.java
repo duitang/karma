@@ -13,6 +13,7 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooDefs.Perms;
 import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.ZooKeeper.States;
 import org.apache.zookeeper.data.ACL;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -96,6 +97,7 @@ public class NodeRegister  implements Watcher, Runnable {
 	}
 
 	private void resetZk(String cs) throws Exception {
+	    int tries = 0;
 		try {
             InetAddress ia = InetAddress.getLocalHost();
             String host = ia.getHostAddress();
@@ -103,6 +105,11 @@ public class NodeRegister  implements Watcher, Runnable {
             ACL acl = new ACL(Perms.ALL, Ids.ANYONE_ID_UNSAFE);
             if (zk != null) zk.close();
             zk = new ZooKeeper(cs, 3000, this);
+            while (zk.getState() != States.CONNECTED && tries < 100) {
+                //waiting for zk initialization
+                tries++;
+                Thread.sleep(500);
+            }
             zk.create(
             	"/app/" + appName + '/' + host, 
             	data.getBytes(), 
@@ -110,7 +117,8 @@ public class NodeRegister  implements Watcher, Runnable {
             	CreateMode.EPHEMERAL
             );
         } catch (Exception e) {
-            log.error("NodeRegister_resetZk_failed:", e);
+            zk.close();//close it right now
+            log.error("NodeRegister_resetZk_failed:" + tries, e);
         }
 	}
 	
