@@ -117,7 +117,7 @@ public class NodeRegister  implements Watcher, Runnable {
             	CreateMode.EPHEMERAL
             );
         } catch (Exception e) {
-            zk.close();//close it right now
+            if (zk != null) zk.close();//close it right now
             log.error("NodeRegister_resetZk_failed:" + tries, e);
         }
 	}
