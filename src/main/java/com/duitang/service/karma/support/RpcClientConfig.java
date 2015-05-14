@@ -2,9 +2,11 @@ package com.duitang.service.karma.support;
 
 import java.util.List;
 import java.util.Observable;
+
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.ZooKeeper.States;
 
 import com.google.common.collect.Lists;
 
@@ -33,6 +35,12 @@ public class RpcClientConfig extends Observable implements Watcher {
 		if (zkFailed()) {
 			try {
 				zk = new ZooKeeper(connString, 3000, this);
+				int tries = 0;
+				while (zk.getState() != States.CONNECTED && tries < 100) {
+	                //waiting for zk initialization
+	                tries++;
+	                Thread.sleep(500);
+	            }
 			} catch (Exception e) {
 			}
 		}
