@@ -134,8 +134,9 @@ public class WRRBalancer implements IOBalance {
                     if (cw <= 0) {
                         cw = Collections.max(serverWt.values());
                         if (cw == 0) {
-                            System.out.println("wrr_shit:" + serverWt.size() + serverWt.keySet().toArray(new String[0]).length);
-                            return null;
+                            String[] ss = serverWt.keySet().toArray(new String[0]);
+                            System.out.println("wrr_shit:"+ ss[0]);
+                            return ss[0];
                         }
                     }
                 } 
