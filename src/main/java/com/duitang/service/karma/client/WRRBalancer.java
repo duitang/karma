@@ -124,6 +124,11 @@ public class WRRBalancer implements IOBalance {
     @Override
     public String next(String token) {
         try {
+            //patch: 当只有一个节点的时候，直接返回该节点。
+            //否则在下面这种极端情况下，该方法会返回null：该节点持续出错不可用且没有更多节点加入
+            if (serverWt.size() == 1) {
+                return serverWt.keySet().toArray(new String[0])[0];
+            }
             lock.lock();
             while (true) {
                 i = (i + 1) % serverWt.size();
@@ -131,8 +136,7 @@ public class WRRBalancer implements IOBalance {
                     cw = cw - gcd(serverWt.values()); 
                     if (cw <= 0) {
                         cw = Collections.max(serverWt.values());
-                        if (cw == 0)
-                        return null;
+                        if (cw == 0) return null;
                     }
                 } 
                 String s = seq[i];
