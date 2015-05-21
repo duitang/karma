@@ -182,7 +182,8 @@ public class WRRBalancer implements IOBalance {
     
     @Override
     public void fail(String s) {
-        failureCounts.get(s).incrementAndGet();
+        AtomicInteger ai = failureCounts.get(s);
+        ai.incrementAndGet();
     }
 
     @Override
