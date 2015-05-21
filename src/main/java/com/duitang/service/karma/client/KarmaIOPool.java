@@ -14,6 +14,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.apache.log4j.Logger;
 
 import com.duitang.service.karma.KarmaException;
+import com.duitang.service.karma.KarmaNoMoreConnException;
 import com.duitang.service.karma.base.LifeCycle;
 import com.google.common.collect.Sets;
 
@@ -56,7 +57,7 @@ public class KarmaIOPool implements LifeCycle {
 		try {
 			return pool.borrowObject(timeout);
 		} catch (Exception e) {
-			throw new KarmaException("fetch KarmaIOSesion error: ", e);
+			throw new KarmaNoMoreConnException();
 		}
 	}
 
