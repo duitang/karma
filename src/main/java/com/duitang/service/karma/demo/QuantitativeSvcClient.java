@@ -57,7 +57,7 @@ public class QuantitativeSvcClient {
                     } catch (KarmaOverloadException ke) {
                         overload.incrementAndGet();
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        e.getCause().printStackTrace();
                         err.incrementAndGet();
                     }
                 }
