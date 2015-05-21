@@ -20,7 +20,7 @@ public class QuantitativeBenchServiceImpl implements QuantitativeBenchService {
         totalCalls.incrementAndGet();
         if (payload != null) totalBytes.addAndGet(payload.length);
         try {
-            Thread.sleep(rand.nextInt(maxWaitMs));
+            Thread.sleep(maxWaitMs);
         } catch (InterruptedException e) {
         }
         return true;
