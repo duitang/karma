@@ -1,5 +1,7 @@
 package com.duitang.service.karma.demo;
 
+import org.apache.commons.lang3.math.NumberUtils;
+
 import com.duitang.service.karma.support.ServicesExporter;
 import com.google.common.collect.Lists;
 
@@ -11,12 +13,14 @@ import com.google.common.collect.Lists;
 public class QuantitativeSvcStarter {
 
     public static void main(String[] args) {
+        int mql = NumberUtils.toInt(args[0], 500);
         QuantitativeBenchService svc = new QuantitativeBenchServiceImpl();
         ServicesExporter se = new ServicesExporter();
         se.setServices(Lists.newArrayList((Object)svc));
-        se.setMaxQueuingLatency(500);
+        se.setMaxQueuingLatency(mql);
         se.setPort(11990);
         se.init();
+        System.out.println(String.format("QuantitativeSvc_started: with maxQeLatency %d \n", mql));
     }
 
 }

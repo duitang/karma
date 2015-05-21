@@ -5,9 +5,11 @@ import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang3.math.NumberUtils;
 
+import com.duitang.service.karma.KarmaOverloadException;
 import com.duitang.service.karma.base.ClientFactory;
 import com.google.common.base.Stopwatch;
 
@@ -40,15 +42,23 @@ public class QuantitativeSvcClient {
         cf0.setTimeout(500);
         cf0.reset();
         
+        final AtomicLong overload = new AtomicLong();
+        final AtomicLong err = new AtomicLong();
         ExecutorService exec = Executors.newFixedThreadPool(nThreads);
         Stopwatch sw = Stopwatch.createStarted();
         for (long i = 0; i < totalcall; i++) {
             exec.submit(new Runnable() {
                 @Override
                 public void run() {
-                    QuantitativeBenchService svc = (QuantitativeBenchService) cf0.create();
-                    svc.benchWithPayload(maxwait, payload);
-                    cf0.release(svc);
+                    try {
+                        QuantitativeBenchService svc = (QuantitativeBenchService) cf0.create();
+                        svc.benchWithPayload(maxwait, payload);
+                        cf0.release(svc);
+                    } catch (KarmaOverloadException ke) {
+                        overload.incrementAndGet();
+                    } catch (Exception e) {
+                        err.incrementAndGet();
+                    }
                 }
             });
         }
@@ -58,7 +68,9 @@ public class QuantitativeSvcClient {
         sw.stop();
         System.out.println("done");
         System.out.println("elapsed: " + sw.elapsed(TimeUnit.SECONDS));
+        System.out.println(String.format("overload: %d  err: %d", overload.get(), err.get()));
         
+        Thread.sleep(3000);
         QuantitativeBenchService svc = (QuantitativeBenchService) cf0.create();
         System.out.println(svc.queryCount());
         Runtime.getRuntime().exit(0);
