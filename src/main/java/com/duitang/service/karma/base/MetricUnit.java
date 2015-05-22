@@ -33,18 +33,24 @@ public class MetricUnit {
         Map<String, Object> ret = new HashMap<>();
         stats.getIntervalHistogramInto(histo);
         ret.put("timestamp", System.currentTimeMillis());
+        ret.put("client_id", clientId);
+        ret.put("name", name);
+        ret.put("group", group);
+        ret.put("server", server);
+
         ret.put("from", histo.getStartTimeStamp());
         ret.put("to", histo.getEndTimeStamp());
+
         ret.put("total", histo.getTotalCount());
         ret.put("mean", histo.getMean());
         ret.put("max", histo.getMaxValue());
         ret.put("min", histo.getMinValue());
         ret.put("stddev", histo.getStdDeviation());
+
         long gap = histo.getEndTimeStamp() - histo.getStartTimeStamp();
         if (gap != 0) {
             ret.put("qps", histo.getTotalCount() / (gap / 1000D));
         }
-        ret.put("server", this.server);
 
         ret.put("p50", histo.getValueAtPercentile(50D));
         ret.put("p75", histo.getValueAtPercentile(75D));

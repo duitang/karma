@@ -140,12 +140,7 @@ public class MetricCenter {
         List<Map> samples = new ArrayList<>();
         for (Map.Entry<String, MetricUnit> entry : metricUnits.entrySet()) {
 //            entry.getKey();
-            MetricUnit value = entry.getValue();
-            Map<String, Object> sample = value.sample();
-            sample.put("client_id", value.clientId);
-            sample.put("name", value.name);
-            sample.put("group", value.group);
-            samples.add(sample);
+            samples.add(entry.getValue().sample());
         }
         return samples;
     }
