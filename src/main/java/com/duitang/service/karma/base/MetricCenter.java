@@ -242,6 +242,3 @@ public class MetricCenter {
 //	}
 }
 
-interface Reporter {
-	void report(Map data);
-}
