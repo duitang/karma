@@ -76,10 +76,10 @@ public class MemoryServer {
 			System.exit(1);
 		}
 
-		if (s > 0) {
-			MetricCenter.alterReportPeroid(s);
-			MetricCenter.enableConsoleReporter(true);
-		}
+//		if (s > 0) {
+//			MetricCenter.alterReportPeroid(s);
+//			MetricCenter.enableConsoleReporter(true);
+//		}
 	}
 
 	static void runClient(Map<String, String> param) {
@@ -149,10 +149,10 @@ public class MemoryServer {
 			ths[i].start();
 		}
 
-		if (s > 0) {
-			MetricCenter.alterReportPeroid(s);
-			MetricCenter.enableConsoleReporter(true);
-		}
+//		if (s > 0) {
+//			MetricCenter.alterReportPeroid(s);
+//			MetricCenter.enableConsoleReporter(true);
+//		}
 
 		try {
 			latch.await();

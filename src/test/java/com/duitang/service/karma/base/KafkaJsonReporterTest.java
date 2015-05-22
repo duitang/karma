@@ -60,8 +60,8 @@ public class KafkaJsonReporterTest {
 		// props.put("queue.enqueue.timeout.ms", "20000");
 		// props.put("message.send.max.retries", "2");
 
-		MetricCenter.alterReportPeroid(1);
-		MetricCenter.enableKafkaReporter(props);
+//		MetricCenter.alterReportPeroid(1);
+//		MetricCenter.enableKafkaReporter(props);
 		try {
 			Thread.sleep(1000);
 		} catch (InterruptedException e1) {
@@ -102,31 +102,31 @@ public class KafkaJsonReporterTest {
 		props.put("auto.commit.interval.ms", "1000");
 		props.put("auto.commit", "true");
 
-		String topic = KafkaJsonReporter.METRICS_QUEUE_NAME;
+//		String topic = KafkaJsonReporter.METRICS_QUEUE_NAME;
 		ConsumerConfig cfg = new ConsumerConfig(props);
 		ConsumerConnector consumer = kafka.consumer.Consumer.createJavaConsumerConnector(cfg);
 
 		Map<String, Integer> topicCountMap = new HashMap<String, Integer>();
-		topicCountMap.put(topic, new Integer(1));
+//		topicCountMap.put(topic, new Integer(1));
 		Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap = consumer.createMessageStreams(topicCountMap);
 
-		while (true) {
-			List<KafkaStream<byte[], byte[]>> stream = consumerMap.get(topic);
-
-			System.out.println("Total Kafka Stream: " + stream.size());
-
-			String msg;
-			for (KafkaStream<byte[], byte[]> ks : stream) {
-				msg = new String(ks.iterator().next().message());
-				System.out.println("=================================" + msg);
-			}
-
-			try {
-				Thread.sleep(1);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
+//		while (true) {
+//			List<KafkaStream<byte[], byte[]>> stream = consumerMap.get(topic);
+//
+//			System.out.println("Total Kafka Stream: " + stream.size());
+//
+//			String msg;
+//			for (KafkaStream<byte[], byte[]> ks : stream) {
+//				msg = new String(ks.iterator().next().message());
+//				System.out.println("=================================" + msg);
+//			}
+//
+//			try {
+//				Thread.sleep(1);
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			}
+//		}
 	}
 
 }

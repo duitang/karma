@@ -11,9 +11,9 @@ public class ServerBootstrapTest {
 
 	@Test
 	public void test() throws Exception {
-		MetricCenter.alterReportPeroid(30);
-		MetricCenter.addLoggerReporterByName("karma");
-		MetricCenter.enableConsoleReporter(true);
+//		MetricCenter.alterReportPeroid(30);
+//		MetricCenter.addLoggerReporterByName("karma");
+//		MetricCenter.enableConsoleReporter(true);
 		ServerBootstrap boot = new ServerBootstrap();
 		MemoryCacheService s1 = new MemoryCacheService();
 		boot.addService(DemoService.class, s1);
