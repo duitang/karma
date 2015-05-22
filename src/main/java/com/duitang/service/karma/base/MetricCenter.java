@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,7 @@ public class MetricCenter {
 //	static MetricReportDaemon daemon = null;
 	static protected String hostname = null;
 	public static Map<String, MetricUnit> method_dur = new HashMap<String, MetricUnit>();
+    private static ConcurrentHashMap<String, MetricUnit> metricUnits = new ConcurrentHashMap<>();
 
 //	final static Reporter console = new Reporter() {
 //		@Override
@@ -38,18 +40,43 @@ public class MetricCenter {
 //		t.start();
 //	}
 
+    public static String metricName(String clientId, String name, boolean failure) {
+        String metric = clientId + ":" + name;
+        if(failure) {
+            return metric + "_Failure_";
+        }
+        return metric;
+    }
+
 	public static void methodMetric(String clientId, String name, long elapse) {
 		methodMetric(clientId, name, elapse, false);
 	}
 
+    private static MetricUnit getMetricUnit(String clientId, String name, boolean failure) {
+        String unitName = metricName(clientId, name, failure);
+        MetricUnit metricUnit = metricUnits.get(unitName);
+        if(metricUnit != null) {
+            return metricUnit;
+        }
+        synchronized (MetricCenter.class) {
+            metricUnit = metricUnits.get(unitName);
+            if (metricUnit == null) {
+                metricUnit = new MetricUnit(clientId, unitName, failure ? "ERR" : "OK");
+                metricUnits.put(unitName, metricUnit);
+            }
+        }
+        return metricUnit;
+    }
+
 	public static void methodMetric(String clientId, String name, long elapse, boolean failure) {
-		if (failure) {
-			name += "_Failure_";
-		}
-		MetricUnit hist = method_dur.get(clientId + ":" + name);
-		if (hist != null) {
-			hist.record(elapse);
-		}
+        getMetricUnit(clientId, name, failure).record(elapse);
+//		if (failure) {
+//			name += "_Failure_";
+//		}
+//		MetricUnit hist = method_dur.get(clientId + ":" + name);
+//		if (hist != null) {
+//			hist.record(elapse);
+//		}
 	}
 
 	static public String getHostname() {
@@ -91,10 +118,12 @@ public class MetricCenter {
 		return ret + "@" + getHostname();
 	}
 
-//	public static void initMetric(Class clazz, String clientid) {
+	public static void initMetric(Class clazz, String clientid) {
 //		String nm;
 //		String nmf;
-//		for (Method m : clazz.getMethods()) {
+		for (Method m : clazz.getMethods()) {
+            getMetricUnit(clientid, m.getName(), true);
+            getMetricUnit(clientid, m.getName(), false);
 //			nm = clientid + ":" + m.getName();
 //			nmf = nm + "_Failure_";
 //			if (debug) {
@@ -109,8 +138,8 @@ public class MetricCenter {
 //			if (!MetricCenter.method_dur.containsKey(nmf)) {
 //				MetricCenter.method_dur.put(nmf, new MetricUnit(clientid, m.getName(), "ERR"));
 //			}
-//		}
-//	}
+		}
+	}
 
 //	static public void alterReportPeroid(long peroid) {
 //		daemon.peroid = peroid;
