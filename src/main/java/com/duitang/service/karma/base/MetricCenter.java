@@ -91,26 +91,26 @@ public class MetricCenter {
 		return ret + "@" + getHostname();
 	}
 
-	public static void initMetric(Class clazz, String clientid) {
-		String nm;
-		String nmf;
-		for (Method m : clazz.getMethods()) {
-			nm = clientid + ":" + m.getName();
-			nmf = nm + "_Failure_";
-			if (debug) {
-				System.err.println(" ------> " + nm);
-			}
-
-			// maybe racing, but not serious problem
-			if (!MetricCenter.method_dur.containsKey(nm)) {
-				MetricCenter.method_dur.put(nm, new MetricUnit(clientid, m.getName(), "OK"));
-			}
-			// maybe racing, but not serious problem
-			if (!MetricCenter.method_dur.containsKey(nmf)) {
-				MetricCenter.method_dur.put(nmf, new MetricUnit(clientid, m.getName(), "ERR"));
-			}
-		}
-	}
+//	public static void initMetric(Class clazz, String clientid) {
+//		String nm;
+//		String nmf;
+//		for (Method m : clazz.getMethods()) {
+//			nm = clientid + ":" + m.getName();
+//			nmf = nm + "_Failure_";
+//			if (debug) {
+//				System.err.println(" ------> " + nm);
+//			}
+//
+//			// maybe racing, but not serious problem
+//			if (!MetricCenter.method_dur.containsKey(nm)) {
+//				MetricCenter.method_dur.put(nm, new MetricUnit(clientid, m.getName(), "OK"));
+//			}
+//			// maybe racing, but not serious problem
+//			if (!MetricCenter.method_dur.containsKey(nmf)) {
+//				MetricCenter.method_dur.put(nmf, new MetricUnit(clientid, m.getName(), "ERR"));
+//			}
+//		}
+//	}
 
 //	static public void alterReportPeroid(long peroid) {
 //		daemon.peroid = peroid;

@@ -103,7 +103,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 			}
 
 		};
-		MetricCenter.initMetric(clz, ret.clientid);
+//		MetricCenter.initMetric(clz, ret.clientid);
 		return ret;
 	}
 
