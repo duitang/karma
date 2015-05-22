@@ -17,6 +17,7 @@ public class MetricUnit {
     public String name;
     public String group;
     public String server;
+    public String slug;
     protected LatencyStats stats;
     protected Histogram histo;
 
@@ -25,6 +26,8 @@ public class MetricUnit {
         this.name = name;
         this.group = group;
         this.server = clientId.split("@")[1];
+        this.slug = clientId.split("@")[0] + "." + name.split(":")[1];
+
         stats = new LatencyStats();
         histo = stats.getIntervalHistogram();
     }
@@ -37,6 +40,7 @@ public class MetricUnit {
         ret.put("name", name);
         ret.put("group", group);
         ret.put("server", server);
+        ret.put("slug", slug);
 
         ret.put("from", histo.getStartTimeStamp());
         ret.put("to", histo.getEndTimeStamp());

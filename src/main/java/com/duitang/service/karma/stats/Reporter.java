@@ -3,6 +3,6 @@ package com.duitang.service.karma.stats;
 import java.util.List;
 import java.util.Map;
 
-interface Reporter {
+public interface Reporter {
     void report(List<Map> data);
 }
