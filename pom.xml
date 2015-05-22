@@ -207,12 +207,12 @@
         <repository>
             <id>duitang-deployment</id>
             <name>Internal Releases</name>
-            <url>http://maven.dev.duitang.com/nexus/content/repositories/thirdparty/</url>
+            <url>http://repo.duitang.net/nexus/content/repositories/thirdparty/</url>
         </repository>
         <snapshotRepository>
             <id>duitang-deployment</id>
             <name>Internal Snapshot</name>
-            <url>http://maven.dev.duitang.com/nexus/content/repositories/snapshots/</url>
+            <url>http://repo.duitang.net/nexus/content/repositories/snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
 </project>
