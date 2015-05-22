@@ -13,7 +13,11 @@ import com.google.common.collect.Lists;
 public class QuantitativeSvcStarter {
 
     public static void main(String[] args) {
-        int mql = NumberUtils.toInt(args[0], 500);
+//        int mql = NumberUtils.toInt(args[0], 500);
+        int mql = 500;
+        if(args.length == 1) {
+            mql = NumberUtils.toInt(args[0], 500);
+        }
         QuantitativeBenchService svc = new QuantitativeBenchServiceImpl();
         ServicesExporter se = new ServicesExporter();
         se.setServices(Lists.newArrayList((Object)svc));

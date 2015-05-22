@@ -1,6 +1,8 @@
 package com.duitang.service.karma.demo;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -11,6 +13,8 @@ import org.apache.commons.lang3.math.NumberUtils;
 
 import com.duitang.service.karma.KarmaOverloadException;
 import com.duitang.service.karma.base.ClientFactory;
+import com.duitang.service.karma.base.MetricCenter;
+
 import com.google.common.base.Stopwatch;
 
 /**
@@ -41,7 +45,7 @@ public class QuantitativeSvcClient {
         cf0.setUrl(url);
         cf0.setTimeout(1000);
         cf0.reset();
-        
+
         final AtomicLong overload = new AtomicLong();
         final AtomicLong err = new AtomicLong();
         ExecutorService exec = Executors.newFixedThreadPool(nThreads);
@@ -74,6 +78,16 @@ public class QuantitativeSvcClient {
         Thread.sleep(3000);
         QuantitativeBenchService svc = (QuantitativeBenchService) cf0.create();
         System.out.println(svc.queryCount());
+
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>");
+        List<Map> samples = MetricCenter.sample();
+        for (Map sample : samples) {
+            for (Object o : sample.entrySet()) {
+                System.out.println(o);
+            }
+            System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>");
+        }
+
         Runtime.getRuntime().exit(0);
     }
 
