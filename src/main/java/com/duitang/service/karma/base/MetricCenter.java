@@ -3,12 +3,7 @@ package com.duitang.service.karma.base;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
@@ -140,6 +135,20 @@ public class MetricCenter {
 //			}
 		}
 	}
+
+    public static List<Map> sample() {
+        List<Map> samples = new ArrayList<>();
+        for (Map.Entry<String, MetricUnit> entry : metricUnits.entrySet()) {
+//            entry.getKey();
+            MetricUnit value = entry.getValue();
+            Map<String, Object> sample = value.sample();
+            sample.put("client_id", value.clientId);
+            sample.put("name", value.name);
+            sample.put("group", value.group);
+            samples.add(sample);
+        }
+        return samples;
+    }
 
 //	static public void alterReportPeroid(long peroid) {
 //		daemon.peroid = peroid;
