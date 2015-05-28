@@ -74,17 +74,33 @@ public class MetricCenter {
 //		}
 	}
 
+	private static class HostNameHolder {
+		public static final String hostname;
+		static {
+			String _hostname = null;
+			try {
+				_hostname = InetAddress.getLocalHost().getHostName();
+			} catch (UnknownHostException e) {
+				logger.error("get hostname error", e);
+				_hostname = System.getenv("HOSTNAME");
+			}
+			hostname = _hostname;
+		}
+	}
+
+
 	static public String getHostname() {
-		if (hostname != null) {
-			return hostname;
-		}
-		String ret;
-		try {
-			ret = InetAddress.getLocalHost().getHostName();
-		} catch (UnknownHostException e) {
-			ret = System.getenv("HOSTNAME");
-		}
-		return ret;
+		return HostNameHolder.hostname;
+//		if (hostname != null) {
+//			return hostname;
+//		}
+//		String ret;
+//		try {
+//			ret = InetAddress.getLocalHost().getHostName();
+//		} catch (UnknownHostException e) {
+//			ret = System.getenv("HOSTNAME");
+//		}
+//		return ret;
 	}
 
 	public static String genClientIdFromCode() {
