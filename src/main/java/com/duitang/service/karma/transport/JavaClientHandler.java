@@ -30,9 +30,9 @@ public class JavaClientHandler extends SimpleChannelInboundHandler<BinaryPacketR
 			error.error("wanted uuid => " + latch.getUuid() + ", ignore uuid => " + data.uuid);
 			return;
 		}
-		TraceChainDO remoteTc = (TraceChainDO) data.conf.getConf(CCT.RPC_CONF_KEY);
-		if (remoteTc != null) {
-	        CCT.mergeTraceChain(remoteTc);
+		TraceChainDO remoteTc = null;
+		if (data.conf != null && data.conf.getConf(CCT.RPC_CONF_KEY) != null) {
+		    CCT.mergeTraceChain((TraceChainDO) data.conf.getConf(CCT.RPC_CONF_KEY));
 		}
 		if (data.ex != null) {
 			latch.offerError(data.ex);

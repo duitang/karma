@@ -44,7 +44,7 @@ public class CCT {
     
     public static void mergeTraceChain(TraceChainDO remoteTc) {
         TraceChainDO tc = get();
-        if (tc != null) {
+        if (tc != null && remoteTc != null) {
             tc.seqMap().putAll(remoteTc.seqMap());
         }
     }
