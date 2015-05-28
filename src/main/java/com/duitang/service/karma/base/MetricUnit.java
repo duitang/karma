@@ -13,20 +13,18 @@ public class MetricUnit {
 
     private ByteBuffer targetBuffer;
 
-    public String clientId;
     public String name;
     public String group;
-    public String server;
-    public String slug;
     protected LatencyStats stats;
     protected Histogram histo;
 
-    public MetricUnit(String clientId, String name, String group) {
-        this.clientId = clientId;
+    public MetricUnit(String name) {
+        this(name, null);
+    }
+
+    public MetricUnit(String name, String group) {
         this.name = name;
         this.group = group;
-        this.server = clientId.split("@")[1];
-        this.slug = clientId.split("@")[0] + "." + name.split(":")[1];
 
         stats = new LatencyStats();
         histo = stats.getIntervalHistogram();
@@ -36,11 +34,11 @@ public class MetricUnit {
         Map<String, Object> ret = new HashMap<>();
         stats.getIntervalHistogramInto(histo);
         ret.put("timestamp", System.currentTimeMillis());
-        ret.put("client_id", clientId);
+        ret.put("location", MetricCenter.getHostname());
         ret.put("name", name);
-        ret.put("group", group);
-        ret.put("server", server);
-        ret.put("slug", slug);
+        if(group != null) {
+            ret.put("group", group);
+        }
 
         ret.put("from", histo.getStartTimeStamp());
         ret.put("to", histo.getEndTimeStamp());
@@ -73,7 +71,7 @@ public class MetricUnit {
         ret.put("p99999", histo.getValueAtPercentile(99.999D));
         ret.put("p999999", histo.getValueAtPercentile(99.9999D));
 
-        ret.put("histogram_b64", encodeCompressedArray(histo));
+//        ret.put("histogram_b64", encodeCompressedArray(histo));
         return ret;
     }
 

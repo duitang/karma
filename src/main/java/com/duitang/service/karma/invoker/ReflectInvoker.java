@@ -8,11 +8,12 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import com.duitang.service.karma.KarmaException;
+import com.duitang.service.karma.base.ClientId;
 import com.duitang.service.karma.base.MetricCenter;
 
 public class ReflectInvoker implements Invoker {
 
-    protected String clientId;
+    protected ClientId clientId;
     protected Class iface;
     protected Object impl;
 
@@ -39,7 +40,7 @@ public class ReflectInvoker implements Invoker {
      */
     protected Map<String, Class[][]> paramTypes;
 
-    public ReflectInvoker(String clientId, Class iface, Object impl) throws KarmaException {
+    public ReflectInvoker(ClientId clientId, Class iface, Object impl) throws KarmaException {
         this.clientId = clientId;
         this.iface = iface;
         this.impl = impl;

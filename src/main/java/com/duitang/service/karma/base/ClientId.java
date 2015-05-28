@@ -1,6 +1,6 @@
 package com.duitang.service.karma.base;
 
-public class MethodId {
+public class ClientId {
     private final String name;
     private final boolean isClient;
     private final String implName;
@@ -12,7 +12,7 @@ public class MethodId {
      * @param implName  实现, server为实现名字, client为null
      * @param location  地点, 可选, 提供 host/机柜/idc/进程 信息
      */
-    public MethodId(String name, String implName, String location) {
+    public ClientId(String name, String implName, String location) {
         this.name = name;
         this.location = location;
         if (implName == null || implName.isEmpty()) {
