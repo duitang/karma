@@ -23,6 +23,9 @@ public class MetricCenter {
                 .append(clientId.getName())
                 .append('.')
                 .append(method);
+        if(!clientId.isClient()) {
+            b.append(".server");
+        }
         if(failure) {
             return b.append(".").append("fail").toString();
         }

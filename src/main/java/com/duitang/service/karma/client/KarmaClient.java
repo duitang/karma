@@ -209,7 +209,7 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 				pool.releaseIOSession(iosession);
 			}
 			long endNanos = System.nanoTime() - startNanos;
-			MetricCenter.methodMetric(this.clientid, name, TimeUnit.NANOSECONDS.toMillis(endNanos), flag);
+			MetricCenter.methodMetric(this.clientid, name, TimeUnit.NANOSECONDS.toMillis(endNanos), failure);
 		}
 		return ret;
 	}

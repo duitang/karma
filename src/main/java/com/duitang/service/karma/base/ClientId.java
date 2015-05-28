@@ -13,6 +13,9 @@ public class ClientId {
      * @param location  地点, 可选, 提供 host/机柜/idc/进程 信息
      */
     public ClientId(String name, String implName, String location) {
+        if(name == null) {
+            throw new IllegalArgumentException("name==null");
+        }
         this.name = name;
         this.location = location;
         if (implName == null || implName.isEmpty()) {
