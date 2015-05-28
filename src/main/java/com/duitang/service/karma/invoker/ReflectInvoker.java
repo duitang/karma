@@ -5,6 +5,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.base.MetricCenter;
@@ -123,7 +124,7 @@ public class ReflectInvoker implements Invoker {
 
     protected Object invokeMethod(Method m, Object[] parameters) throws KarmaException {
         Object ret;
-        long ts = System.nanoTime();
+        long startNanos = System.nanoTime();
         boolean fail = false;
         try {
             ret = m.invoke(impl, parameters);
@@ -143,8 +144,8 @@ public class ReflectInvoker implements Invoker {
             fail = true;
             throw new KarmaException(sb.toString(), e);
         } finally {
-            ts = System.nanoTime() - ts;
-            MetricCenter.methodMetric(clientId, m.getName(), ts, fail);
+            long endNanos = System.nanoTime() - startNanos;
+            MetricCenter.methodMetric(clientId, m.getName(), TimeUnit.NANOSECONDS.toMillis(endNanos), fail);
         }
         return ret;
     }

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import net.sf.cglib.proxy.Enhancer;
@@ -154,7 +155,7 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 			Method m = mgrCallbacks.get(name);
 			return m.invoke(this, args);
 		}
-		long ts = System.nanoTime();
+		long startNanos = System.nanoTime();
 		RPCConfig rpcConfig = new RPCConfig();
 		TraceChainDO tc = CCT.get();
 		if (tc != null) {
@@ -207,8 +208,8 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 			if (iosession != null) {
 				pool.releaseIOSession(iosession);
 			}
-			ts = System.nanoTime() - ts;
-			MetricCenter.methodMetric(this.clientid, name, ts, failure);
+			long endNanos = System.nanoTime() - startNanos;
+			MetricCenter.methodMetric(this.clientid, name, TimeUnit.NANOSECONDS.toMillis(endNanos), flag);
 		}
 		return ret;
 	}
