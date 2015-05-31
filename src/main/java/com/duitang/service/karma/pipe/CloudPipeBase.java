@@ -67,7 +67,12 @@ public abstract class CloudPipeBase {
     
     protected void init() {
         this.biz = getBiz();
-        Properties props = prepareKafkaParams();
+        Properties props = null;
+        try {
+            props = prepareKafkaParams();
+        } catch (RuntimeException e) {
+            return;
+        }
         producer = new Producer<String, String>(new ProducerConfig(props));
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
@@ -97,7 +102,11 @@ public abstract class CloudPipeBase {
     
     protected Properties prepareKafkaParams() {
         Properties props = new Properties();
-        props.put("metadata.broker.list", fetchClusterBrokers());
+        String clusterBrokers = fetchClusterBrokers();
+        if (clusterBrokers == null) {
+            throw new RuntimeException("connect kafka fail");
+        }
+        props.put("metadata.broker.list", clusterBrokers);
         props.put("serializer.class", "kafka.serializer.StringEncoder");
         props.put("request.required.acks", "0");
         props.put("producer.type", "sync");
