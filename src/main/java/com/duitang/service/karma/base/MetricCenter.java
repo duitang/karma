@@ -67,8 +67,8 @@ public class MetricCenter {
         metricUnitFor(clientId, method, failure).record(elapse);
     }
 
-    public static void record(String stuff, long elapse) {
-        metricUnitFor(stuff).record(elapse);
+    public static void record(String name, long elapse) {
+        metricUnitFor(name).record(elapse);
     }
 
 	private static class HostNameHolder {
