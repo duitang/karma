@@ -30,7 +30,7 @@ public class MetricReporterDaemon {
         return this;
     }
 
-    public MetricReporterDaemon interval(int second) {
+    public MetricReporterDaemon reportInterval(int second) {
         this.interval = second;
         return this;
     }
