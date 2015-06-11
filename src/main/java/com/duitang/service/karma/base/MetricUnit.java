@@ -47,9 +47,10 @@ public class MetricUnit {
 
         ret.put("p50", histo.getValueAtPercentile(50D));
         ret.put("p75", histo.getValueAtPercentile(75D));
-        ret.put("p87", histo.getValueAtPercentile(87D));
-        ret.put("p93", histo.getValueAtPercentile(93D));
-        ret.put("p96", histo.getValueAtPercentile(96D));
+        ret.put("p80", histo.getValueAtPercentile(80D));
+        ret.put("p85", histo.getValueAtPercentile(85D));
+        ret.put("p90", histo.getValueAtPercentile(90D));
+        ret.put("p95", histo.getValueAtPercentile(95D));
         ret.put("p98", histo.getValueAtPercentile(98D));
         ret.put("p99", histo.getValueAtPercentile(99D));
         ret.put("p999", histo.getValueAtPercentile(99.9D));
