@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 
 import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.KarmaOverloadException;
+import com.duitang.service.karma.base.MetricCenter;
 import com.duitang.service.karma.handler.RPCContext;
 import com.duitang.service.karma.handler.RPCHandler;
 import com.duitang.service.karma.meta.BinaryPacketData;
@@ -77,6 +78,7 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
 			long latency = this.schdTime - this.submitTime;
 			do {
 				try {
+					MetricCenter.record("com.dutiang.service.karma.router.JavaRouter.latency", latency);
 		            if (latency > 200L) {
 		                String info = String.format("%s_JavaRouter_latency:%d,Qsize:%d", 
 		                    sdf.format(new Date()), latency, execPool.getTaskCount()
@@ -84,7 +86,6 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
 		                out.warn(info);
 		                RpcStatPipe.stat(RpcStatPipe.CAT_HIGH_LATENCY, latency);
 		            }
-		            
 					data = BinaryPacketHelper.fromRawToData(raw);
 					if (BinaryPacketHelper.isPing(data)) {
 						long g = pingCount.incrementAndGet();
