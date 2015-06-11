@@ -153,6 +153,14 @@ public class MetricCenter {
         LocationHolder.resetLocation();
     }
 
+    static public void setHostname(String hostname) {
+        if (hostname == null) {
+            throw new NullPointerException("hostname==null");
+        }
+        LocationHolder.HOSTNAME = hostname;
+        LocationHolder.resetLocation();
+    }
+
     static public void enablePid() {
         LocationHolder.enablePid();
         LocationHolder.resetLocation();
