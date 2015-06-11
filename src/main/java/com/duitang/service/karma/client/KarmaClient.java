@@ -20,6 +20,7 @@ import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.KarmaOverloadException;
 import com.duitang.service.karma.KarmaRuntimeException;
 import com.duitang.service.karma.KarmaTimeoutException;
+import com.duitang.service.karma.base.ClientId;
 import com.duitang.service.karma.base.KarmaClientInfo;
 import com.duitang.service.karma.base.LifeCycle;
 import com.duitang.service.karma.base.MetricCenter;
@@ -39,7 +40,7 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 	
 	static String zkURL = null;
 
-	protected String clientid;
+	protected ClientId clientid;
 	protected String domainName;
 	protected Map<String, Boolean> cutoffNames;
 	protected long timeout = 500;
@@ -109,7 +110,7 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 		IOBalance iob = WRRBalancer.getInstance(group, urls);
 		KarmaClient client = new KarmaClient(iface, iob);
 		client.timeout = timeout;
-		client.clientid = clientid;
+		client.clientid = new ClientId(clientid, true);
 		client.dummy = (T) Enhancer.create(
 		    null, 
 		    new Class[] {iface, KarmaClientInfo.class}, 
@@ -209,7 +210,7 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 				pool.releaseIOSession(iosession);
 			}
 			long endNanos = System.nanoTime() - startNanos;
-			MetricCenter.methodMetric(this.clientid, name, TimeUnit.NANOSECONDS.toMillis(endNanos), failure);
+			MetricCenter.record(this.clientid, name, TimeUnit.NANOSECONDS.toMillis(endNanos), failure);
 		}
 		return ret;
 	}
