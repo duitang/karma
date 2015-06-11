@@ -3,29 +3,28 @@ package com.duitang.service.karma.demo;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.google.common.base.Stopwatch;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import com.duitang.service.karma.KarmaOverloadException;
 import com.duitang.service.karma.base.ClientFactory;
 import com.duitang.service.karma.base.MetricCenter;
 
-import com.google.common.base.Stopwatch;
-
 /**
- * 
+ * java -cp target/karma-test.jar com.duitang.service.karma.demo.QuantitativeSvcStarter
+ * java -cp target/karma-test.jar com.duitang.service.karma.demo.QuantitativeSvcClient
+ * args: <url> <n_threads> <n_calls> <maxwait> <payload_size>
  * @author kevx
  * @since 3:31:12 PM May 21, 2015
  */
 public class QuantitativeSvcClient {
 
-    private static Random rand = new Random();
-    
     @SuppressWarnings("unchecked")
     public static void main(String[] args) throws Exception {
         final String url = args[0].trim();
@@ -33,9 +32,9 @@ public class QuantitativeSvcClient {
         final long totalcall = NumberUtils.toLong(args[2]);
         final int maxwait = NumberUtils.toInt(args[3]);
         final int payloadSize = NumberUtils.toInt(args[4]);
-        
+
         final byte[] payload = new byte[payloadSize];
-        Arrays.fill(payload, Integer.valueOf(rand.nextInt()).byteValue());
+        Arrays.fill(payload, Integer.valueOf(ThreadLocalRandom.current().nextInt()).byteValue());
         
         Class<Object> interfaceCls = (Class<Object>)Class.forName(
             "com.duitang.service.karma.demo.QuantitativeBenchService"
@@ -82,11 +81,9 @@ public class QuantitativeSvcClient {
         System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>");
         List<Map> samples = MetricCenter.sample();
         for (Map sample : samples) {
-            for (Object o : sample.entrySet()) {
-                System.out.println(o);
-            }
-            System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>");
+            System.out.println(sample);
         }
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>");
 
         Runtime.getRuntime().exit(0);
     }

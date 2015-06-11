@@ -110,7 +110,7 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 		IOBalance iob = WRRBalancer.getInstance(group, urls);
 		KarmaClient client = new KarmaClient(iface, iob);
 		client.timeout = timeout;
-		client.clientid = new ClientId(clientid, true);
+		client.clientid = new ClientId(iface.getCanonicalName(), true);
 		client.dummy = (T) Enhancer.create(
 		    null, 
 		    new Class[] {iface, KarmaClientInfo.class}, 

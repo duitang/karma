@@ -32,19 +32,18 @@ public class QuantitativeSvcStarter {
         System.out.println(String.format("QuantitativeSvc_started: with maxQeLatency %d \n", mql));
 
         MetricReporterDaemon metricReporterDaemon = new MetricReporterDaemon();
-        metricReporterDaemon.addReporter(new Reporter() {
-            @Override
-            public void report(List<Map> data) {
-                System.out.println(">>>>>>>>>>>>>");
-                for (Map map : data) {
-                    for (Object o : map.entrySet()) {
-                        System.out.println(o);
+        metricReporterDaemon
+                .addReporter(new Reporter() {
+                    @Override
+                    public void report(List<Map> data) {
+                        System.out.println(">>>>>>>>>>>>>");
+                        for (Map map : data) {
+                            System.out.println(map);
+                        }
+                        System.out.println(">>>>>>>>>>>>>");
                     }
-                    System.out.println(">>>>>>>>>>>>>");
-                }
-            }
-        });
-        metricReporterDaemon.start();
+                })
+                .start();
     }
 
 }
