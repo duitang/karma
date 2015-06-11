@@ -18,7 +18,7 @@ public class MetricUnitTest {
 
 	@Test
 	public void test() {
-		MetricUnit u = new MetricUnit("mandala.somemethod", "normal");
+		MetricUnit u = new MetricUnit("mandala.somemethod");
 
 		for (int i = 0; i < 100; i++) {
 			u.record(i);

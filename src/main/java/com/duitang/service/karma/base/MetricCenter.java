@@ -13,6 +13,9 @@ import io.netty.util.internal.SystemPropertyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * TODO 解释怎么录制latency
+ */
 public class MetricCenter {
 	final static Logger logger = LoggerFactory.getLogger(MetricCenter.class);
 
@@ -27,9 +30,11 @@ public class MetricCenter {
                 .append(method);
         if(!clientId.isClient()) {
             b.append(".server");
+        } else {
+            b.append(".client");
         }
         if(failure) {
-            return b.append(".").append("fail").toString();
+            return b.append(".").append("failure").toString();
         }
         return b.toString();
     }
@@ -43,7 +48,7 @@ public class MetricCenter {
         synchronized (MetricCenter.class) {
             metricUnit = metricUnits.get(name);
             if (metricUnit == null) {
-                metricUnit = new MetricUnit(name, failure ? "ERR" : "OK");
+                metricUnit = new MetricUnit(name);
                 metricUnits.put(name, metricUnit);
             }
         }

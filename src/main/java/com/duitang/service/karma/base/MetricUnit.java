@@ -14,17 +14,11 @@ public class MetricUnit {
     private ByteBuffer targetBuffer;
 
     public String name;
-    public String group;
     protected LatencyStats stats;
     protected Histogram histo;
 
     public MetricUnit(String name) {
-        this(name, null);
-    }
-
-    public MetricUnit(String name, String group) {
         this.name = name;
-        this.group = group;
 
         stats = new LatencyStats();
         histo = stats.getIntervalHistogram();
@@ -34,16 +28,13 @@ public class MetricUnit {
         Map<String, Object> ret = new HashMap<>();
         stats.getIntervalHistogramInto(histo);
         ret.put("timestamp", System.currentTimeMillis());
-        ret.put("location", MetricCenter.getHostname());
+        ret.put("location", MetricCenter.getLocation());
         ret.put("name", name);
-        if(group != null) {
-            ret.put("group", group);
-        }
 
         ret.put("from", histo.getStartTimeStamp());
         ret.put("to", histo.getEndTimeStamp());
 
-        ret.put("total", histo.getTotalCount());
+        ret.put("count", histo.getTotalCount());
         ret.put("mean", histo.getMean());
         ret.put("max", histo.getMaxValue());
         ret.put("min", histo.getMinValue());
