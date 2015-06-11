@@ -1,29 +1,32 @@
 package com.duitang.service.karma.stats;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.duitang.service.karma.base.MetricCenter;
+import com.duitang.service.karma.pipe.CloudPipeBase;
 
 public class MetricReporterDaemon {
+    private final static ObjectMapper mapper = new ObjectMapper();
     private final static Logger logger = LoggerFactory.getLogger(MetricReporterDaemon.class);
     private final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
     private int interval = 5; // sec
     private List<Reporter> reporters = new ArrayList<>();
 
-    public MetricReporterDaemon() {
-    }
-
     public synchronized MetricReporterDaemon addReporter(Reporter reporter) {
         reporters.add(reporter);
+        return this;
+    }
+
+    public MetricReporterDaemon enableKafka() {
+        addReporter(new KafkaReporter());
         return this;
     }
 
@@ -35,6 +38,12 @@ public class MetricReporterDaemon {
     public synchronized void start() {
         executor.prestartAllCoreThreads();
         executor.scheduleAtFixedRate(REPORT, interval, interval, TimeUnit.SECONDS);
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                stop();
+            }
+        }));
     }
 
     public synchronized void stop() {
@@ -54,4 +63,16 @@ public class MetricReporterDaemon {
             }
         }
     };
+
+    private static class KafkaReporter extends CloudPipeBase implements Reporter {
+        @Override
+        protected String getBiz() {
+            return "kafka_metrics";
+        }
+
+        @Override
+        public void report(List<Map> data) throws Exception {
+            pumpString(mapper.writeValueAsString(data));
+        }
+    }
 }

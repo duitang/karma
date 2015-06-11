@@ -41,33 +41,21 @@ public class MetricCenter {
 
     private static MetricUnit metricUnitFor(ClientId clientId, String method, boolean failure) {
         String name = metricName(clientId, method, failure);
-        MetricUnit metricUnit = metricUnits.get(name);
-        if(metricUnit != null) {
-            return metricUnit;
-        }
-        synchronized (MetricCenter.class) {
-            metricUnit = metricUnits.get(name);
-            if (metricUnit == null) {
-                metricUnit = new MetricUnit(name);
-                metricUnits.put(name, metricUnit);
-            }
-        }
-        return metricUnit;
+        return metricUnitFor(name);
     }
 
     private static MetricUnit metricUnitFor(String name) {
         MetricUnit metricUnit = metricUnits.get(name);
-        if (metricUnit != null) {
-            return metricUnit;
-        }
-        synchronized (MetricCenter.class) {
-            metricUnit = metricUnits.get(name);
-            if(metricUnit == null) {
-                metricUnit = new MetricUnit(name);
-                metricUnits.put(name, metricUnit);
+        if (metricUnit == null) {
+            synchronized (MetricCenter.class) {
+                metricUnit = metricUnits.get(name);
+                if (metricUnit == null) {
+                    metricUnit = new MetricUnit(name);
+                    metricUnits.put(name, metricUnit);
+                }
             }
-            return metricUnit;
         }
+        return metricUnit;
     }
 
     public static void record(ClientId clientId, String method, long elapse, boolean failure) {
@@ -79,8 +67,12 @@ public class MetricCenter {
     }
 
 	private static class LocationHolder {
-		public static final String HOSTNAME;
-		static {
+		private static String HOSTNAME = genHostname();
+        private static String PID = genPid();
+        private static String APP_NAME = genAppName();
+        private static boolean includePid = false;
+
+		private static String genHostname() {
 			String _hostname = null;
 			try {
 				_hostname = InetAddress.getLocalHost().getHostName();
@@ -91,11 +83,10 @@ public class MetricCenter {
                     _hostname = "unknown_" + ThreadLocalRandom.current().nextLong(10000, 99999);
                 }
 			}
-			HOSTNAME = _hostname;
+			return  _hostname;
 		}
 
-        public static final String APP_NAME;
-        static {
+        public static String genAppName() {
             String _appName = null;
             try {
                 _appName = SystemPropertyUtil.get("app.name");
@@ -105,11 +96,10 @@ public class MetricCenter {
             if (_appName == null) {
                 _appName = "";
             }
-            APP_NAME = _appName;
+            return _appName;
         }
 
-        public static final String PID;
-        static {
+        private static String genPid() {
             String _pid = null;
             try {
                 String name = ManagementFactory.getRuntimeMXBean().getName();
@@ -123,20 +113,28 @@ public class MetricCenter {
             if (_pid == null) {
                 _pid = "";
             }
-            PID = _pid;
+            return _pid;
         }
 
-        public static final String LOCATION;
-        static {
+        private static void enablePid() {
+            includePid = true;
+        }
+
+        public static volatile String LOCATION;
+        public static void resetLocation() {
             StringBuilder b = new StringBuilder();
             b.append(HOSTNAME);
             if (!APP_NAME.isEmpty()) {
                 b.append('-').append(APP_NAME);
             }
-            if (!PID.isEmpty()) {
+            if (includePid && !PID.isEmpty()) {
                 b.append('-').append(PID);
             }
             LOCATION = b.toString();
+        }
+
+        static {
+            resetLocation();
         }
 	}
 
@@ -146,6 +144,16 @@ public class MetricCenter {
 	static public String getHostname() {
 		return LocationHolder.HOSTNAME;
 	}
+
+    static public void setAppName(String name) {
+        LocationHolder.APP_NAME = name;
+        LocationHolder.resetLocation();
+    }
+
+    static public void enablePid() {
+        LocationHolder.enablePid();
+        LocationHolder.resetLocation();
+    }
 
     static public String getLocation() {
         return LocationHolder.LOCATION;
