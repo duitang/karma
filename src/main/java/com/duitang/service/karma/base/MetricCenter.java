@@ -146,6 +146,9 @@ public class MetricCenter {
 	}
 
     static public void setAppName(String name) {
+        if (name == null) {
+            throw new NullPointerException("name==null");
+        }
         LocationHolder.APP_NAME = name;
         LocationHolder.resetLocation();
     }
