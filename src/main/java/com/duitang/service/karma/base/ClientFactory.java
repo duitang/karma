@@ -12,7 +12,7 @@ import com.duitang.service.karma.client.KarmaClient;
 
 public abstract class ClientFactory<T> implements ServiceFactory<T> {
 
-	final static protected Logger err = Logger.getLogger("error");
+	final static protected Logger err = Logger.getLogger(ClientFactory.class);
 
 	protected String url;
 	protected List<String> serviceURL;

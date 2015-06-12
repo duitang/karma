@@ -24,7 +24,7 @@ public class CCT {
 
     public static final String RPC_CONF_KEY = "cct";
     
-    private static Logger cctlog = Logger.getLogger("cct");
+    private static Logger cctlog = Logger.getLogger(CCT.class);
     
     private static ThreadLocal<TraceChainDO> chainHolder = new ThreadLocal<TraceChainDO>();
     
