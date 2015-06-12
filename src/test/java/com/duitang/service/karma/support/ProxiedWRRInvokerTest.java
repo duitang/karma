@@ -17,6 +17,7 @@ public class ProxiedWRRInvokerTest {
         p.setValue("ttttt");
         P testInvoker = ProxiedWRRInvoker.newInstance("test", P.class, Lists.newArrayList(p));
         Assert.assertEquals(testInvoker.invokeSomeMethod(), "tttttxxx");
+        Assert.assertEquals(testInvoker.invokeTest2("yy", 123), "tttttyy123");
     }
 
     @Test
@@ -57,6 +58,10 @@ public class ProxiedWRRInvokerTest {
 
         public String invokeSomeMethod() {
             return value + "xxx";
+        }
+
+        public String invokeTest2(String xx, int yy) {
+            return value + xx + yy;
         }
     }
 }
