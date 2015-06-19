@@ -72,15 +72,12 @@ public class KarmaRemoteLatch {
 	}
 
 	protected void throwIt(Throwable t) throws KarmaRuntimeException {
-		// if (!canThrowIt) {
-		// return;
-		// }
 		KarmaRuntimeException ret = null;
 		if (t == null) {
 			ret = new KarmaRuntimeException("rpc call timeout = " + timeout + "ms");
 		} else {
 			if (!KarmaRuntimeException.class.isAssignableFrom(t.getClass())) {
-				ret = new KarmaRuntimeException(t);
+				ret = new KarmaRuntimeException(t.getCause());
 			} else {
 				ret = (KarmaRuntimeException) t;
 			}
