@@ -12,7 +12,7 @@ import io.netty.util.Attribute;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -42,7 +42,8 @@ public class KarmaIoSession implements LifeCycle {
 	protected Bootstrap conn;
 	protected ChannelFuture cf;
 	protected Channel session;
-
+	protected AtomicLong uuid = new AtomicLong(0);
+	
 	protected volatile int errorCount = 0;
 
 	// not thread-safe
@@ -111,14 +112,14 @@ public class KarmaIoSession implements LifeCycle {
 		this.session.writeAndFlush(data.getBytes());
 	}
 
-	public boolean ping(long uuid) {
+	public boolean ping() {
 		if (!this.session.isActive()) {
 			hitError();
 			return false;
 		}
 		// using 25% timeout for reduce cost
 		KarmaRemoteLatch latch = new KarmaRemoteLatch(timeout / 4);
-		latch.uuid = uuid;
+		latch.uuid = uuid.incrementAndGet();
 		this.setAttribute(latch);
 		this.session.writeAndFlush(BinaryPacketHelper.karmaPingBytes(1.0f, latch.uuid));
 		try {
@@ -144,7 +145,11 @@ public class KarmaIoSession implements LifeCycle {
 	    return false;
 	}
 	
-	public void setAttribute(KarmaRemoteLatch latch) {
+	public AtomicLong getUuid() {
+        return uuid;
+    }
+
+    public void setAttribute(KarmaRemoteLatch latch) {
 		Attribute<KarmaRemoteLatch> attr = this.session.attr(KarmaRemoteLatch.LATCH_KEY);
 		attr.set(latch);
 	}

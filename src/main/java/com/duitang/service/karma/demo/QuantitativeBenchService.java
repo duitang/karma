@@ -14,5 +14,20 @@ public interface QuantitativeBenchService {
      */
     public boolean benchWithPayload(int maxWaitMs, byte[] payload);
     
+    /**
+     * 不稳定的方法，该方法有50%的可能超时
+     */
+    public DemoRPCDTO unstableTimeoutMethod();
+    
+    /**
+     * 不稳定的方法，该方法有50%的可能抛出异常
+     */
+    public long unstableExceptionMethod();
+    
+    /**
+     * 稳定的方法，绝不超时
+     */
+    public String stableMethod();
+    
     public String queryCount();
 }

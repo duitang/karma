@@ -6,6 +6,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import com.duitang.service.karma.KarmaRuntimeException;
+import com.duitang.service.karma.KarmaTimeoutException;
 import com.duitang.service.karma.support.TraceChainDO;
 
 public class KarmaRemoteLatch {
@@ -62,30 +63,28 @@ public class KarmaRemoteLatch {
 
 	public Object getResult() throws Throwable {
 		try {
-			if (!latch.await(timeout, TimeUnit.MILLISECONDS) || this.ex != null) {
-				throwIt(ex);
-			}
+		    if (!latch.await(timeout, TimeUnit.MILLISECONDS)) {
+		        throw new KarmaTimeoutException();
+		    }
+			if (this.ex != null) throw this.ex;
 		} catch (InterruptedException e) {
-			throwIt(null);
+		    throw new KarmaRuntimeException("Interrupted");
 		}
 		return result;
 	}
 
-	protected void throwIt(Throwable t) throws KarmaRuntimeException {
-		// if (!canThrowIt) {
-		// return;
-		// }
-		KarmaRuntimeException ret = null;
-		if (t == null) {
-			ret = new KarmaRuntimeException("rpc call timeout = " + timeout + "ms");
-		} else {
-			if (!KarmaRuntimeException.class.isAssignableFrom(t.getClass())) {
-				ret = new KarmaRuntimeException(t);
-			} else {
-				ret = (KarmaRuntimeException) t;
-			}
-		}
-		throw ret;
-	}
+//	protected void throwIt(Throwable t) throws KarmaRuntimeException {
+//		KarmaRuntimeException ret = null;
+//		if (t == null) {
+//			ret = new KarmaRuntimeException("rpc call timeout = " + timeout + "ms");
+//		} else {
+//			if (!KarmaRuntimeException.class.isAssignableFrom(t.getClass())) {
+//				ret = new KarmaRuntimeException(t.getCause());
+//			} else {
+//				ret = (KarmaRuntimeException) t;
+//			}
+//		}
+//		throw ret;
+//	}
 
 }
