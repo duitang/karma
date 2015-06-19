@@ -154,7 +154,7 @@ public class ServicesHolder implements Observer {
 			
 			List<String> lst = Splitter.on(';').splitToList(endpoint);
 			if (lastEndpoints != null && lst.size() == lastEndpoints.size() && lst.containsAll(lastEndpoints)) {
-			    log.warn("nodelist_changed_but_no_change_for_group:" + rpcClientConfig.getGroup());
+			    log.warn("nodelist_not_changed_for_group:" + rpcClientConfig.getGroup());
 			    return;
 			}
 			lastEndpoints = lst;

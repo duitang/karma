@@ -96,7 +96,7 @@ public class WRRBalancer implements IOBalance {
                             double total = (double)counts.get(server).intValue();
                             double fail = (double)failureCounts.get(server).intValue();
                             if (total != 0) failrate = fail / total;
-                            if (failrate > 0.0) System.out.println(server + "@" + total + '/' + fail);
+                            if (failrate > 0.0) System.err.println(server + "@" + total + '/' + fail);
                             int oldwt = serverWt.get(server);
                             int wt = oldwt - (int)(failrate * 100.0);
                             if (failrate > KICKOUT_RATE) wt = 0;
@@ -133,9 +133,9 @@ public class WRRBalancer implements IOBalance {
                         cw = Collections.max(serverWt.values());
                         if (cw == 0) {
                             //patch: 当没有节点可用的时候，直接返回第一个节点。
-                            //否则在下面这种极端情况下，该方法会返回null：该节点持续出错不可用且没有更多节点加入
+                            //否则在极端情况（该节点持续出错不可用且没有更多节点加入）下，该方法会返回null
                             String[] ss = serverWt.keySet().toArray(new String[0]);
-                            System.out.println("wrr_shit:"+ ss[0]);
+                            System.err.println("wrrbalancer_fatal:"+ ss[0]);
                             return ss[0];
                         }
                     }

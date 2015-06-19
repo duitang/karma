@@ -68,7 +68,6 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 
 	public static void reset(String group, List<String> urls) {
 	    if (lock.compareAndSet(false, true)) {
-	        System.out.println("obtained:" + group);
 	        pool.resetPool();
             WRRBalancer.getInstance(group, urls).reload(urls);
             new Timer().schedule(new TimerTask() {
@@ -76,7 +75,7 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
                 public void run() {
                     lock.compareAndSet(true, false);
                 }
-            }, 6000);
+            }, 15000);
 	    }
 	}
 	
@@ -194,14 +193,15 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 			boolean reachable = true;
 			if (iosession != null) {
 				pong = iosession.ping();
-				error.debug("ping " + u + " ok = " + pong);
 				if (!pong) reachable = iosession.reachable();
 			}
-			String err = String.format("%s call method[%s]@%s timeout/err_pong=%s,reachable=%s", iosession, name, u, pong, reachable);
 			if (e instanceof KarmaTimeoutException) {
+			    error.error(String.format("%s call method[%s]@%s timeout/err_pong=%s,reachable=%s", 
+			        iosession, name, u, pong, reachable)
+			    );
 			    throw e;
 			} else {
-			    throw new KarmaRuntimeException(err, e);
+			    throw new KarmaRuntimeException(e);
 			}
 		} finally {
 			if (iosession != null) {
