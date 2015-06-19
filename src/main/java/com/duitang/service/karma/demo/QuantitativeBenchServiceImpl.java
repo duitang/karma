@@ -3,6 +3,9 @@ package com.duitang.service.karma.demo;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+
 /**
  * 
  * @author kevx
@@ -33,6 +36,27 @@ public class QuantitativeBenchServiceImpl implements QuantitativeBenchService {
         totalBytes.set(0);
         totalCalls.set(0);
         return ret;
+    }
+
+    @Override
+    public DemoRPCDTO unstableMethod() {
+        if (rand.nextInt(10) < 5) {
+            try {
+                Thread.sleep(700);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        DemoRPCDTO dto = new DemoRPCDTO();
+        dto.setA("asd");
+        dto.setB(Lists.newArrayList(1.1f, 1.2f));
+        dto.setC(Maps.<String,Double>newHashMap());
+        return dto;
+    }
+
+    @Override
+    public String stableMethod() {
+        return String.valueOf(System.currentTimeMillis());
     }
 
 }

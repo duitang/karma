@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.Validate;
 import org.apache.log4j.Logger;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.WatchedEvent;
@@ -26,6 +27,8 @@ import com.google.common.collect.Maps;
  * 
  * 每台机器启动后均将自身注册到zk中；
  * 当机器失联后zk会自动删除相应节点
+ * 
+ * 对于服务提供者还会将ServiceExporter暴露的接口写入ZK
  * 
  * @author kevx
  * @since 5:57:54 PM Jan 13, 2015
@@ -53,12 +56,16 @@ public class NodeRegister  implements Watcher, Runnable {
 	
 	public String makeData() throws Exception {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
-		List<String> all = servicesExporter.getExportedInterfaces();
+		String now = sdf.format(new Date());
 		Map<String, String> m = Maps.newHashMap();
-		if (all.size() > 0) {
-			m.put("rpc_interfaces", Joiner.on(';').join(all));
-			m.put("rpc_port", String.valueOf(servicesExporter.getPort()));
-			m.put("rpc_gmt_create", sdf.format(new Date()));
+		m.put("rpc_gmt_create", now);
+		if (servicesExporter != null) {
+		    //this is a service provider
+    		List<String> all = servicesExporter.getExportedInterfaces();
+    		if (all.size() > 0) {
+    			m.put("rpc_interfaces", Joiner.on(';').join(all));
+    			m.put("rpc_port", String.valueOf(servicesExporter.getPort()));
+    		}
 		}
 		return mapper.writeValueAsString(m);
 	}
@@ -78,6 +85,7 @@ public class NodeRegister  implements Watcher, Runnable {
 	@Override
 	public void run() {
 		try {
+		    Validate.notBlank(appName);
 			String cs = connString;
 			if (isDev()) {
 				cs = connStringDev;

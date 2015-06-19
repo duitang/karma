@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
@@ -41,7 +40,6 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 	protected String clientid;
 	protected String domainName;
 	protected Map<String, Boolean> cutoffNames;
-	protected AtomicLong uuid = new AtomicLong(0);
 	protected long timeout = 500;
 	protected T dummy;
 	protected IOBalance router;
@@ -169,33 +167,32 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 		data.domain = domainName;
 		data.method = name;
 		data.param = args;
-		data.uuid = uuid.incrementAndGet();
 		data.conf = rpcConfig;
 		
 		KarmaRemoteLatch latch = new KarmaRemoteLatch(timeout);
-		latch.setUuid(data.uuid);
 		Object ret = null;
-		boolean flag = false;
+		boolean failure = false;
 		KarmaIoSession iosession = null;
 		String u = null;
 		boolean pong = false;
 		try {
 			u = this.router.next(null);
 			iosession = pool.getIOSession(u);
+			data.uuid = iosession.getUuid().incrementAndGet();
+			latch.setUuid(data.uuid);
 			iosession.setTimeout(timeout);
 			iosession.setAttribute(latch);
 			iosession.write(data);
 			ret = latch.getResult();
-			flag = false;
 			CCT.mergeTraceChain(latch.getRemoteTc());
 		} catch (KarmaOverloadException e) {
 		    throw e;
 		} catch (Throwable e) {
 		    router.fail(u);
-			flag = true;
+			failure = true;
 			boolean reachable = true;
 			if (iosession != null) {
-				pong = iosession.ping(uuid.incrementAndGet());
+				pong = iosession.ping();
 				error.debug("ping " + u + " ok = " + pong);
 				if (!pong) reachable = iosession.reachable();
 			}
@@ -206,7 +203,7 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 				pool.releaseIOSession(iosession);
 			}
 			ts = System.nanoTime() - ts;
-			MetricCenter.methodMetric(this.clientid, name, ts, flag);
+			MetricCenter.methodMetric(this.clientid, name, ts, failure);
 		}
 		return ret;
 	}
