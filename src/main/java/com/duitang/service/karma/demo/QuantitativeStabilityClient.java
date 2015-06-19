@@ -27,7 +27,7 @@ private static Random rand = new Random();
         final String url = args[0].trim();
         final int nThreads = NumberUtils.toInt(args[1]);
         final long totalcall = NumberUtils.toLong(args[2]);
-        final int payloadSize = NumberUtils.toInt(args[4]);
+        final int payloadSize = NumberUtils.toInt(args[3]);
         
         final byte[] payload = new byte[payloadSize];
         Arrays.fill(payload, Integer.valueOf(rand.nextInt()).byteValue());
@@ -51,13 +51,14 @@ private static Random rand = new Random();
                 public void run() {
                     try {
                         QuantitativeBenchService svc = (QuantitativeBenchService) cf0.create();
-                        svc.unstableMethod();
+                        svc.unstableTimeoutMethod();
+                        svc.unstableExceptionMethod();
                         svc.stableMethod();
                         cf0.release(svc);
                     } catch (KarmaOverloadException ke) {
                         overload.incrementAndGet();
                     } catch (Exception e) {
-                        e.getCause().printStackTrace();
+                        e.printStackTrace();
                         err.incrementAndGet();
                     }
                 }

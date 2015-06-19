@@ -3,6 +3,8 @@ package com.duitang.service.karma.demo;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.commons.lang3.Validate;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -39,7 +41,7 @@ public class QuantitativeBenchServiceImpl implements QuantitativeBenchService {
     }
 
     @Override
-    public DemoRPCDTO unstableMethod() {
+    public DemoRPCDTO unstableTimeoutMethod() {
         if (rand.nextInt(10) < 5) {
             try {
                 Thread.sleep(700);
@@ -57,6 +59,12 @@ public class QuantitativeBenchServiceImpl implements QuantitativeBenchService {
     @Override
     public String stableMethod() {
         return String.valueOf(System.currentTimeMillis());
+    }
+
+    @Override
+    public long unstableExceptionMethod() {
+        Validate.isTrue(rand.nextInt(10) < 5);
+        return System.currentTimeMillis();
     }
 
 }
