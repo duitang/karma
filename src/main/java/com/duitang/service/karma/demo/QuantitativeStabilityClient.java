@@ -38,7 +38,7 @@ private static Random rand = new Random();
         final ClientFactory<Object> cf0 = ClientFactory.createFactory(interfaceCls);
         cf0.setGroup("bench");
         cf0.setUrl(url);
-        cf0.setTimeout(1000);
+        cf0.setTimeout(500);
         cf0.reset();
         
         final AtomicLong overload = new AtomicLong();
