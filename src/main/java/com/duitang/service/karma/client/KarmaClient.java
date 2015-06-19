@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.KarmaOverloadException;
 import com.duitang.service.karma.KarmaRuntimeException;
+import com.duitang.service.karma.KarmaTimeoutException;
 import com.duitang.service.karma.base.KarmaClientInfo;
 import com.duitang.service.karma.base.LifeCycle;
 import com.duitang.service.karma.base.MetricCenter;
@@ -197,7 +198,11 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 				if (!pong) reachable = iosession.reachable();
 			}
 			String err = String.format("%s call method[%s]@%s timeout/err_pong=%s,reachable=%s", iosession, name, u, pong, reachable);
-			throw new KarmaRuntimeException(err, e);
+			if (e instanceof KarmaTimeoutException) {
+			    throw e;
+			} else {
+			    throw new KarmaRuntimeException(err, e);
+			}
 		} finally {
 			if (iosession != null) {
 				pool.releaseIOSession(iosession);

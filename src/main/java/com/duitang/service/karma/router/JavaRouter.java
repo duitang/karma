@@ -125,9 +125,9 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
 					if (data == null) {
 						data = new BinaryPacketData();
 					}
-					if (e.getCause() == null) {
-					    data.ex = e;
-					} else data.ex = e.getCause();
+					Throwable root = e;
+					while (root.getCause() != null) root = root.getCause();
+					data.ex = root;
 				}
 			} while (false);
 			
