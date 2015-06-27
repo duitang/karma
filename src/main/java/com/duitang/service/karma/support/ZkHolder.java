@@ -23,7 +23,7 @@ public class ZkHolder {
     private static CountDownLatch latch = null;
     
     private static ZooKeeper zk;
-    private static final String connString = "s44:3881,s45:3881,s46:3881";
+    private static final String connString = "std-1.zk.infra.duitang.net:3881,std-2.zk.infra.duitang.net:3881,std-3.zk.infra.duitang.net:3881";
     private static final String connStringDev = "10.0.4.11:3881";
     
     private static final Set<Runnable> callbacks = Sets.newHashSet();
