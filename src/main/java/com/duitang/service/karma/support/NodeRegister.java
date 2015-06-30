@@ -6,15 +6,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.Validate;
 import org.apache.log4j.Logger;
 import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
+import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooDefs.Perms;
 import org.apache.zookeeper.ZooKeeper;
-import org.apache.zookeeper.ZooKeeper.States;
 import org.apache.zookeeper.data.ACL;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,31 +30,64 @@ import com.google.common.collect.Maps;
  * @author kevx
  * @since 5:57:54 PM Jan 13, 2015
  */
-public class NodeRegister  implements Watcher, Runnable {
+public class NodeRegister {
 
 	private final static Logger log = Logger.getLogger(NodeRegister.class);
 	private final static ObjectMapper mapper = new ObjectMapper();
 	
+	private final Map<String, String> extraData = Maps.newHashMap();
+	
 	private String appName;
-	private ZooKeeper zk;
-	private String connString;
-	private String connStringDev;
 	
 	private ServicesExporter servicesExporter;
 	
-	@Override
-	public void process(WatchedEvent e) {
-		//nothing to do
-	}
-	
 	public void init() {
-		new Thread(this, "ZkRegister").start();
+	    try {
+            InetAddress ia = InetAddress.getLocalHost();
+            final String host = ia.getHostAddress();
+            final String data = makeData();
+            final ACL acl = new ACL(Perms.ALL, Ids.ANYONE_ID_UNSAFE);
+            final ZooKeeper zk = ZkHolder.get();
+            ZkHolder.addCallback(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        String appPath = "/app/" + appName;
+                        if (zk.exists(appPath, false) == null) {
+                            zk.create(
+                                appPath, 
+                                null, 
+                                Lists.newArrayList(acl), 
+                                CreateMode.PERSISTENT
+                            );
+                        }
+                        
+                        String nodePath = appPath + '/' + host;
+                        if (zk.exists(nodePath, false) == null) {
+                            zk.create(
+                                nodePath, 
+                                data.getBytes(), 
+                                Lists.newArrayList(acl), 
+                                CreateMode.EPHEMERAL
+                            );
+                        }
+                    } catch (KeeperException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }, false);
+        } catch (Exception e) {
+            log.error("NodeRegister_failed:", e);
+        }
 	}
 	
 	public String makeData() throws Exception {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
 		String now = sdf.format(new Date());
 		Map<String, String> m = Maps.newHashMap();
+		m.putAll(extraData);
 		m.put("rpc_gmt_create", now);
 		if (servicesExporter != null) {
 		    //this is a service provider
@@ -81,62 +111,6 @@ public class NodeRegister  implements Watcher, Runnable {
 		}
 		return true;
 	}
-	
-	@Override
-	public void run() {
-		try {
-		    Validate.notBlank(appName);
-			String cs = connString;
-			if (isDev()) {
-				cs = connStringDev;
-			}
-			while (true) {
-				Thread.sleep(1000);
-				if (zk == null || !zk.getState().isAlive()) {
-				    if (zk != null) {
-				        zk.close();
-				    }
-					resetZk(cs);
-				}
-			}
-		} catch (Exception e) {
-			log.error("NodeRegister_failed:", e);
-		}
-	}
-
-	private void resetZk(String cs) throws Exception {
-	    int tries = 0;
-		try {
-            InetAddress ia = InetAddress.getLocalHost();
-            String host = ia.getHostAddress();
-            String data = makeData();
-            ACL acl = new ACL(Perms.ALL, Ids.ANYONE_ID_UNSAFE);
-            if (zk != null) zk.close();
-            zk = new ZooKeeper(cs, 3000, this);
-            while (zk.getState() != States.CONNECTED && tries < 100) {
-                //waiting for zk initialization
-                tries++;
-                Thread.sleep(500);
-            }
-            zk.create(
-            	"/app/" + appName + '/' + host, 
-            	data.getBytes(), 
-            	Lists.newArrayList(acl), 
-            	CreateMode.EPHEMERAL
-            );
-        } catch (Exception e) {
-            if (zk != null) zk.close();//close it right now
-            log.error("NodeRegister_resetZk_failed:" + tries, e);
-        }
-	}
-	
-	public void setConnString(String connString) {
-		this.connString = connString;
-	}
-
-	public void setConnStringDev(String connStringDev) {
-		this.connStringDev = connStringDev;
-	}
 
 	public String getAppName() {
 		return appName;
@@ -150,4 +124,11 @@ public class NodeRegister  implements Watcher, Runnable {
 		this.servicesExporter = servicesExporter;
 	}
 
+    public void setExtraData(Map<String, String> extraData) {
+        addExtraData(extraData);
+    }
+	
+    public void addExtraData(Map<String, String> ext) {
+        if (ext != null) extraData.putAll(ext);
+    }
 }
