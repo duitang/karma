@@ -99,10 +99,10 @@ public class ZkHolder {
         return true;
     }
     
-    public static void addCallback(Runnable r, boolean immediattlyRun) {
+    public static void addCallback(Runnable r, boolean immediatllyRun) {
         if (r != null) {
             callbacks.add(r);
-            if (immediattlyRun) r.run();
+            if (immediatllyRun) r.run();
         }
     }
 
