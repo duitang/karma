@@ -18,6 +18,7 @@ public class StandardClient {
 		ServicesHolder service = new ServicesHolder();
 		service.setInterfaceName("com.duitang.service.biz.ICatService");
 		service.setRpcClientConfig(cfg);
+		service.init();
 		
 		service.create();
 	}
