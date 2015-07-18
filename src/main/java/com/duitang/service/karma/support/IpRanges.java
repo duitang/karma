@@ -39,6 +39,7 @@ public class IpRanges {
         Validate.isTrue(isProduction("10.0.3.10"));
         
         Validate.isTrue(isProduction("10.1.1.10"));
+        Validate.isTrue(isProduction("10.1.2.222"));
         Validate.isTrue(isProduction("10.1.3.10"));
         Validate.isTrue(isProduction("10.1.3.100"));
         Validate.isTrue(isProduction("10.1.3.222"));

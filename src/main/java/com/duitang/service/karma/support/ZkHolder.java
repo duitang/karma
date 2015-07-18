@@ -79,7 +79,7 @@ public class ZkHolder {
                         try {
                             r.run();
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            log.error("ZkCallbackRunner_failed:", e);
                         }
                     }
                 }
@@ -113,7 +113,7 @@ public class ZkHolder {
                 return zk;
             }
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            log.error("", e);
         }
         return null;
     }

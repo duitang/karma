@@ -47,10 +47,10 @@ public class NodeRegister {
             final String host = ia.getHostAddress();
             final String data = makeData();
             final ACL acl = new ACL(Perms.ALL, Ids.ANYONE_ID_UNSAFE);
-            final ZooKeeper zk = ZkHolder.get();
             ZkHolder.addCallback(new Runnable() {
                 @Override
                 public void run() {
+                    final ZooKeeper zk = ZkHolder.get();
                     try {
                         String appPath = "/app/" + appName;
                         if (zk.exists(appPath, false) == null) {
