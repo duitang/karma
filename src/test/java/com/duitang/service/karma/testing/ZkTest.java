@@ -16,7 +16,7 @@ public class ZkTest {
 
     @Test
     public void test() throws Exception {
-        final String cs = "192.168.172.15:3881";
+        final String cs = "10.1.4.11:3881";
         final RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 30);
         CuratorFramework client =  CuratorFrameworkFactory.newClient(cs, retryPolicy);
         client.start();

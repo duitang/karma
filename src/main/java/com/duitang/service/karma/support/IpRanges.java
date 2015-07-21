@@ -16,6 +16,7 @@ public class IpRanges {
     private static final String[] productionIPRanges = new String[]{
         "^192\\.168\\.172\\.(1[2-9]|[2-9][0-9]|1([0-9][0-9])|2([0-4][0-9]|5[0-4]))$",
         "^10\\.0|1\\.1\\.([1-9][0-9]|1([0-9][0-9])|2([0-4][0-9]|5[0-5]))$",
+        "^10\\.0|1\\.2\\.([1-9][0-9]|1([0-9][0-9])|2([0-4][0-9]|5[0-5]))$",
         "^10\\.0|1\\.3\\.([1-9][0-9]|1([0-9][0-9])|2([0-4][0-9]|5[0-5]))$",
     };
     
@@ -39,6 +40,7 @@ public class IpRanges {
         Validate.isTrue(isProduction("10.0.3.10"));
         
         Validate.isTrue(isProduction("10.1.1.10"));
+        Validate.isTrue(isProduction("10.1.2.222"));
         Validate.isTrue(isProduction("10.1.3.10"));
         Validate.isTrue(isProduction("10.1.3.100"));
         Validate.isTrue(isProduction("10.1.3.222"));

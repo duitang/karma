@@ -109,7 +109,7 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
     					}
 					}
 					//如果延迟超过maxQueuingLatency说明系统过载，直接报错不再执行业务逻辑
-                    if (latency >= maxQueuingLatency) throw new KarmaOverloadException();
+                    if (latency >= maxQueuingLatency) throw new KarmaOverloadException(data.method);
                     
 					ctx.name = data.domain;
 					ctx.method = data.method;
@@ -126,8 +126,9 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
 					if (data == null) {
 						data = new BinaryPacketData();
 					}
+					int tries = 0;
 					Throwable root = e;
-					while (root.getCause() != null) root = root.getCause();
+					while (root.getCause() != null && tries++ < 5) root = root.getCause();
 					data.ex = root;
 				}
 			} while (false);

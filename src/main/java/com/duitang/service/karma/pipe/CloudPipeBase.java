@@ -117,6 +117,6 @@ public abstract class CloudPipeBase {
     }
     
     protected String zkCommEndpoint() {
-        return "192.168.172.44:3881,192.168.172.45:3881,192.168.172.46:3881";
+        return "std-1.zk.infra.duitang.net:3881,std-2.zk.infra.duitang.net:3881,std-3.zk.infra.duitang.net:3881";
     }
 }
