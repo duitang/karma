@@ -59,11 +59,11 @@ public class TCPServer implements RPCService, GenericFutureListener {
 
 	public void stop() {
 		try {
-			boss.shutdownGracefully().sync();
+			boss.shutdownGracefully().await(1000);//sync();
 		} catch (InterruptedException e) {
 		}
 		try {
-			worker.shutdownGracefully().sync();
+			worker.shutdownGracefully().await(1000);//.sync();
 		} catch (InterruptedException e) {
 		}
 	}
