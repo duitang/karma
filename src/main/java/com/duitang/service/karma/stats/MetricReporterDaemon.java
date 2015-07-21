@@ -11,43 +11,51 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.duitang.service.karma.base.MetricCenter;
-import com.duitang.service.karma.pipe.CloudPipeBase;
 
 public class MetricReporterDaemon {
-    private final static ObjectMapper mapper = new ObjectMapper();
     private final static Logger logger = LoggerFactory.getLogger(MetricReporterDaemon.class);
     private final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
     private int interval = 5; // sec
     private List<Reporter> reporters = new ArrayList<>();
 
-    public synchronized MetricReporterDaemon addReporter(Reporter reporter) {
+    private int state = INIT;
+    private static final int INIT = 0;
+    private static final int STARTED = 1;
+    private static final int STOPPED = 2;
+
+    // package private
+    MetricReporterDaemon() {
+    }
+
+    synchronized MetricReporterDaemon addReporter(Reporter reporter) {
         reporters.add(reporter);
         return this;
     }
 
-    public MetricReporterDaemon enableKafka() {
-        addReporter(new KafkaReporter());
-        return this;
-    }
-
-    public MetricReporterDaemon reportInterval(int second) {
+    MetricReporterDaemon reportInterval(int second) {
         this.interval = second;
         return this;
     }
 
-    public synchronized void start() {
-        executor.prestartAllCoreThreads();
-        executor.scheduleAtFixedRate(REPORT, interval, interval, TimeUnit.SECONDS);
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            @Override
-            public void run() {
-                stop();
-            }
-        }));
+    synchronized void start() {
+        if (state == INIT) {
+            executor.prestartAllCoreThreads();
+            executor.scheduleAtFixedRate(REPORT, interval, interval, TimeUnit.SECONDS);
+            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    stop();
+                }
+            }));
+            state = STARTED;
+        }
     }
 
-    public synchronized void stop() {
-        executor.shutdown();
+    synchronized void stop() {
+        if (state == STARTED) {
+            executor.shutdown();
+            state = STOPPED;
+        }
     }
 
     private Runnable REPORT = new Runnable() {
@@ -64,15 +72,4 @@ public class MetricReporterDaemon {
         }
     };
 
-    private static class KafkaReporter extends CloudPipeBase implements Reporter {
-        @Override
-        protected String getBiz() {
-            return "kafka_metrics";
-        }
-
-        @Override
-        public void report(List<Map> data) throws Exception {
-            pumpString(mapper.writeValueAsString(data));
-        }
-    }
 }
