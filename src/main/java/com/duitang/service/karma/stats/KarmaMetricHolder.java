@@ -11,28 +11,23 @@ public class KarmaMetricHolder {
         return metricHolder.holding;
     }
 
-    public static synchronized KarmaMetricHolder enable() {
+    public static void enable() {
         daemon.start();
-        return new KarmaMetricHolder();
     }
 
-    public static KarmaMetricHolder enableKafkaReporter() {
+    public static void enableKafkaReporter() {
         daemon.addReporter(new KafkaReporter());
-        return new KarmaMetricHolder();
     }
 
-    public static KarmaMetricHolder enableHolderReporter() {
+    public static void enableHolderReporter() {
         daemon.addReporter(metricHolder.reporter());
-        return new KarmaMetricHolder();
     }
 
-    public static KarmaMetricHolder setReportInterval(int second) {
+    public static void setReportInterval(int second) {
         daemon.reportInterval(second);
-        return new KarmaMetricHolder();
     }
 
-    public static KarmaMetricHolder addReporter(Reporter r) {
+    public static void addReporter(Reporter r) {
         daemon.addReporter(r);
-        return new KarmaMetricHolder();
     }
 }

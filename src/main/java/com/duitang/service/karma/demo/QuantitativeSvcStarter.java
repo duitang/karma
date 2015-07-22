@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.math.NumberUtils;
 
+import com.duitang.service.karma.stats.KarmaMetricHolder;
 import com.duitang.service.karma.stats.MetricReporterDaemon;
 import com.duitang.service.karma.stats.Reporter;
 import com.duitang.service.karma.support.ServicesExporter;
@@ -31,9 +32,8 @@ public class QuantitativeSvcStarter {
         se.init();
         System.out.println(String.format("QuantitativeSvc_started: with maxQeLatency %d \n", mql));
 
-        MetricReporterDaemon metricReporterDaemon = new MetricReporterDaemon();
-        metricReporterDaemon
-                .addReporter(new Reporter() {
+        KarmaMetricHolder.enable();
+        KarmaMetricHolder.addReporter(new Reporter() {
                     @Override
                     public void report(List<Map> data) {
                         System.out.println(">>>>>>>>>>>>>");
@@ -42,8 +42,7 @@ public class QuantitativeSvcStarter {
                         }
                         System.out.println(">>>>>>>>>>>>>");
                     }
-                })
-                .start();
+                });
     }
 
 }

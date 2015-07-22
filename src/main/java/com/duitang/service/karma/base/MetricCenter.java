@@ -14,7 +14,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * TODO 解释怎么录制latency
+ * {@code
+ *  MetricCenter.record("com.duitang.example.service.SomeService.methodName", 20); // record in millis
+ * }
  */
 public class MetricCenter {
 	final static Logger logger = LoggerFactory.getLogger(MetricCenter.class);
