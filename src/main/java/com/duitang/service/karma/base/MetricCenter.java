@@ -1,17 +1,14 @@
 package com.duitang.service.karma.base;
 
-import java.lang.management.ManagementFactory;
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ThreadLocalRandom;
 
-import io.netty.util.internal.StringUtil;
-import io.netty.util.internal.SystemPropertyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.duitang.service.karma.stats.LocationHolder;
 
 /**
  * {@code
@@ -68,90 +65,18 @@ public class MetricCenter {
         metricUnitFor(name).record(elapse);
     }
 
-	private static class LocationHolder {
-		private static String HOSTNAME = genHostname();
-        private static String PID = genPid();
-        private static String APP_NAME = genAppName();
-        private static boolean includePid = false;
-
-		private static String genHostname() {
-			String _hostname = null;
-			try {
-				_hostname = InetAddress.getLocalHost().getHostName();
-			} catch (Exception e) {
-				logger.error("get hostname error", e);
-				_hostname = System.getenv("HOSTNAME");
-                if (_hostname == null || _hostname.isEmpty()) {
-                    _hostname = "unknown_" + ThreadLocalRandom.current().nextLong(10000, 99999);
-                }
-			}
-			return  _hostname;
-		}
-
-        public static String genAppName() {
-            String _appName = null;
-            try {
-                _appName = SystemPropertyUtil.get("app.name");
-            } catch (Exception e) {
-                logger.error("get APP_NAME error", e);
-            }
-            if (_appName == null) {
-                _appName = "";
-            }
-            return _appName;
-        }
-
-        private static String genPid() {
-            String _pid = null;
-            try {
-                String name = ManagementFactory.getRuntimeMXBean().getName();
-                String[] split = StringUtil.split(name, '@');
-                if (split.length == 2) {
-                    _pid = split[1];
-                }
-            } catch (Exception e) {
-                logger.error("get PID error", e);
-            }
-            if (_pid == null) {
-                _pid = "";
-            }
-            return _pid;
-        }
-
-        private static void enablePid() {
-            includePid = true;
-        }
-
-        public static volatile String LOCATION;
-        public static void resetLocation() {
-            StringBuilder b = new StringBuilder();
-            b.append(HOSTNAME);
-            if (!APP_NAME.isEmpty()) {
-                b.append('-').append(APP_NAME);
-            }
-            if (includePid && !PID.isEmpty()) {
-                b.append('-').append(PID);
-            }
-            LOCATION = b.toString();
-        }
-
-        static {
-            resetLocation();
-        }
-	}
-
     /**
      *  HOSTNAME or randomly generated string
      */
 	static public String getHostname() {
-		return LocationHolder.HOSTNAME;
+		return LocationHolder.getHostname();
 	}
 
     static public void setAppName(String name) {
         if (name == null) {
             throw new NullPointerException("name==null");
         }
-        LocationHolder.APP_NAME = name;
+        LocationHolder.setAppName(name);
         LocationHolder.resetLocation();
     }
 
@@ -159,7 +84,7 @@ public class MetricCenter {
         if (hostname == null) {
             throw new NullPointerException("hostname==null");
         }
-        LocationHolder.HOSTNAME = hostname;
+        LocationHolder.setHostname(hostname);
         LocationHolder.resetLocation();
     }
 
