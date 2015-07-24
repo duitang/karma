@@ -34,7 +34,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ClusterZKRouter implements IOBalance {
 
-	final static Logger err = LoggerFactory.getLogger(ClusterZKRouter.class);
+	final static Logger err = LoggerFactory.getLogger("error");
 	final static float lower = 0.7f;
 	final static float upper = 1f + (1f - lower);
 	final static String KARMA_CLUSTER_LOAD_NAME = "/trivial/rpc_lb/cobweb";

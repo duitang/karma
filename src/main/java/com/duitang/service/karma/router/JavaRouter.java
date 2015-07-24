@@ -86,6 +86,7 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
 		                out.warn(info);
 		                RpcStatPipe.stat(RpcStatPipe.CAT_HIGH_LATENCY, latency);
 		            }
+		            
 					data = BinaryPacketHelper.fromRawToData(raw);
 					if (BinaryPacketHelper.isPing(data)) {
 						long g = pingCount.incrementAndGet();

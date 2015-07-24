@@ -133,14 +133,11 @@ public class ReflectInvoker implements Invoker {
         } catch (Throwable e) {
             StringBuilder sb = new StringBuilder();
             sb.append(m.getClass().getName()).append(".").append(m.getName()).append("(");
-            for (Object parameter : parameters) {
-                if (parameter == null) {
-                    sb.append("null");
-                } else {
-                    sb.append(parameter.getClass().getName());
-                }
-                sb.append(",");
-            }
+			for (int i = 0; i < parameters.length; i++) {
+				if (!(parameters[i] == null)) {
+					sb.append(parameters[i].getClass().getName()).append(",");
+				}
+			}
             sb.replace(sb.length() - 1, sb.length(), ")");
             fail = true;
             throw new KarmaException(sb.toString(), e);

@@ -23,7 +23,7 @@ public class ServicesExporter {
 	private int maxQueuingLatency;
 	private ServerBootstrap boot;
 	
-	private final Logger log = Logger.getLogger(ServicesExporter.class);
+	private final Logger log = Logger.getLogger("server");
 	
 	public void init() {
 		try {

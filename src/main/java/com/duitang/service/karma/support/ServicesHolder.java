@@ -34,7 +34,7 @@ public class ServicesHolder implements Observer {
 	private ClientFactory<Object> cf = null;
 	private static final String zkGroupBase = "/rpc_groups";
 	
-	private static final Logger log = Logger.getLogger(ServicesHolder.class);
+	private static final Logger log = Logger.getLogger("main");
 	private static final ObjectMapper mapper = new ObjectMapper();
 	
 	@SuppressWarnings("unchecked")

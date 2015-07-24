@@ -20,7 +20,7 @@ import com.google.common.collect.Sets;
 
 public class KarmaIOPool implements LifeCycle {
 
-	final static protected Logger err = Logger.getLogger(KarmaIOPool.class);
+	final static protected Logger err = Logger.getLogger("error");
 	protected ConcurrentHashMap<String, GenericObjectPool<KarmaIoSession>> ioPool = new ConcurrentHashMap<String, GenericObjectPool<KarmaIoSession>>();
 	protected long timeout;
 	protected volatile boolean closed = false;

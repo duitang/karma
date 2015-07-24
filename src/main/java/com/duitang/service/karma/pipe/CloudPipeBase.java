@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public abstract class CloudPipeBase {
 
     protected static final ObjectMapper mapper = new ObjectMapper();
-    protected static final Logger log = Logger.getLogger(CloudPipeBase.class);
+    protected static final Logger log = Logger.getLogger("cloudPipe");
     protected static final String zkBase = "/config/kafka_clusters";
     
     private Producer<String, String> producer;
