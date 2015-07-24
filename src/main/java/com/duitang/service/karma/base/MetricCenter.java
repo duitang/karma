@@ -88,11 +88,6 @@ public class MetricCenter {
         LocationHolder.resetLocation();
     }
 
-    static public void enablePid() {
-        LocationHolder.enablePid();
-        LocationHolder.resetLocation();
-    }
-
     static public String getLocation() {
         return LocationHolder.LOCATION;
     }

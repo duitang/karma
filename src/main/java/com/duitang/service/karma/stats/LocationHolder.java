@@ -12,23 +12,18 @@ public class LocationHolder {
 
     public static volatile String LOCATION;
     static String HOSTNAME = genHostName();
-    private static String APP_NAME = getAppName();
+    private static String APP_NAME = genAppName();
 
     private static String genHostName() {
-        String _hostname = null;
         try {
-            _hostname = InetAddress.getLocalHost().getHostName();
+            return InetAddress.getLocalHost().getHostName();
         } catch (Exception e) {
             logger.error("get hostname error", e);
-            _hostname = System.getenv("HOSTNAME");
-            if (_hostname == null || _hostname.isEmpty()) {
-                _hostname = "unknown_" + ThreadLocalRandom.current().nextLong(10000, 99999);
-            }
         }
-        return  _hostname;
+        return "host-" + String.valueOf(ThreadLocalRandom.current().nextInt(10000,99999));
     }
 
-    public static String getAppName() {
+    private static String genAppName() {
         String _appName = null;
         try {
             _appName = SystemPropertyUtil.get("app.name");
