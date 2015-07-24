@@ -8,7 +8,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.duitang.service.karma.stats.KarmaMetricHolder;
 import com.duitang.service.karma.stats.LocationHolder;
+import com.duitang.service.karma.stats.Reporter;
 
 /**
  * {@code
@@ -125,5 +127,30 @@ public class MetricCenter {
         }
         return samples;
     }
+
+    public static List<Map> getLatestMetric() {
+        return KarmaMetricHolder.getLatestMetric();
+    }
+
+    public static void enable() {
+        KarmaMetricHolder.enable();
+    }
+
+    public static void enableKafkaReporter() {
+        KarmaMetricHolder.enableKafkaReporter();
+    }
+
+    public static void enableHolderReporter() {
+        KarmaMetricHolder.enableHolderReporter();
+    }
+
+    public static void setReportInterval(int second) {
+        KarmaMetricHolder.setReportInterval(second);
+    }
+
+    public static void addReporter(Reporter reporter) {
+        KarmaMetricHolder.addReporter(reporter);
+    }
+
 }
 
