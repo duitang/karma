@@ -36,17 +36,12 @@ public class TestClient {
 		ServerBootstrap boot = new ServerBootstrap();
 		boot.addService(DemoService.class, new MemoryCacheService());
 		boot.startUp(9999);
-//		MetricCenter.alterReportPeroid(3);
-//		// MetricCenter.enableConsoleReporter(true);
-//		MetricCenter.addLoggerReporter(root);
 
 		Thread.sleep(100000);
 	}
 
 	@Test
 	public void test2() throws Exception {
-//		MetricCenter.alterReportPeroid(3);
-//		MetricCenter.enableConsoleReporter(true);
 		ClientFactory<DemoService> fac = ClientFactory.createFactory(DemoService.class);
 		fac.setUrl("localhost:9999");
 		DemoService client = fac.create();

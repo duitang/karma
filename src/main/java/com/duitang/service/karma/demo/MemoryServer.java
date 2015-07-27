@@ -75,11 +75,6 @@ public class MemoryServer {
 			e.printStackTrace();
 			System.exit(1);
 		}
-
-//		if (s > 0) {
-//			MetricCenter.alterReportPeroid(s);
-//			MetricCenter.enableConsoleReporter(true);
-//		}
 	}
 
 	static void runClient(Map<String, String> param) {
@@ -148,11 +143,6 @@ public class MemoryServer {
 			ths[i] = new Thread(new LoadRunner(latch, l, msg, fac, usemap, trace));
 			ths[i].start();
 		}
-
-//		if (s > 0) {
-//			MetricCenter.alterReportPeroid(s);
-//			MetricCenter.enableConsoleReporter(true);
-//		}
 
 		try {
 			latch.await();

@@ -94,8 +94,6 @@ public class CacheNettyServiceTest {
 
 	// @Test
 	public void testMetric() throws Exception {
-//		MetricCenter.alterReportPeroid(1);
-//		MetricCenter.enableConsoleReporter(true);
 		DemoService cli = fac.create();
 		for (int i = 0; i < 10; i++) {
 			System.out.println("----->" + cli.trace_msg("wait_100", 100));
