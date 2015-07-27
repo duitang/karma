@@ -34,15 +34,16 @@ public class MetricUnit {
         ret.put("from", histo.getStartTimeStamp());
         ret.put("to", histo.getEndTimeStamp());
 
-        ret.put("count", histo.getTotalCount());
+        long count = histo.getTotalCount();
+        ret.put("count", count);
         ret.put("mean", histo.getMean());
-        ret.put("max", histo.getMaxValue());
-        ret.put("min", histo.getMinValue());
+        ret.put("max", count == 0 ? 0 : histo.getMaxValue());
+        ret.put("min", count == 0 ? 0 : histo.getMinValue());
         ret.put("stddev", histo.getStdDeviation());
 
         long gap = histo.getEndTimeStamp() - histo.getStartTimeStamp();
         if (gap != 0) {
-            ret.put("qps", histo.getTotalCount() / (gap / 1000D));
+            ret.put("qps", count / (gap / 1000D));
         }
 
         ret.put("p50", histo.getValueAtPercentile(50D));
@@ -61,7 +62,7 @@ public class MetricUnit {
     }
 
     protected String encodeCompressedArray(final Histogram histogram) {
-        if(targetBuffer == null || targetBuffer.capacity() < histogram.getNeededByteBufferCapacity()) {
+        if (targetBuffer == null || targetBuffer.capacity() < histogram.getNeededByteBufferCapacity()) {
             targetBuffer = ByteBuffer.allocate(histogram.getNeededByteBufferCapacity());
         }
         targetBuffer.clear();
