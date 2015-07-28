@@ -8,7 +8,7 @@ import com.duitang.service.karma.pipe.CloudPipeBase;
 public class KafkaReporter extends CloudPipeBase implements Reporter {
     @Override
     protected String getBiz() {
-        return "kafka_metrics";
+        return "karma_metrics";
     }
 
     @Override
