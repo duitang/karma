@@ -66,7 +66,7 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
 		public KarmaJobRunner(RPCContext ctx, BinaryPacketRaw rawPack) {
 			this.ctx = ctx;
 			this.raw = rawPack;
-			this.submitTime = System.currentTimeMillis();
+			this.submitTime = System.nanoTime();
 			this.schdTime = 0;
 			this.sdf = new SimpleDateFormat("HH:mm:ss.S");
 		}
@@ -74,7 +74,7 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
 		@Override
 		public void run() {
 			BinaryPacketData data = null;
-			schdTime = System.currentTimeMillis();
+			schdTime = System.nanoTime();
 			long latency = this.schdTime - this.submitTime;
 			do {
 				try {
