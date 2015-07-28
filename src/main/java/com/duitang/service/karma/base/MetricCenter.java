@@ -13,9 +13,7 @@ import com.duitang.service.karma.stats.LocationHolder;
 import com.duitang.service.karma.stats.Reporter;
 
 /**
- * {@code
- *  MetricCenter.record("com.duitang.example.service.SomeService.methodName", 20); // record in millis
- * }
+ *  MetricCenter.record("com.duitang.example.service.SomeService.methodName", 20); // record in nanos
  */
 public class MetricCenter {
 	final static Logger logger = LoggerFactory.getLogger(MetricCenter.class);
