@@ -20,7 +20,7 @@ public class ServicesExporter {
 	private List<String> exportedInterfaces = Lists.newArrayList();
 	
 	private int port;
-	private int maxQueuingLatency;
+	private int maxQueuingLatency = 500;
 	private ServerBootstrap boot;
 	
 	private final Logger log = Logger.getLogger("server");
