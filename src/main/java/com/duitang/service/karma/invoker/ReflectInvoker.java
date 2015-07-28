@@ -142,8 +142,8 @@ public class ReflectInvoker implements Invoker {
             fail = true;
             throw new KarmaException(sb.toString(), e);
         } finally {
-            long endNanos = System.nanoTime() - startNanos;
-            MetricCenter.record(clientId, m.getName(), TimeUnit.NANOSECONDS.toMillis(endNanos), fail);
+            long elapsedNanos = System.nanoTime() - startNanos;
+            MetricCenter.record(clientId, m.getName(), TimeUnit.NANOSECONDS.toMillis(elapsedNanos), fail);
         }
         return ret;
     }
