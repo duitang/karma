@@ -79,7 +79,7 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
             long latency = TimeUnit.NANOSECONDS.toMillis(latencyNanos);
             do {
                 try {
-                    MetricCenter.record("com.dutiang.service.karma.router.JavaRouter.latency", latencyNanos);
+                    MetricCenter.record("com.duitang.service.karma.router.JavaRouter.latency", latencyNanos);
                     if (latency > 200L) {
                         String info = String.format("%s_JavaRouter_latency:%d,Qsize:%d",
                                 sdf.format(new Date()), latency, execPool.getTaskCount()
