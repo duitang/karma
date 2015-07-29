@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import net.sf.cglib.proxy.Enhancer;
@@ -19,6 +20,7 @@ import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.KarmaOverloadException;
 import com.duitang.service.karma.KarmaRuntimeException;
 import com.duitang.service.karma.KarmaTimeoutException;
+import com.duitang.service.karma.base.ClientId;
 import com.duitang.service.karma.base.KarmaClientInfo;
 import com.duitang.service.karma.base.LifeCycle;
 import com.duitang.service.karma.base.MetricCenter;
@@ -38,7 +40,7 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 	
 	static String zkURL = null;
 
-	protected String clientid;
+	protected ClientId clientid;
 	protected String domainName;
 	protected Map<String, Boolean> cutoffNames;
 	protected long timeout = 500;
@@ -108,7 +110,7 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 		IOBalance iob = WRRBalancer.getInstance(group, urls);
 		KarmaClient client = new KarmaClient(iface, iob);
 		client.timeout = timeout;
-		client.clientid = clientid;
+		client.clientid = new ClientId(iface.getCanonicalName(), true);
 		client.dummy = (T) Enhancer.create(
 		    null, 
 		    new Class[] {iface, KarmaClientInfo.class}, 
@@ -154,7 +156,7 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 			Method m = mgrCallbacks.get(name);
 			return m.invoke(this, args);
 		}
-		long ts = System.nanoTime();
+		long startNanos = System.nanoTime();
 		RPCConfig rpcConfig = new RPCConfig();
 		TraceChainDO tc = CCT.get();
 		if (tc != null) {
@@ -207,8 +209,8 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 			if (iosession != null) {
 				pool.releaseIOSession(iosession);
 			}
-			ts = System.nanoTime() - ts;
-			MetricCenter.methodMetric(this.clientid, name, ts, failure);
+			long elapsedNanos = System.nanoTime() - startNanos;
+			MetricCenter.record(this.clientid, name, elapsedNanos, failure);
 		}
 		return ret;
 	}

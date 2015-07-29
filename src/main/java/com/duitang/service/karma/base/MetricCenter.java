@@ -1,69 +1,94 @@
 package com.duitang.service.karma.base;
 
-import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.duitang.service.karma.stats.KarmaMetricHolder;
+import com.duitang.service.karma.stats.LocationHolder;
+import com.duitang.service.karma.stats.Reporter;
+
+/**
+ *  MetricCenter.record("com.duitang.example.service.SomeService.methodName", 20); // record in nanos
+ */
 public class MetricCenter {
-
-	final static Logger out = Logger.getLogger(MetricCenter.class);
-	final public static boolean debug = false;
+	final static Logger logger = LoggerFactory.getLogger(MetricCenter.class);
 
 	final static String[] NOT_IN_PACKAGE_NAME = { "com.duitang.service.karma" };// "com.duitang.webx",
 
-	static MetricReportDaemon daemon = null;
-	static protected String hostname = null;
-	public static Map<String, MetricUnit> method_dur = new HashMap<String, MetricUnit>();
+    private static ConcurrentHashMap<String, MetricUnit> metricUnits = new ConcurrentHashMap<>();
 
-	final static Reporter console = new Reporter() {
-		@Override
-		public void report(Map data) {
-			System.out.println(data);
-		}
-	};
+    public static String metricName(ClientId clientId, String method, boolean failure) {
+        StringBuilder b = new StringBuilder()
+                .append(clientId.getName())
+                .append('.')
+                .append(method);
 
-	static {
-		daemon = new MetricReportDaemon();
-		Thread t = new Thread(daemon);
-		t.setDaemon(true);
-		t.start();
-	}
+        b.append(clientId.isClient() ? ".CLIENT" : ".SERVER");
 
-	public static void methodMetric(String clientId, String name, long elapse) {
-		methodMetric(clientId, name, elapse, false);
-	}
+        if(failure) {
+            b.append(".FAILURE");
+        }
+        return b.toString();
+    }
 
-	public static void methodMetric(String clientId, String name, long elapse, boolean failure) {
-		if (failure) {
-			name += "_Failure_";
-		}
-		MetricUnit hist = method_dur.get(clientId + ":" + name);
-		if (hist != null) {
-			hist.record(elapse);
-		}
-	}
+    private static MetricUnit metricUnitFor(ClientId clientId, String method, boolean failure) {
+        String name = metricName(clientId, method, failure);
+        return metricUnitFor(name);
+    }
 
+    private static MetricUnit metricUnitFor(String name) {
+        MetricUnit metricUnit = metricUnits.get(name);
+        if (metricUnit == null) {
+            synchronized (MetricCenter.class) {
+                metricUnit = metricUnits.get(name);
+                if (metricUnit == null) {
+                    metricUnit = new MetricUnit(name);
+                    metricUnits.put(name, metricUnit);
+                }
+            }
+        }
+        return metricUnit;
+    }
+
+    public static void record(ClientId clientId, String method, long elapse, boolean failure) {
+        metricUnitFor(clientId, method, failure).record(elapse);
+    }
+
+    public static void record(String name, long elapse) {
+        metricUnitFor(name).record(elapse);
+    }
+
+    /**
+     *  HOSTNAME or randomly generated string
+     */
 	static public String getHostname() {
-		if (hostname != null) {
-			return hostname;
-		}
-		String ret;
-		try {
-			ret = InetAddress.getLocalHost().getHostName();
-		} catch (UnknownHostException e) {
-			ret = System.getenv("HOSTNAME");
-		}
-		return ret;
+		return LocationHolder.getHostname();
 	}
+
+    static public void setAppName(String name) {
+        if (name == null) {
+            throw new NullPointerException("name==null");
+        }
+        LocationHolder.setAppName(name);
+        LocationHolder.resetLocation();
+    }
+
+    static public void setHostname(String hostname) {
+        if (hostname == null) {
+            throw new NullPointerException("hostname==null");
+        }
+        LocationHolder.setHostname(hostname);
+        LocationHolder.resetLocation();
+    }
+
+    static public String getLocation() {
+        return LocationHolder.LOCATION;
+    }
 
 	public static String genClientIdFromCode() {
 		StackTraceElement[] trac = Thread.currentThread().getStackTrace();
@@ -91,119 +116,37 @@ public class MetricCenter {
 		return ret + "@" + getHostname();
 	}
 
-	public static void initMetric(Class clazz, String clientid) {
-		String nm;
-		String nmf;
-		for (Method m : clazz.getMethods()) {
-			nm = clientid + ":" + m.getName();
-			nmf = nm + "_Failure_";
-			if (debug) {
-				System.err.println(" ------> " + nm);
-			}
+    public static List<Map> sample() {
+        List<Map> samples = new ArrayList<>();
+        for (Map.Entry<String, MetricUnit> entry : metricUnits.entrySet()) {
+            samples.add(entry.getValue().sample());
+        }
+        return samples;
+    }
 
-			// maybe racing, but not serious problem
-			if (!MetricCenter.method_dur.containsKey(nm)) {
-				MetricCenter.method_dur.put(nm, new MetricUnit(clientid, m.getName(), "OK"));
-			}
-			// maybe racing, but not serious problem
-			if (!MetricCenter.method_dur.containsKey(nmf)) {
-				MetricCenter.method_dur.put(nmf, new MetricUnit(clientid, m.getName(), "ERR"));
-			}
-		}
-	}
+    public static List<Map> getLatestMetric() {
+        return KarmaMetricHolder.getLatestMetric();
+    }
 
-	static public void alterReportPeroid(long peroid) {
-		daemon.peroid = peroid;
-	}
+    public static void enable() {
+        KarmaMetricHolder.enable();
+    }
 
-	static public void enableConsoleReporter(boolean openit) {
-		if (openit) {
-			daemon.rps.add(console);
-		} else {
-			daemon.rps.remove(console);
-		}
-	}
+    public static void enableKafkaReporter() {
+        KarmaMetricHolder.enableKafkaReporter();
+    }
 
-	static public void enableKafkaReporter(Properties config) {
-		Reporter kafkaReporter = new KafkaJsonReporter(config);
-		daemon.rps.add(kafkaReporter);
-	}
+    public static void enableHolderReporter() {
+        KarmaMetricHolder.enableHolderReporter();
+    }
 
-	static public void addLoggerReporter(final Logger logR) {
-		Reporter logReport = new Reporter() {
-			@Override
-			public void report(Map data) {
-				logR.info(data.toString());
-			}
-		};
-		daemon.rps.add(logReport);
-	}
+    public static void setReportInterval(int second) {
+        KarmaMetricHolder.setReportInterval(second);
+    }
 
-	static public void addLoggerReporterByName(String name) {
-		final Logger logger = Logger.getLogger(name);
-		logger.setLevel(Level.INFO);
-		Reporter logReport = new Reporter() {
-			Logger logR = logger;
+    public static void addReporter(Reporter reporter) {
+        KarmaMetricHolder.addReporter(reporter);
+    }
 
-			@Override
-			public void report(Map data) {
-				logR.info(data.toString());
-			}
-		};
-		daemon.rps.add(logReport);
-	}
-
-	static class MetricReportDaemon implements Runnable {
-
-		protected long peroid = 10; // 10 sencods
-		protected Set<Reporter> rps = Collections.synchronizedSet(new HashSet<Reporter>());
-
-		public void addReporter(Reporter r) {
-			if (r != null) {
-				this.rps.add(r);
-			}
-		}
-
-		public void setPeroid(long peroid) {
-			this.peroid = peroid;
-		}
-
-		@Override
-		public void run() {
-			while (true) {
-				try {
-					Thread.sleep(peroid * 1000);
-				} catch (Exception e) {
-				}
-				if (rps.isEmpty()) {
-					continue;
-				}
-				Map data;
-				for (MetricUnit u : method_dur.values()) {
-					try {
-						try {
-							data = u.sample();
-							data.put("client_id", u.clientId);
-							data.put("name", u.name);
-							data.put("group", u.group);
-						} catch (Exception e) {
-							continue;
-						}
-						for (Reporter r : rps) {
-							r.report(data);
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-						continue;
-					} finally {
-						data = null;
-					}
-				}
-			}
-		}
-	}
 }
 
-interface Reporter {
-	void report(Map data);
-}
