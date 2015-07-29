@@ -28,7 +28,7 @@ public class MetricCenter {
                 .append('.')
                 .append(method);
 
-        b.append(clientId.isClient ? ".CLIENT" : ".SERVER");
+        b.append(clientId.isClient() ? ".CLIENT" : ".SERVER");
 
         if(failure) {
             b.append(".FAILURE");
