@@ -3,6 +3,7 @@ package com.duitang.service.karma.support;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -24,8 +25,15 @@ public class DynamicConfig implements Runnable {
     private CountDownLatch itemInitLatch = new CountDownLatch(1);
     private Map<String, String> dynamicItems = Maps.newHashMap();
     
+    private Map<String, Runnable> observers = Maps.newHashMap();
+    
     public void registerItem(String itemName, String defaultVal) {
         dynamicItems.put(itemName, defaultVal);
+    }
+    
+    public void registerItem(String itemName, String defaultVal, Runnable ob) {
+        dynamicItems.put(itemName, defaultVal);
+        observers.put(itemName, ob);
     }
     
     public void setDynamicItem(String itemKey, String data) {
@@ -64,7 +72,13 @@ public class DynamicConfig implements Runnable {
                     String path = String.format("/config/%s", e.getKey());
                     byte[] bb = client.getData().forPath(path);
                     if (bb != null && bb.length > 0) {
-                        dynamicItems.put(e.getKey(), new String(bb));
+                        String old = dynamicItems.get(e.getKey());
+                        String newVal = new String(bb);
+                        dynamicItems.put(e.getKey(), newVal);
+                        if (!StringUtils.equals(old, newVal)) {
+                            Runnable ob = observers.get(e.getKey());
+                            if (ob != null) ob.run();
+                        }
                     }
                 }
                 itemInitLatch.countDown();
