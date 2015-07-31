@@ -63,6 +63,8 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
         SimpleDateFormat sdf;
         Future<?> future;
 
+        private String LATENCY_NAME = JavaRouter.class.getCanonicalName() + ".latency";
+
         public KarmaJobRunner(RPCContext ctx, BinaryPacketRaw rawPack) {
             this.ctx = ctx;
             this.raw = rawPack;
@@ -79,7 +81,7 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
             long latency = TimeUnit.NANOSECONDS.toMillis(latencyNanos);
             do {
                 try {
-                    MetricCenter.record("com.duitang.service.karma.router.JavaRouter.latency", latencyNanos);
+                    MetricCenter.record(LATENCY_NAME, latencyNanos);
                     if (latency > 200L) {
                         String info = String.format("%s_JavaRouter_latency:%d,Qsize:%d",
                                 sdf.format(new Date()), latency, execPool.getTaskCount()
