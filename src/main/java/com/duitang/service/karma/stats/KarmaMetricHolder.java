@@ -23,11 +23,19 @@ public class KarmaMetricHolder {
         daemon.addReporter(metricHolder.reporter());
     }
 
+    public static void enableDWMetricReporter() {
+        addCustomReporter(new DWMetricReporter());
+    }
+
     public static void setReportInterval(int second) {
         daemon.reportInterval(second);
     }
 
     public static void addReporter(Reporter r) {
+        daemon.addReporter(r);
+    }
+
+    public static void addCustomReporter(CustomDataReporter r) {
         daemon.addReporter(r);
     }
 }

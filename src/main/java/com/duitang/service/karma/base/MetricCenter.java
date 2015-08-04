@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.duitang.service.karma.stats.CustomDataReporter;
 import com.duitang.service.karma.stats.KarmaMetricHolder;
 import com.duitang.service.karma.stats.LocationHolder;
 import com.duitang.service.karma.stats.Reporter;
@@ -139,7 +140,9 @@ public class MetricCenter {
     public static void enableHolderReporter() {
         KarmaMetricHolder.enableHolderReporter();
     }
-
+    public static void enableDWMetricReporter() {
+        KarmaMetricHolder.enableDWMetricReporter();
+    }
     public static void setReportInterval(int second) {
         KarmaMetricHolder.setReportInterval(second);
     }
@@ -148,5 +151,8 @@ public class MetricCenter {
         KarmaMetricHolder.addReporter(reporter);
     }
 
+    public static void addCustomReporter(CustomDataReporter r) {
+        KarmaMetricHolder.addCustomReporter(r);
+    }
 }
 
