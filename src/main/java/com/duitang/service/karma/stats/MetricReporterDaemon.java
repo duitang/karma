@@ -1,11 +1,11 @@
 package com.duitang.service.karma.stats;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.collect.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +15,8 @@ public class MetricReporterDaemon {
     private final static Logger logger = LoggerFactory.getLogger(MetricReporterDaemon.class);
     private final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
     private int interval = 5; // sec
-    private List<Reporter> reporters = new ArrayList<>();
+    private volatile ImmutableList<Reporter> reporters = ImmutableList.of();
+    private volatile ImmutableList<CustomDataReporter> cdReporters = ImmutableList.of();
 
     private int state = INIT;
     private static final int INIT = 0;
@@ -27,7 +28,12 @@ public class MetricReporterDaemon {
     }
 
     synchronized MetricReporterDaemon addReporter(Reporter reporter) {
-        reporters.add(reporter);
+        reporters = ImmutableList.<Reporter>builder().addAll(reporters).add(reporter).build();
+        return this;
+    }
+
+    synchronized MetricReporterDaemon addReporter(CustomDataReporter reporter) {
+        cdReporters = ImmutableList.<CustomDataReporter>builder().addAll(cdReporters).add(reporter).build();
         return this;
     }
 
@@ -40,6 +46,7 @@ public class MetricReporterDaemon {
         if (state == INIT) {
             executor.prestartAllCoreThreads();
             executor.scheduleAtFixedRate(REPORT, interval, interval, TimeUnit.SECONDS);
+            executor.scheduleAtFixedRate(CDREPOT, interval, interval, TimeUnit.SECONDS);
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -68,6 +75,20 @@ public class MetricReporterDaemon {
                     logger.error("report_error", e);
                 }
             }
+        }
+    };
+
+    private Runnable CDREPOT = new Runnable() {
+        @Override
+        public void run() {
+            for (CustomDataReporter r : cdReporters) {
+                try {
+                    r.report();
+                } catch (Exception e) {
+                    logger.error("report_error", e);
+                }
+            }
+
         }
     };
 
