@@ -13,6 +13,8 @@ public class KafkaReporter extends CloudPipeBase implements Reporter {
 
     @Override
     public void report(List<Map> data) throws Exception {
-        pumpString(mapper.writeValueAsString(data));
+        for (Map m : data) {
+            pumpString(mapper.writeValueAsString(m));
+        }
     }
 }
