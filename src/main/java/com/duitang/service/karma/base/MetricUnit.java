@@ -9,6 +9,8 @@ import java.util.Map;
 import org.HdrHistogram.Histogram;
 import org.LatencyUtils.LatencyStats;
 
+import com.duitang.service.karma.stats.LocationTag;
+
 public class MetricUnit {
 
     private ByteBuffer targetBuffer;
@@ -28,8 +30,26 @@ public class MetricUnit {
         Map<String, Object> ret = new HashMap<>();
         stats.getIntervalHistogramInto(histo);
         ret.put("timestamp", System.currentTimeMillis());
-        ret.put("location", MetricCenter.getLocation());
         ret.put("name", name);
+
+        {
+            LocationTag loc = MetricCenter.getLocation();
+            String app = loc.app;
+            if (app != null && !app.isEmpty()) {
+                ret.put("app", app);
+            }
+
+            String host = loc.host;
+            if (host != null && host.isEmpty()) {
+                ret.put("host", host);
+            }
+
+            long pid = loc.pid;
+            if (pid > 0) {
+                ret.put("pid", pid);
+            }
+        }
+//        ret.put("location", MetricCenter.getLocation());
 
         ret.put("from", histo.getStartTimeStamp());
         ret.put("to", histo.getEndTimeStamp());

@@ -5,13 +5,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.google.common.collect.ImmutableMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.duitang.service.karma.stats.CustomDataReporter;
-import com.duitang.service.karma.stats.KarmaMetricHolder;
-import com.duitang.service.karma.stats.LocationHolder;
-import com.duitang.service.karma.stats.Reporter;
+import com.duitang.service.karma.stats.*;
 
 /**
  *  MetricCenter.record("com.duitang.example.service.SomeService.methodName", 20); // record in nanos
@@ -87,8 +85,8 @@ public class MetricCenter {
         LocationHolder.resetLocation();
     }
 
-    static public String getLocation() {
-        return LocationHolder.LOCATION;
+    static public LocationTag getLocation() {
+        return LocationHolder.LOCATION_TAG;
     }
 
 	public static String genClientIdFromCode() {

@@ -4,7 +4,6 @@ import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import com.google.common.collect.ImmutableMap;
 import io.netty.util.internal.SystemPropertyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +11,7 @@ import org.slf4j.LoggerFactory;
 public class LocationHolder {
     private static final Logger logger = LoggerFactory.getLogger(LocationHolder.class);
 
-    public static volatile ImmutableMap<String, String> LOCATION;
+    public static volatile LocationTag LOCATION_TAG;
     static String HOSTNAME = genHostName();
     private static String APP_NAME = genAppName();
     private static long PID = genPID();
@@ -69,11 +68,7 @@ public class LocationHolder {
     }
 
     public static void resetLocation() {
-        LOCATION = ImmutableMap.of(
-                "host", HOSTNAME,
-                "app", APP_NAME,
-                "pid", String.valueOf(PID)
-        );
+        LOCATION_TAG = new LocationTag(APP_NAME, PID, HOSTNAME);
     }
 
     static {
