@@ -46,7 +46,6 @@ public class MetricReporterDaemon {
         if (state == INIT) {
             executor.prestartAllCoreThreads();
             executor.scheduleAtFixedRate(REPORT, interval, interval, TimeUnit.SECONDS);
-            executor.scheduleAtFixedRate(CDREPOT, interval, interval, TimeUnit.SECONDS);
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -75,12 +74,7 @@ public class MetricReporterDaemon {
                     logger.error("report_error", e);
                 }
             }
-        }
-    };
 
-    private Runnable CDREPOT = new Runnable() {
-        @Override
-        public void run() {
             for (CustomDataReporter r : cdReporters) {
                 try {
                     r.report();
@@ -88,7 +82,6 @@ public class MetricReporterDaemon {
                     logger.error("report_error", e);
                 }
             }
-
         }
     };
 
