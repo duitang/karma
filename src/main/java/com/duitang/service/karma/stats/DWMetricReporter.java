@@ -3,6 +3,7 @@ package com.duitang.service.karma.stats;
 import java.util.concurrent.TimeUnit;
 
 import com.codahale.metrics.MetricFilter;
+import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.json.MetricsModule;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,6 +19,16 @@ public class DWMetricReporter extends CloudPipeBase implements CustomDataReporte
             TimeUnit.SECONDS, // duration unit
             true, // show samples
             MetricFilter.ALL));
+    public final MetricRegistry registry;
+
+    public DWMetricReporter() {
+        this(DropwizardMetricHolder.getRegistry());
+    }
+
+    public DWMetricReporter(MetricRegistry registry) {
+        super();
+        this.registry = registry;
+    }
 
     @Override
     protected String getBiz() {
@@ -34,7 +45,7 @@ public class DWMetricReporter extends CloudPipeBase implements CustomDataReporte
                 ImmutableMap.of(
                         "timestamp", String.valueOf(System.currentTimeMillis()),
                         "location", MetricCenter.getLocation(),
-                        "metrics", DropwizardMetricHolder.getRegistry()
+                        "metrics", registry
                 )
         );
     }
