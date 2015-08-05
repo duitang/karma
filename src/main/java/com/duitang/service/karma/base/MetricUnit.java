@@ -40,7 +40,7 @@ public class MetricUnit {
             }
 
             String host = loc.host;
-            if (host != null && host.isEmpty()) {
+            if (host != null && !host.isEmpty()) {
                 ret.put("host", host);
             }
 
