@@ -49,7 +49,6 @@ public class MetricUnit {
                 ret.put("pid", pid);
             }
         }
-//        ret.put("location", MetricCenter.getLocation());
 
         ret.put("from", histo.getStartTimeStamp());
         ret.put("to", histo.getEndTimeStamp());
