@@ -27,22 +27,22 @@ public class MetricReporterDaemon {
     MetricReporterDaemon() {
     }
 
-    synchronized MetricReporterDaemon addReporter(Reporter reporter) {
+    public synchronized MetricReporterDaemon addReporter(Reporter reporter) {
         reporters = ImmutableList.<Reporter>builder().addAll(reporters).add(reporter).build();
         return this;
     }
 
-    synchronized MetricReporterDaemon addReporter(CustomDataReporter reporter) {
+    public synchronized MetricReporterDaemon addReporter(CustomDataReporter reporter) {
         cdReporters = ImmutableList.<CustomDataReporter>builder().addAll(cdReporters).add(reporter).build();
         return this;
     }
 
-    MetricReporterDaemon reportInterval(int second) {
+    public MetricReporterDaemon reportInterval(int second) {
         this.interval = second;
         return this;
     }
 
-    synchronized void start() {
+    public synchronized void start() {
         if (state == INIT) {
             executor.prestartAllCoreThreads();
             executor.scheduleAtFixedRate(REPORT, interval, interval, TimeUnit.SECONDS);
@@ -57,7 +57,7 @@ public class MetricReporterDaemon {
         }
     }
 
-    synchronized void stop() {
+    public synchronized void stop() {
         if (state == STARTED) {
             executor.shutdown();
             state = STOPPED;

@@ -124,33 +124,34 @@ public class MetricCenter {
     }
 
     public static List<Map> getLatestMetric() {
-        return KarmaMetricHolder.getLatestMetric();
+        return KarmaMetricHolder.getMetricHolder().holding;
     }
 
     public static void enable() {
-        KarmaMetricHolder.enable();
+        KarmaMetricHolder.getReporterDaemon().start();
     }
 
     public static void enableKafkaReporter() {
-        KarmaMetricHolder.enableKafkaReporter();
+        KarmaMetricHolder.getReporterDaemon().addReporter(new KafkaReporter());
     }
 
     public static void enableHolderReporter() {
-        KarmaMetricHolder.enableHolderReporter();
+        KarmaMetricHolder.getReporterDaemon().addReporter(
+                KarmaMetricHolder.getMetricHolder().reporter());
     }
     public static void enableDWMetricReporter() {
-        KarmaMetricHolder.enableDWMetricReporter();
+        addCustomReporter(new DWMetricReporter());
     }
     public static void setReportInterval(int second) {
-        KarmaMetricHolder.setReportInterval(second);
+        KarmaMetricHolder.getReporterDaemon().reportInterval(second);
     }
 
-    public static void addReporter(Reporter reporter) {
-        KarmaMetricHolder.addReporter(reporter);
+    public static void addReporter(Reporter r) {
+        KarmaMetricHolder.getReporterDaemon().addReporter(r);
     }
 
     public static void addCustomReporter(CustomDataReporter r) {
-        KarmaMetricHolder.addCustomReporter(r);
+        KarmaMetricHolder.getReporterDaemon().addReporter(r);
     }
 }
 
