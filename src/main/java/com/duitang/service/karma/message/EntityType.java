@@ -22,7 +22,9 @@ public enum EntityType {
 	CART(10),//商业-购物车
 	INVENTORY(11),//商业-最小商品单元
 	COUPON(12),//商业-优惠券
-	PROMOTION(13);//商业-优惠活动
+	PROMOTION(13),//商业-优惠活动
+	CELLPHONE(14) //手机号
+	;
 
 	public final int value;
 	private EntityType(int v) {
