@@ -43,7 +43,7 @@ public class DWMetricReporter extends CloudPipeBase implements CustomDataReporte
     public String genReport() throws JsonProcessingException {
         return DWMAPPER.writeValueAsString(
                 ImmutableMap.of(
-                        "timestamp", String.valueOf(System.currentTimeMillis()),
+                        "timestamp", System.currentTimeMillis(),
                         "location", MetricCenter.getLocation(),
                         "metrics", registry
                 )
