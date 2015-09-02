@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 public class LocationHolder {
     private static final Logger logger = LoggerFactory.getLogger(LocationHolder.class);
 
-    public static volatile LocationTag LOCATION_TAG;
+    public static volatile InstanceTag LOCATION_TAG;
     static String HOSTNAME = genHostName();
     private static String APP_NAME = genAppName();
     private static long PID = genPID();
@@ -68,7 +68,7 @@ public class LocationHolder {
     }
 
     public static void resetLocation() {
-        LOCATION_TAG = new LocationTag(APP_NAME, PID, HOSTNAME);
+        LOCATION_TAG = new InstanceTag(APP_NAME, PID, HOSTNAME);
     }
 
     static {

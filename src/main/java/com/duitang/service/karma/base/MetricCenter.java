@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.google.common.collect.ImmutableMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,7 +84,7 @@ public class MetricCenter {
         LocationHolder.resetLocation();
     }
 
-    static public LocationTag getLocation() {
+    static public InstanceTag getInstanceTag() {
         return LocationHolder.LOCATION_TAG;
     }
 

@@ -44,7 +44,7 @@ public class DWMetricReporter extends CloudPipeBase implements CustomDataReporte
         return DWMAPPER.writeValueAsString(
                 ImmutableMap.of(
                         "timestamp", System.currentTimeMillis(),
-                        "location", MetricCenter.getLocation(),
+                        "instance", MetricCenter.getInstanceTag(),
                         "metrics", registry
                 )
         );

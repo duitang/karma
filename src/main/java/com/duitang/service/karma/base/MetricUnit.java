@@ -9,7 +9,7 @@ import java.util.Map;
 import org.HdrHistogram.Histogram;
 import org.LatencyUtils.LatencyStats;
 
-import com.duitang.service.karma.stats.LocationTag;
+import com.duitang.service.karma.stats.InstanceTag;
 
 public class MetricUnit {
 
@@ -33,7 +33,7 @@ public class MetricUnit {
         ret.put("name", name);
 
         {
-            LocationTag loc = MetricCenter.getLocation();
+            InstanceTag loc = MetricCenter.getInstanceTag();
             String app = loc.app;
             if (app != null && !app.isEmpty()) {
                 ret.put("app", app);
