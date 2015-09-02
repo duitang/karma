@@ -14,7 +14,7 @@ import com.duitang.service.karma.stats.*;
  *  MetricCenter.record("com.duitang.example.service.SomeService.methodName", 20); // record in nanos
  */
 public class MetricCenter {
-	final static Logger logger = LoggerFactory.getLogger(MetricCenter.class);
+	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	final static String[] NOT_IN_PACKAGE_NAME = { "com.duitang.service.karma" };// "com.duitang.webx",
 
