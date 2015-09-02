@@ -11,6 +11,10 @@ import org.LatencyUtils.LatencyStats;
 
 import com.duitang.service.karma.stats.InstanceTag;
 
+/*
+    TODO
+    - abstract general metric unit, useful for metrics needs custom tags
+ */
 public class MetricUnit {
 
     private ByteBuffer targetBuffer;
