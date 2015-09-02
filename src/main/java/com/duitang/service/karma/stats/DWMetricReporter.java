@@ -17,7 +17,7 @@ public class DWMetricReporter extends CloudPipeBase implements CustomDataReporte
     public final static ObjectMapper DWMAPPER = new ObjectMapper().registerModule(new MetricsModule(
             TimeUnit.SECONDS, // rate unit
             TimeUnit.SECONDS, // duration unit
-            true, // show samples
+            false, // show samples
             MetricFilter.ALL));
     public final MetricRegistry registry;
 
