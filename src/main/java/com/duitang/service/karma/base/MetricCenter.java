@@ -65,27 +65,27 @@ public class MetricCenter {
      *  HOSTNAME or randomly generated string
      */
 	static public String getHostname() {
-		return LocationHolder.getHostname();
+		return InstanceTagHolder.getHostname();
 	}
 
     static public void setAppName(String name) {
         if (name == null) {
             throw new NullPointerException("name==null");
         }
-        LocationHolder.setAppName(name);
-        LocationHolder.resetLocation();
+        InstanceTagHolder.setAppName(name);
+        InstanceTagHolder.resetFinalTag();
     }
 
     static public void setHostname(String hostname) {
         if (hostname == null) {
             throw new NullPointerException("hostname==null");
         }
-        LocationHolder.setHostname(hostname);
-        LocationHolder.resetLocation();
+        InstanceTagHolder.setHostname(hostname);
+        InstanceTagHolder.resetFinalTag();
     }
 
     static public InstanceTag getInstanceTag() {
-        return LocationHolder.LOCATION_TAG;
+        return InstanceTagHolder.INSTANCE_TAG;
     }
 
 	public static String genClientIdFromCode() {

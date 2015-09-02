@@ -8,10 +8,10 @@ import io.netty.util.internal.SystemPropertyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LocationHolder {
-    private static final Logger logger = LoggerFactory.getLogger(LocationHolder.class);
+public class InstanceTagHolder {
+    private static final Logger logger = LoggerFactory.getLogger(InstanceTagHolder.class);
 
-    public static volatile InstanceTag LOCATION_TAG;
+    public static volatile InstanceTag INSTANCE_TAG;
     static String HOSTNAME = genHostName();
     private static String APP_NAME = genAppName();
     private static long PID = genPID();
@@ -55,23 +55,23 @@ public class LocationHolder {
 
     public static void setHostname(String hostname) {
         HOSTNAME = hostname;
-        resetLocation();
+        resetFinalTag();
     }
 
     public static void setAppName(String appName) {
         APP_NAME = appName;
-        resetLocation();
+        resetFinalTag();
     }
 
     public static String getHostname() {
         return HOSTNAME;
     }
 
-    public static void resetLocation() {
-        LOCATION_TAG = new InstanceTag(APP_NAME, PID, HOSTNAME);
+    public static void resetFinalTag() {
+        INSTANCE_TAG = new InstanceTag(APP_NAME, PID, HOSTNAME);
     }
 
     static {
-        resetLocation();
+        resetFinalTag();
     }
 }
