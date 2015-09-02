@@ -12,7 +12,7 @@
         <maven.compiler.target>1.7</maven.compiler.target>
         <maven.test.skip>true</maven.test.skip>
         <jetty.version>9.2.3.v20140905</jetty.version>
-        <dwmetrics.version>3.1.2</dwmetrics.version>
+        <io.dropwizard.metrics.version>3.1.2</io.dropwizard.metrics.version>
     </properties>
     <dependencies>
         <dependency>
@@ -170,12 +170,12 @@
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-jvm</artifactId>
-            <version>${dwmetrics.version}</version>
+            <version>${io.dropwizard.metrics.version}</version>
         </dependency>
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-json</artifactId>
-            <version>${dwmetrics.version}</version>
+            <version>${io.dropwizard.metrics.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
