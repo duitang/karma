@@ -47,8 +47,8 @@ public class InstanceTagHolder {
         } catch (Exception e) {
             logger.error("get APP_NAME error", e);
         }
-        if (_appName == null) {
-            _appName = "";
+        if ("".equals(_appName)) {
+            _appName = null;
         }
         return _appName;
     }
