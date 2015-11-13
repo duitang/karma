@@ -92,7 +92,7 @@ public class NodeRegister {
     }
   }
 
-  public void unregister() {
+  private void unregister() {
     try {
       String appPath = "/app/" + appName;
       String nodePath = appPath + '/' + getHost();
