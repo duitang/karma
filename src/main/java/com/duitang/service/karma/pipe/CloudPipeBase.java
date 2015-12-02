@@ -119,4 +119,14 @@ public abstract class CloudPipeBase {
     protected String zkCommEndpoint() {
         return "std-1.zk.infra.duitang.net:3881,std-2.zk.infra.duitang.net:3881,std-3.zk.infra.duitang.net:3881";
     }
+    
+    public static void main(String[] args) {
+        CloudPipeBase c = new CloudPipeBase() {
+            @Override
+            protected String getBiz() {
+                return "karma_metrics";
+            }
+        };
+        c.pumpString(null);
+    }
 }
