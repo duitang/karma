@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class StdMessage {
 
-    @JsonProperty("action")
     private String act;
     
     @JsonProperty("sbj_id")
