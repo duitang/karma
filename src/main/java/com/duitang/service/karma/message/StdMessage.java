@@ -2,6 +2,7 @@ package com.duitang.service.karma.message;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -9,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author kevx
  * @since 1:17:10 PM Aug 19, 2015
  */
+@JsonIgnoreProperties(ignoreUnknown=true)
 public class StdMessage {
 
     private String act;
