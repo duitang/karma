@@ -41,12 +41,13 @@ public class BalancingTest {
                     String svr = wrr.next(null);
                     if (svr == null) {
                         System.out.println("shit");
-                    }
-                    counts.get(svr).incrementAndGet();
-                    if (svr.equalsIgnoreCase(s) && rand.nextInt(3) == 1) {
-                        safeSleep(rand.nextInt(500));
-                        errcounts.get(svr).incrementAndGet();
-                        wrr.fail(svr);
+                    } else {
+                        counts.get(svr).incrementAndGet();
+                        if (svr.equalsIgnoreCase(s) && rand.nextInt(3) == 1) {
+                            safeSleep(rand.nextInt(500));
+                            errcounts.get(svr).incrementAndGet();
+                            wrr.fail(svr);
+                        }
                     }
                     safeSleep(rand.nextInt(10));
                 }
