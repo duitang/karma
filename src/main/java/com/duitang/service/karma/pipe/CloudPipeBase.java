@@ -83,6 +83,9 @@ public abstract class CloudPipeBase {
     }
 
     protected void pumpString(String msg) {
+        if (producer == null) {
+            return;
+        }
         producer.send(new KeyedMessage<String, String>(
             biz, String.valueOf(Math.random()), msg
         ));
