@@ -7,9 +7,9 @@ package com.duitang.service.karma;
  */
 public class KarmaNoMoreConnException extends KarmaOverloadException {
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = -3338950361429293389L;
 
+    public KarmaNoMoreConnException(String message) {
+        super(message);
+    }
 }

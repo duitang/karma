@@ -1,10 +1,10 @@
 package com.duitang.service.karma.client;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import com.duitang.service.karma.KarmaException;
+import com.duitang.service.karma.KarmaNoMoreConnException;
+import com.duitang.service.karma.base.LifeCycle;
+
+import com.google.common.collect.Sets;
 
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
@@ -13,10 +13,11 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.apache.log4j.Logger;
 
-import com.duitang.service.karma.KarmaException;
-import com.duitang.service.karma.KarmaNoMoreConnException;
-import com.duitang.service.karma.base.LifeCycle;
-import com.google.common.collect.Sets;
+import java.io.IOException;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class KarmaIOPool implements LifeCycle {
 
@@ -57,7 +58,7 @@ public class KarmaIOPool implements LifeCycle {
 		try {
 			return pool.borrowObject(timeout);
 		} catch (Exception e) {
-			throw new KarmaNoMoreConnException();
+			throw new KarmaNoMoreConnException(e.getMessage());
 		}
 	}
 
