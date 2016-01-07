@@ -11,7 +11,7 @@ import org.junit.Test;
 import com.duitang.service.karma.base.ClientFactory;
 import com.duitang.service.karma.base.MetricCenter;
 import com.duitang.service.karma.base.ServerBootstrap;
-import com.duitang.service.karma.demo.DemoService;
+import com.duitang.service.karma.demo.IDemoService;
 import com.duitang.service.karma.demo.MemoryCacheService;
 
 public class TestClient {
@@ -34,7 +34,7 @@ public class TestClient {
 		root.addAppender(appender);
 
 		ServerBootstrap boot = new ServerBootstrap();
-		boot.addService(DemoService.class, new MemoryCacheService());
+		boot.addService(IDemoService.class, new MemoryCacheService());
 		boot.startUp(9999);
 
 		Thread.sleep(100000);
@@ -42,9 +42,9 @@ public class TestClient {
 
 	@Test
 	public void test2() throws Exception {
-		ClientFactory<DemoService> fac = ClientFactory.createFactory(DemoService.class);
+		ClientFactory<IDemoService> fac = ClientFactory.createFactory(IDemoService.class);
 		fac.setUrl("localhost:9999");
-		DemoService client = fac.create();
+		IDemoService client = fac.create();
 		for (int i = 0; i < 1000; i++) {
 			client.memory_setString("aaa", "bbb", 5000);
 			client.memory_getString("aaa");

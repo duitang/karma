@@ -9,23 +9,22 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.duitang.service.karma.base.ClientFactory;
-import com.duitang.service.karma.base.MetricCenter;
 import com.duitang.service.karma.base.ServerBootstrap;
 
 public class CacheNettyServiceTest {
 
 	ServerBootstrap boot = null;
-	ClientFactory<DemoService> fac = null;
+	ClientFactory<IDemoService> fac = null;
 
 	@Before
 	public void setUp() throws Exception {
 		LogManager.getLogger("com.duitang.service").setLevel(Level.ALL);
 		MemoryCacheService impl = new MemoryCacheService(true);
 		boot = new ServerBootstrap();
-		boot.addService(DemoService.class, impl);
+		boot.addService(IDemoService.class, impl);
 		boot.startUp(9090);
 
-		fac = ClientFactory.createFactory(DemoService.class);
+		fac = ClientFactory.createFactory(IDemoService.class);
 		fac.setUrl("127.0.0.1:9091");
 
 	}
@@ -47,7 +46,7 @@ public class CacheNettyServiceTest {
 
 	@Test
 	public void testBoot() {
-		DemoService cli = fac.create();
+		IDemoService cli = fac.create();
 		try {
 			String key = "aaaa";
 			String value = "bbbb";
@@ -94,7 +93,7 @@ public class CacheNettyServiceTest {
 
 	// @Test
 	public void testMetric() throws Exception {
-		DemoService cli = fac.create();
+		IDemoService cli = fac.create();
 		for (int i = 0; i < 10; i++) {
 			System.out.println("----->" + cli.trace_msg("wait_100", 100));
 		}
@@ -112,7 +111,7 @@ public class CacheNettyServiceTest {
 
 	// @Test
 	public void testCloseit() throws Exception {
-		DemoService cli = fac.create();
+		IDemoService cli = fac.create();
 		fac.release(cli);
 	}
 

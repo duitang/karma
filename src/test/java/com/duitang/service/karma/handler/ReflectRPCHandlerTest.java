@@ -3,7 +3,7 @@ package com.duitang.service.karma.handler;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.duitang.service.karma.demo.DemoService;
+import com.duitang.service.karma.demo.IDemoService;
 import com.duitang.service.karma.demo.MemoryCacheService;
 import com.duitang.service.karma.server.ServiceConfig;
 
@@ -14,7 +14,7 @@ public class ReflectRPCHandlerTest {
 	@Before
 	public void setUp() {
 		conf = new ServiceConfig();
-		conf.addService(DemoService.class, new MemoryCacheService());
+		conf.addService(IDemoService.class, new MemoryCacheService());
 	}
 
 	@Test
@@ -23,7 +23,7 @@ public class ReflectRPCHandlerTest {
 		service.setConf(conf);
 		service.init();
 
-		String domain = DemoService.class.getName();
+		String domain = IDemoService.class.getName();
 		String method = "memory_setString";
 		Object[] param = new Object[] { "aaa", "bbb", 10000 };
 		RPCContext ctx = new RPCContext();

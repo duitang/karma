@@ -5,10 +5,9 @@ import java.io.IOException;
 import org.junit.Test;
 
 import com.duitang.service.karma.KarmaException;
-import com.duitang.service.karma.base.MetricCenter;
 import com.duitang.service.karma.demo.DemoJsonRPCImpl;
 import com.duitang.service.karma.demo.DemoJsonRPCService;
-import com.duitang.service.karma.demo.DemoService;
+import com.duitang.service.karma.demo.IDemoService;
 import com.duitang.service.karma.demo.MemoryCacheService;
 import com.duitang.service.karma.handler.ReflectRPCHandler;
 import com.duitang.service.karma.router.JavaRouter;
@@ -32,7 +31,7 @@ public class TCPServerTest {
 		System.out.println("aaaa ---> " + mms.memory_getString("aaaa"));
 
 		conf.addService(DemoJsonRPCService.class, demoJson);
-		conf.addService(DemoService.class, mms);
+		conf.addService(IDemoService.class, mms);
 
 		ReflectRPCHandler rpc = new ReflectRPCHandler();
 		rpc.setConf(conf);

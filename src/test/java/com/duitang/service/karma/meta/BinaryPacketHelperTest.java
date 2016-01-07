@@ -1,6 +1,5 @@
 package com.duitang.service.karma.meta;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.zip.Adler32;
@@ -9,7 +8,7 @@ import java.util.zip.Checksum;
 import org.junit.Test;
 
 import com.duitang.service.karma.KarmaException;
-import com.duitang.service.karma.demo.DemoService;
+import com.duitang.service.karma.demo.IDemoService;
 
 public class BinaryPacketHelperTest {
 
@@ -71,7 +70,7 @@ public class BinaryPacketHelperTest {
 	@Test
 	public void test1() throws KarmaException, IOException {
 		BinaryPacketData d = new BinaryPacketData();
-		d.domain = DemoService.class.getName();
+		d.domain = IDemoService.class.getName();
 		d.method = "memory_getString";
 		d.flag = 0;
 		d.param = new Object[] { "aaa" };

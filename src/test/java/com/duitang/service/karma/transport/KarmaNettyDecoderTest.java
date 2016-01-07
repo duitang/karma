@@ -18,7 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.duitang.service.karma.KarmaException;
-import com.duitang.service.karma.demo.DemoService;
+import com.duitang.service.karma.demo.IDemoService;
 import com.duitang.service.karma.meta.BinaryPacketData;
 import com.duitang.service.karma.meta.BinaryPacketHelper;
 import com.duitang.service.karma.meta.BinaryPacketRaw;
@@ -36,7 +36,7 @@ public class KarmaNettyDecoderTest {
 	public void setUp() throws Exception {
 		ddd = new BinaryPacketData();
 		ddd.uuid = 123456789;
-		ddd.domain = DemoService.class.getName();
+		ddd.domain = IDemoService.class.getName();
 		ddd.method = "memory_getString";
 		ddd.flag = 1;
 		ddd.version = 1;
@@ -97,7 +97,7 @@ public class KarmaNettyDecoderTest {
 	@Test
 	public void test2() throws Exception {
 		BinaryPacketData demodata = new BinaryPacketData();
-		demodata.domain = DemoService.class.getName();
+		demodata.domain = IDemoService.class.getName();
 		demodata.method = "memory_getString";
 		demodata.uuid = 123456789L;
 		demodata.flag = 1;

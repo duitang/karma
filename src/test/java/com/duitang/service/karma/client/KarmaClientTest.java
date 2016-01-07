@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.base.MetricCenter;
-import com.duitang.service.karma.demo.DemoService;
+import com.duitang.service.karma.demo.IDemoService;
 
 public class KarmaClientTest {
 
@@ -19,8 +19,8 @@ public class KarmaClientTest {
 	public void test() throws KarmaException, IOException, Exception {
 		Logger.getLogger(KarmaClient.class).setLevel(Level.DEBUG);
 		List<String> urls = Arrays.asList(new String[] { "localhost:9999" });
-		KarmaClient<DemoService> cli = KarmaClient.createKarmaClient(DemoService.class, urls, MetricCenter.genClientIdFromCode(), "dev1");
-		DemoService client = cli.getService();
+		KarmaClient<IDemoService> cli = KarmaClient.createKarmaClient(IDemoService.class, urls, MetricCenter.genClientIdFromCode(), "dev1");
+		IDemoService client = cli.getService();
 		System.out.println(client.memory_getString("aaaa"));
 		System.out.println(client.trace_msg("laurence", 200));
 		System.out.println(client.noparam());

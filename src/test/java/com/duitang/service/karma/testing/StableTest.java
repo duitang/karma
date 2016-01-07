@@ -6,7 +6,7 @@ import com.duitang.service.karma.KarmaRuntimeException;
 import com.duitang.service.karma.base.ClientFactory;
 import com.duitang.service.karma.base.LifeCycle;
 import com.duitang.service.karma.base.ServerBootstrap;
-import com.duitang.service.karma.demo.DemoService;
+import com.duitang.service.karma.demo.IDemoService;
 import com.duitang.service.karma.demo.MemoryCacheService;
 
 public class StableTest {
@@ -16,9 +16,9 @@ public class StableTest {
 	 */
 	@Test
 	public void test1() {
-		ClientFactory<DemoService> fac = ClientFactory.createFactory(DemoService.class);
+		ClientFactory<IDemoService> fac = ClientFactory.createFactory(IDemoService.class);
 		fac.setUrl("localhost:9999");
-		DemoService cli = fac.create();
+		IDemoService cli = fac.create();
 		long ts = System.currentTimeMillis();
 		try {
 			ts = System.currentTimeMillis();
@@ -53,12 +53,12 @@ public class StableTest {
 	// @Test
 	public void test2() throws Exception {
 		ServerBootstrap server = new ServerBootstrap();
-		server.addService(DemoService.class, new MemoryCacheService());
+		server.addService(IDemoService.class, new MemoryCacheService());
 		server.startUp(9998);
 
-		ClientFactory<DemoService> fac = ClientFactory.createFactory(DemoService.class);
+		ClientFactory<IDemoService> fac = ClientFactory.createFactory(IDemoService.class);
 		fac.setUrl("localhost:9999");
-		DemoService cli = fac.create();
+		IDemoService cli = fac.create();
 		System.out.println(cli.memory_setString("aaa", "bbb", 10000));
 		System.out.println(cli.memory_getString("aaa"));
 

@@ -12,7 +12,7 @@ import com.duitang.service.karma.base.ServerBootstrap;
 import com.duitang.service.karma.demo.DemoJsonRPCImpl;
 import com.duitang.service.karma.demo.DemoJsonRPCService;
 import com.duitang.service.karma.demo.DemoRPCDTO;
-import com.duitang.service.karma.demo.DemoService;
+import com.duitang.service.karma.demo.IDemoService;
 import com.duitang.service.karma.demo.MemoryCacheService;
 import com.duitang.service.karma.demo.domain.SimpleObject;
 import com.duitang.service.karma.handler.JsonRPCHandler;
@@ -29,7 +29,7 @@ public class HTTPServerTest {
 		mms.memory_setString("aaaa", "bbbb", 5000);
 		System.out.println("aaaa ---> " + mms.memory_getString("aaaa"));
 
-		conf.addService(DemoService.class, mms);
+		conf.addService(IDemoService.class, mms);
 
 		ReflectRPCHandler rpc = new ReflectRPCHandler();
 		rpc.setConf(conf);

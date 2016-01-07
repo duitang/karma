@@ -3,7 +3,7 @@ package com.duitang.service.karma.demo;
 import java.util.Map;
 import java.util.Set;
 
-public interface DemoService {
+public interface IDemoService {
 
 	String memory_getString(String key);
 

@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.demo.DemoObject;
-import com.duitang.service.karma.demo.DemoService;
+import com.duitang.service.karma.demo.IDemoService;
 import com.duitang.service.karma.demo.MemoryCacheService;
 import com.duitang.service.karma.demo.domain.SimpleObject;
 import com.duitang.service.karma.server.ServiceConfig;
@@ -27,7 +27,7 @@ public class JsonRPCHandlerTest {
 	@Before
 	public void setUp() throws Exception {
 		conf = new ServiceConfig();
-		conf.addService(DemoService.class, new MemoryCacheService());
+		conf.addService(IDemoService.class, new MemoryCacheService());
 
 		service = new ReflectRPCHandler();
 		service.setConf(conf);
@@ -60,7 +60,7 @@ public class JsonRPCHandlerTest {
 
 		JsonRPCHandler jik = new JsonRPCHandler(service);
 
-		String domain = DemoService.class.getName().toLowerCase();
+		String domain = IDemoService.class.getName().toLowerCase();
 		String method = "memory_setString".toLowerCase();
 		Object[] param = new Object[] { "[{\"v\":\"aaa\"}, {\"v\":\"bbb\"}, {\"v\":\"10000\"}]" };
 		RPCContext ctx = new RPCContext();

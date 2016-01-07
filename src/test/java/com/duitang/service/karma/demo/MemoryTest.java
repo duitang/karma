@@ -17,8 +17,8 @@ public class MemoryTest {
 	public void test0() throws Exception {
 		List<String> urls = new ArrayList<String>();
 		urls.add("localhost:9999");
-		KarmaClient<DemoService> client = KarmaClient.createKarmaClient(DemoService.class, urls, MetricCenter.genClientIdFromCode(), "dev1");
-		DemoService cli = client.getService();
+		KarmaClient<IDemoService> client = KarmaClient.createKarmaClient(IDemoService.class, urls, MetricCenter.genClientIdFromCode(), "dev1");
+		IDemoService cli = client.getService();
 		long ts = System.currentTimeMillis();
 		String msg = cli.trace_msg("this will timeout ", 1000);
 		ts = System.currentTimeMillis() - ts;
@@ -28,8 +28,8 @@ public class MemoryTest {
 
 	// @Test
 	public void test1() {
-		DemoService cli = null;
-		ClientFactory<DemoService> fac = ClientFactory.createFactory(DemoService.class);
+		IDemoService cli = null;
+		ClientFactory<IDemoService> fac = ClientFactory.createFactory(IDemoService.class);
 		fac.setUrl("netty://" + "gpu0" + ":" + 9999);
 
 		System.out.println("-------------------");
@@ -78,8 +78,8 @@ public class MemoryTest {
 
 	// @Test
 	public void testConnections() {
-		DemoService cli = null;
-		ClientFactory<DemoService> fac = ClientFactory.createFactory(DemoService.class);
+		IDemoService cli = null;
+		ClientFactory<IDemoService> fac = ClientFactory.createFactory(IDemoService.class);
 		fac.setUrl("netty://" + "localhost" + ":" + 9999);
 
 		boolean r = false;
@@ -107,8 +107,8 @@ public class MemoryTest {
 
 	// @Test
 	public void testHuge() {
-		DemoService cli = null;
-		ClientFactory<DemoService> fac = ClientFactory.createFactory(DemoService.class);
+		IDemoService cli = null;
+		ClientFactory<IDemoService> fac = ClientFactory.createFactory(IDemoService.class);
 		fac.setUrl("netty://" + "localhost" + ":" + 9999);
 
 		int sz = 50000;
@@ -139,10 +139,10 @@ public class MemoryTest {
 
 	@Test
 	public void testSomeError() {
-		ClientFactory<DemoService> fac = ClientFactory.createFactory(DemoService.class);
+		ClientFactory<IDemoService> fac = ClientFactory.createFactory(IDemoService.class);
 		fac.setUrl("localhost:9999");
 		fac.setTimeout(100000);
-		DemoService cli = fac.create();
+		IDemoService cli = fac.create();
 		cli.getError();
 		fac.release(cli);
 	}

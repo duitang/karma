@@ -3,9 +3,10 @@ package com.duitang.service.karma.demo;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
-public class MemoryCacheService implements DemoService {
+public class MemoryCacheService implements IDemoService {
 
 	protected Map<String, String> memory = new HashMap();
 	protected Map<String, byte[]> memoryB = new HashMap();
@@ -24,11 +25,9 @@ public class MemoryCacheService implements DemoService {
 	@Override
 	public String memory_getString(String key) {
 		verbose("memory_getString: " + key);
-//		try {
-//	        Thread.sleep(20);
-//        } catch (InterruptedException e) {
-//	        e.printStackTrace();
-//        }
+		if(new Random().nextInt(10) > 7){
+		  System.out.println("serve " + key);
+		}
 		return memory.get(key);
 	}
 

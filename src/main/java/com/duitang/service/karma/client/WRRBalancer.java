@@ -1,5 +1,8 @@
 package com.duitang.service.karma.client;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -7,9 +10,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 /**
  * Weighted Round-Robin (WRR)
@@ -76,6 +76,7 @@ public class WRRBalancer implements IOBalance {
                 failureCounts.put(s, new AtomicInteger(0));
             }
             seq = serverWt.keySet().toArray(new String[0]);
+            cache.clear();
         } finally {
             lock.unlock();
         }

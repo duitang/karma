@@ -11,7 +11,6 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.PatternLayout;
 
 import com.duitang.service.karma.base.ClientFactory;
-import com.duitang.service.karma.base.MetricCenter;
 import com.duitang.service.karma.base.ServerBootstrap;
 
 public class MemoryServer {
@@ -23,7 +22,7 @@ public class MemoryServer {
 		// DOMConfigurator.configure("conf/test/log4j.xml");
 	}
 
-	static protected DemoService one;
+	static protected IDemoService one;
 
 	public static void main(String[] args) {
 		Map<String, String> param = argsToMap(args);
@@ -68,7 +67,7 @@ public class MemoryServer {
 		impl.memory_setString("main", msg, 50000);
 		impl.memory_setString("aaa", msg, 50000);
 		try {
-			boot.addService(DemoService.class, impl);
+			boot.addService(IDemoService.class, impl);
 			boot.addService(DemoJsonRPCService.class, new DemoJsonRPCImpl());
 			boot.startUp(p - 1);
 		} catch (Exception e) {
@@ -131,7 +130,7 @@ public class MemoryServer {
 			org.apache.log4j.Logger.getLogger("error").setLevel(Level.DEBUG);
 		}
 
-		ClientFactory<DemoService> fac = ClientFactory.createFactory(DemoService.class);
+		ClientFactory<IDemoService> fac = ClientFactory.createFactory(IDemoService.class);
 		fac.setUrl(host + ":" + port);
 
 		CountDownLatch latch = new CountDownLatch(t);
@@ -188,16 +187,16 @@ public class MemoryServer {
 
 class LoadRunner implements Runnable {
 
-	static protected DemoService one;
+	static protected IDemoService one;
 	protected CountDownLatch latch;
 	protected int loop;
 	protected String msg;
-	protected ClientFactory<DemoService> fac;
+	protected ClientFactory<IDemoService> fac;
 	protected String name;
 	protected boolean usemap;
 	protected int trace;
 
-	public LoadRunner(CountDownLatch latch, int loop, String msg, ClientFactory<DemoService> fac, boolean usemap, int trace) {
+	public LoadRunner(CountDownLatch latch, int loop, String msg, ClientFactory<IDemoService> fac, boolean usemap, int trace) {
 		this.latch = latch;
 		this.loop = loop;
 		this.msg = msg;
@@ -213,7 +212,7 @@ class LoadRunner implements Runnable {
 		int err = 0;
 		long ts = System.currentTimeMillis();
 		try {
-			DemoService cli = null;
+			IDemoService cli = null;
 			String val = null;
 			Map vvv = new HashMap();
 			vvv.put("aaa", msg);

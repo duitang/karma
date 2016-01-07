@@ -1,21 +1,5 @@
 package com.duitang.service.karma.client;
 
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import net.sf.cglib.proxy.Enhancer;
-import net.sf.cglib.proxy.MethodInterceptor;
-import net.sf.cglib.proxy.MethodProxy;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.KarmaOverloadException;
 import com.duitang.service.karma.KarmaRuntimeException;
@@ -28,6 +12,21 @@ import com.duitang.service.karma.meta.BinaryPacketData;
 import com.duitang.service.karma.meta.RPCConfig;
 import com.duitang.service.karma.support.CCT;
 import com.duitang.service.karma.support.TraceChainDO;
+
+import net.sf.cglib.proxy.Enhancer;
+import net.sf.cglib.proxy.MethodInterceptor;
+import net.sf.cglib.proxy.MethodProxy;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings("rawtypes")
 public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
@@ -77,7 +76,7 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
                 public void run() {
                     lock.compareAndSet(true, false);
                 }
-            }, 15000);
+            }, 3000);
 	    }
 	}
 	

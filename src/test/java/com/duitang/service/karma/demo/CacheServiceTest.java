@@ -7,25 +7,24 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.duitang.service.karma.base.ClientFactory;
-import com.duitang.service.karma.base.MetricCenter;
 import com.duitang.service.karma.base.ServerBootstrap;
 
 public class CacheServiceTest {
 
 	ServerBootstrap boot = null;
-	ClientFactory<DemoService> fac = null;
+	ClientFactory<IDemoService> fac = null;
 
 	@Before
 	public void setUp() {
 		MemoryCacheService impl = new MemoryCacheService(true);
 		boot = new ServerBootstrap();
 		try {
-			boot.startUp(new Class[] { DemoService.class }, new Object[] { impl }, 9090, "");
+			boot.startUp(new Class[] { IDemoService.class }, new Object[] { impl }, 9090, "");
 		} catch (Exception e) {
 			e.printStackTrace();
 			Assert.fail(e.getMessage());
 		}
-		fac = ClientFactory.createFactory(DemoService.class);
+		fac = ClientFactory.createFactory(IDemoService.class);
 		fac.setUrl("127.0.0.1:9091");
 	}
 
@@ -36,7 +35,7 @@ public class CacheServiceTest {
 
 	@Test
 	public void testBoot() {
-		DemoService cli = fac.create();
+		IDemoService cli = fac.create();
 		try {
 			String key = "aaaa";
 			String value = "bbbb";
@@ -68,7 +67,7 @@ public class CacheServiceTest {
 
 	// @Test
 	public void testMetric() throws Exception {
-		DemoService cli = fac.create();
+		IDemoService cli = fac.create();
 		for (int i = 0; i < 10; i++) {
 			System.out.println("----->" + cli.trace_msg("wait_100", 100));
 		}
