@@ -76,7 +76,6 @@ public class WRRBalancer implements IOBalance {
                 failureCounts.put(s, new AtomicInteger(0));
             }
             seq = serverWt.keySet().toArray(new String[0]);
-            cache.clear();
         } finally {
             lock.unlock();
         }
