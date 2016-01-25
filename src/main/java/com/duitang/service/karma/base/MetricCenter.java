@@ -1,14 +1,20 @@
 package com.duitang.service.karma.base;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import com.duitang.service.karma.stats.CustomDataReporter;
+import com.duitang.service.karma.stats.DWMetricReporter;
+import com.duitang.service.karma.stats.InstanceTag;
+import com.duitang.service.karma.stats.InstanceTagHolder;
+import com.duitang.service.karma.stats.KafkaReporter;
+import com.duitang.service.karma.stats.KarmaMetricHolder;
+import com.duitang.service.karma.stats.Reporter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.duitang.service.karma.stats.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *  MetricCenter.record("com.duitang.example.service.SomeService.methodName", 20); // record in nanos
@@ -20,9 +26,37 @@ public class MetricCenter {
 
     private static ConcurrentHashMap<String, MetricUnit> metricUnits = new ConcurrentHashMap<>();
 
+    /**
+     * abbreviate the full class name
+     *
+     * @param fullClassName full class name, say com.duitang.infrastructure.utils.StringUtil
+     * @return abbreviated name, say c.d.i.u.StringUtil
+     */
+    private static String abbreviate(String fullClassName) {
+      String shortName = "";
+      if (fullClassName == null || fullClassName.isEmpty())
+        return shortName;
+
+      char leadingChar = fullClassName.charAt(0);
+      boolean newStart = false;
+      int lastDotPosition = 0;
+      int index = 0;
+      for (char c : fullClassName.toCharArray()) {
+        if (newStart) {
+          shortName += leadingChar;
+          shortName += '.';
+          leadingChar = c;
+          lastDotPosition = index;
+        }
+        newStart = c == '.';
+        index++;
+      }
+      return shortName + fullClassName.substring(lastDotPosition);
+    }
+
     public static String metricName(ClientId clientId, String method, boolean failure) {
         StringBuilder b = new StringBuilder()
-                .append(clientId.getName())
+                .append(abbreviate(clientId.getName()))
                 .append('.')
                 .append(method);
 
