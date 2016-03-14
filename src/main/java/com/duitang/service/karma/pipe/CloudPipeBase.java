@@ -1,5 +1,11 @@
 package com.duitang.service.karma.pipe;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.apache.log4j.Logger;
+import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.data.Stat;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -7,12 +13,6 @@ import java.util.Properties;
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
 import kafka.producer.ProducerConfig;
-
-import org.apache.log4j.Logger;
-import org.apache.zookeeper.ZooKeeper;
-import org.apache.zookeeper.data.Stat;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * 
@@ -62,18 +62,7 @@ public abstract class CloudPipeBase {
     }
 
     protected CloudPipeBase() {
-        init();
-    }
-    
-    protected void init() {
-        this.biz = getBiz();
-        Properties props = null;
-        try {
-            props = prepareKafkaParams();
-        } catch (RuntimeException e) {
-            return;
-        }
-        producer = new Producer<String, String>(new ProducerConfig(props));
+        createProducer();
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
@@ -82,9 +71,20 @@ public abstract class CloudPipeBase {
         });
     }
 
+    protected void createProducer() {
+        this.biz = getBiz();
+        Properties props = null;
+        try {
+            props = prepareKafkaParams();
+        } catch (RuntimeException e) {
+            return;
+        }
+        producer = new Producer<String, String>(new ProducerConfig(props));
+    }
+
     protected void pumpString(String msg) {
         if (producer == null) {
-            return;
+            createProducer();
         }
         producer.send(new KeyedMessage<String, String>(
             biz, String.valueOf(Math.random()), msg
