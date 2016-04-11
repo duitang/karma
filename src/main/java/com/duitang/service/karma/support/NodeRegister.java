@@ -5,6 +5,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
@@ -32,6 +33,7 @@ import java.util.Map;
  * @since 5:57:54 PM Jan 13, 2015
  */
 public class NodeRegister {
+  private static final String zkGroupBase = "/rpc_groups";
 
   private final static Logger log = Logger.getLogger(NodeRegister.class);
   private final static ObjectMapper mapper = new ObjectMapper();
@@ -39,6 +41,7 @@ public class NodeRegister {
   private final Map<String, String> extraData = Maps.newHashMap();
 
   private String appName;
+  private String appGroupName;
   private boolean online = true;
   private ServicesExporter servicesExporter;
 
@@ -80,6 +83,29 @@ public class NodeRegister {
                   CreateMode.EPHEMERAL
               );
             }
+
+            // 创建默认分组信息
+            if (!StringUtils.isEmpty(appGroupName)) {
+              String groupPath = zkGroupBase + "/" + appGroupName;
+              if (zk.exists(groupPath, false) == null) {
+                zk.create(
+                    groupPath,
+                    null,
+                    Lists.newArrayList(acl),
+                    CreateMode.PERSISTENT
+                );
+              }
+
+              String groupNodePath = groupPath + "/" + host;
+              if (zk.exists(groupNodePath, false) == null) {
+                zk.create(
+                    groupNodePath,
+                    null,
+                    Lists.newArrayList(acl),
+                    CreateMode.EPHEMERAL
+                );
+              }
+            }
           } catch (KeeperException e) {
             e.printStackTrace();
           } catch (InterruptedException e) {
@@ -100,6 +126,15 @@ public class NodeRegister {
       Stat status = zk.exists(nodePath, false);
       if (status != null) {
         zk.delete(nodePath, status.getVersion());
+      }
+
+      // 卸载默认分组信息
+      if (!StringUtils.isEmpty(appGroupName)) {
+        String groupPath = zkGroupBase + "/" + appGroupName + "/" + getHost();
+        Stat groupStat = zk.exists(groupPath, false);
+        if (groupStat != null) {
+          zk.delete(groupPath, groupStat.getVersion());
+        }
       }
     } catch (Exception e) {
       log.error("NodeUnregister_failed:", e);
@@ -166,5 +201,13 @@ public class NodeRegister {
 
   public void addExtraData(Map<String, String> ext) {
     if (ext != null) extraData.putAll(ext);
+  }
+
+  public void setAppGroupName(String appGroupName) {
+    this.appGroupName = appGroupName;
+  }
+
+  public String getAppGroupName() {
+    return this.appGroupName;
   }
 }
