@@ -41,8 +41,9 @@ public abstract class CloudPipeBase {
     }
     
     private String fetchClusterBrokers() {
+        ZooKeeper zk = null;
         try {
-            ZooKeeper zk = new ZooKeeper(zkCommEndpoint(), 3000, null);
+            zk = new ZooKeeper(zkCommEndpoint(), 3000, null);
             fetchClusterMetadata(zk);
             String path = zkBase + '/' + cluster;
             byte[] bs = zk.getData(path, false, new Stat());
@@ -53,10 +54,17 @@ public abstract class CloudPipeBase {
             @SuppressWarnings("unchecked")
             Map<String, Object> obj = mapper.readValue(new String(bs), Map.class);
             String brokers = (String) obj.get("brokers");
-            zk.close();
             return brokers;
         } catch (Exception e) {
             log.error("fetchClusterBrokers_failed:", e);
+        } finally {
+            try {
+                if (zk != null) {
+                    zk.close();
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         return null;
     }
