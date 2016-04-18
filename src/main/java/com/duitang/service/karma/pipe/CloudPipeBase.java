@@ -94,6 +94,11 @@ public abstract class CloudPipeBase {
         if (producer == null) {
             createProducer();
         }
+        if (producer == null) {
+            log.error(String.format("cannot use pipeline, cluster: %s, biz: %s", this.cluster,
+                this.biz));
+            return;
+        }
         producer.send(new KeyedMessage<String, String>(
             biz, String.valueOf(Math.random()), msg
         ));
