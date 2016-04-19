@@ -24,8 +24,6 @@ public class MetricCenter {
 
   final static String[] NOT_IN_PACKAGE_NAME = { "com.duitang.service.karma" };// "com.duitang.webx",
   
-  private static boolean isEnabled = true;
-
   private static ConcurrentHashMap<String, MetricUnit> metricUnits = new ConcurrentHashMap<>();
 
   /**
