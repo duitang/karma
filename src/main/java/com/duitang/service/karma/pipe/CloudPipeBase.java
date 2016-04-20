@@ -49,7 +49,8 @@ public abstract class CloudPipeBase {
             byte[] bs = zk.getData(path, false, new Stat());
             List<String> bizs = zk.getChildren(path, false);
             if (bizs == null || !bizs.contains(biz)) {
-                throw new Exception("biz_not_belongs_to_cluster:" + biz);
+                log.error("biz_not_belongs_to_cluster:" + biz);
+                return null;
             }
             @SuppressWarnings("unchecked")
             Map<String, Object> obj = mapper.readValue(new String(bs), Map.class);
@@ -62,8 +63,7 @@ public abstract class CloudPipeBase {
                 if (zk != null) {
                     zk.close();
                 }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            } catch (InterruptedException ignored) {
             }
         }
         return null;
@@ -93,6 +93,11 @@ public abstract class CloudPipeBase {
     protected void pumpString(String msg) {
         if (producer == null) {
             createProducer();
+        }
+        if (producer == null) {
+            log.error(String.format("cannot use pipeline, cluster: %s, biz: %s", this.cluster,
+                this.biz));
+            return;
         }
         producer.send(new KeyedMessage<String, String>(
             biz, String.valueOf(Math.random()), msg
