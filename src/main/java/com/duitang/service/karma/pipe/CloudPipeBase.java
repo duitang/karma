@@ -3,6 +3,8 @@ package com.duitang.service.karma.pipe;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.log4j.Logger;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
 
@@ -43,7 +45,13 @@ public abstract class CloudPipeBase {
     private String fetchClusterBrokers() {
         ZooKeeper zk = null;
         try {
-            zk = new ZooKeeper(zkCommEndpoint(), 3000, null);
+            zk = new ZooKeeper(zkCommEndpoint(), 3000, new Watcher() {
+                @Override
+                public void process(WatchedEvent event) {
+                    log.warn("got event" + event.toString());
+                }
+            });
+
             fetchClusterMetadata(zk);
             String path = zkBase + '/' + cluster;
             byte[] bs = zk.getData(path, false, new Stat());
