@@ -1,16 +1,5 @@
 package com.duitang.service.karma.router;
 
-import java.io.Serializable;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.apache.log4j.Logger;
-
 import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.KarmaOverloadException;
 import com.duitang.service.karma.base.MetricCenter;
@@ -19,9 +8,18 @@ import com.duitang.service.karma.handler.RPCHandler;
 import com.duitang.service.karma.meta.BinaryPacketData;
 import com.duitang.service.karma.meta.BinaryPacketHelper;
 import com.duitang.service.karma.meta.BinaryPacketRaw;
-import com.duitang.service.karma.pipe.RpcStatPipe;
 import com.duitang.service.karma.support.CCT;
 import com.duitang.service.karma.support.TraceChainDO;
+
+import org.apache.log4j.Logger;
+
+import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class JavaRouter implements Router<BinaryPacketRaw> {
 
@@ -83,11 +81,10 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
                 try {
                     MetricCenter.record(LATENCY_NAME, latencyNanos);
                     if (latency > 200L) {
-                        String info = String.format("%s_JavaRouter_latency:%d,Qsize:%d",
-                                sdf.format(new Date()), latency, execPool.getTaskCount()
+                        String info = String.format("router_latency:%d,remaining capacity:%d",
+                                latency, execPool.getQueue().remainingCapacity()
                         );
                         out.warn(info);
-                        RpcStatPipe.stat(RpcStatPipe.CAT_HIGH_LATENCY, latency);
                     }
 
                     data = BinaryPacketHelper.fromRawToData(raw);
