@@ -15,7 +15,6 @@ import org.apache.log4j.Logger;
 
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -82,8 +81,8 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
                 try {
                     MetricCenter.record(LATENCY_NAME, latencyNanos);
                     if (latency > 200L) {
-                        String info = String.format("%s_JavaRouter_latency:%d,Qsize:%d",
-                                sdf.format(new Date()), latency, execPool.getTaskCount()
+                        String info = String.format("router_latency:%d,remaining capacity:%d",
+                                latency, execPool.getQueue().remainingCapacity()
                         );
                         out.warn(info);
                     }
