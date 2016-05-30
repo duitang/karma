@@ -71,8 +71,11 @@ public abstract class CloudPipeBase {
           log.warn("got event" + event.toString());
         }
       });
-
-      String path = zkBase + '/' + fetchClusterMetadata(zk);
+      String meta = fetchClusterMetadata(zk);
+      if (meta == null) {
+        return null;
+      }
+      String path = zkBase + '/' + meta;
       byte[] bs = zk.getData(path, false, new Stat());
       List<String> bizs = zk.getChildren(path, false);
       if (bizs == null || !bizs.contains(getBiz())) {
@@ -100,6 +103,9 @@ public abstract class CloudPipeBase {
     try {
       props = prepareKafkaParams();
     } catch (RuntimeException e) {
+      return;
+    }
+    if (props == null) {
       return;
     }
     producer = new Producer<String, String>(new ProducerConfig(props));
