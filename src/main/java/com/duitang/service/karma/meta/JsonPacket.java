@@ -9,82 +9,81 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
  * {
  * 	"d": "domain name",
  *  "m": "method name",
- *  "p": '[{"type": "XXXX", "value": "{json string}"}, 
+ *  "p": '[{"type": "XXXX", "value": "{json string}"},
  *        {"type": "YYYY", "value": "{json string}"} ... ]',
  *  "r": "{json result}",
  *  "e": "exception msg"
  * }
  * </pre>
- * 
+ *
  * @author laurence
- * 
  */
 @JsonInclude(Include.NON_NULL)
 public class JsonPacket {
 
-	/**
-	 * domain name
-	 */
-	protected String d;
+  /**
+   * domain name
+   */
+  protected String d;
 
-	/**
-	 * method name
-	 */
-	protected String m;
+  /**
+   * method name
+   */
+  protected String m;
 
-	/**
-	 * parameters
-	 */
-	protected String p;
+  /**
+   * parameters
+   */
+  protected String p;
 
-	/**
-	 * return
-	 */
-	protected Object r;
+  /**
+   * return
+   */
+  protected Object r;
 
-	/**
-	 * exception
-	 */
-	protected String e;
+  /**
+   * exception
+   */
+  protected String e;
 
-	public String getD() {
-		return d;
-	}
+  public String getD() {
+    return d;
+  }
 
-	public void setD(String d) {
-		this.d = d;
-	}
+  public void setD(String d) {
+    this.d = d;
+  }
 
-	public String getM() {
-		return m;
-	}
+  public String getM() {
+    return m;
+  }
 
-	public void setM(String m) {
-		this.m = m;
-	}
+  public void setM(String m) {
+    this.m = m;
+  }
 
-	public String getP() {
-		return p;
-	}
+  public String getP() {
+    return p;
+  }
 
-	public void setP(String p) {
-		this.p = p;
-	}
+  public void setP(String p) {
+    this.p = p;
+  }
 
-	public Object getR() {
-		return r;
-	}
+  public Object getR() {
+    return r;
+  }
 
-	public void setR(Object r) {
-		this.r = r;
-	}
+  public void setR(Object r) {
+    this.r = r;
+  }
 
-	public String getE() {
-		return e;
-	}
+  public String getE() {
+    return e;
+  }
 
-	public void setE(String e) {
-		this.e = e;
-	}
+  public void setE(String e) {
+    this.e = e;
+  }
 
 }

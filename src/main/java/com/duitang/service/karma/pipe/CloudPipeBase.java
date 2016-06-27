@@ -8,13 +8,13 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
 import kafka.producer.ProducerConfig;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 
 /**
@@ -137,7 +137,7 @@ public abstract class CloudPipeBase {
   protected abstract String getBiz();
 
   protected Properties prepareKafkaParams() {
-    if (updated == null || System.currentTimeMillis() - updated > 1000*90) {
+    if (updated == null || System.currentTimeMillis() - updated > 1000 * 90) {
       clusterBrokers = fetchClusterBrokers();
       updated = System.currentTimeMillis();
     }

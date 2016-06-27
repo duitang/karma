@@ -59,7 +59,7 @@ public class KarmaServerClient {
     nodeRegister.setServicesExporter(servicesExporter);
     nodeRegister.init();
     System.out.println("server running at port: " + port + " " + new Date());
-    Runtime.getRuntime().addShutdownHook(new Thread(){
+    Runtime.getRuntime().addShutdownHook(new Thread() {
       @Override
       public void run() {
         nodeRegister.setOffline();
@@ -118,7 +118,7 @@ public class KarmaServerClient {
             try {
               cli.memory_setString(key, val, 1000);
               String res = cli.memory_getString(key);
-              if(new Random().nextInt(10) > 8) {
+              if (new Random().nextInt(10) > 8) {
                 System.out.println("sent " + val + " got " + res + " " + new Date());
               }
             } catch (Exception e) {

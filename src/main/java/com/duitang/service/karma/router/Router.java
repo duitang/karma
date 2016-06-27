@@ -6,8 +6,8 @@ import com.duitang.service.karma.handler.RPCHandler;
 
 public interface Router<T> {
 
-	public void route(RPCContext ctx, T ret) throws KarmaException;
+  public void route(RPCContext ctx, T ret) throws KarmaException;
 
-	public void setHandler(RPCHandler handler);
+  public void setHandler(RPCHandler handler);
 
 }

@@ -1,48 +1,48 @@
 package com.duitang.service.karma.handler;
 
-import org.junit.Before;
-import org.junit.Test;
-
 import com.duitang.service.karma.demo.IDemoService;
 import com.duitang.service.karma.demo.MemoryCacheService;
 import com.duitang.service.karma.server.ServiceConfig;
 
+import org.junit.Before;
+import org.junit.Test;
+
 public class ReflectRPCHandlerTest {
 
-	ServiceConfig conf;
+  ServiceConfig conf;
 
-	@Before
-	public void setUp() {
-		conf = new ServiceConfig();
-		conf.addService(IDemoService.class, new MemoryCacheService());
-	}
+  @Before
+  public void setUp() {
+    conf = new ServiceConfig();
+    conf.addService(IDemoService.class, new MemoryCacheService());
+  }
 
-	@Test
-	public void test() throws Exception {
-		ReflectRPCHandler service = new ReflectRPCHandler();
-		service.setConf(conf);
-		service.init();
+  @Test
+  public void test() throws Exception {
+    ReflectRPCHandler service = new ReflectRPCHandler();
+    service.setConf(conf);
+    service.init();
 
-		String domain = IDemoService.class.getName();
-		String method = "memory_setString";
-		Object[] param = new Object[] { "aaa", "bbb", 10000 };
-		RPCContext ctx = new RPCContext();
-		ctx.name = domain;
-		ctx.method = method;
-		ctx.params = param;
+    String domain = IDemoService.class.getName();
+    String method = "memory_setString";
+    Object[] param = new Object[]{"aaa", "bbb", 10000};
+    RPCContext ctx = new RPCContext();
+    ctx.name = domain;
+    ctx.method = method;
+    ctx.params = param;
 
-		service.lookUp(ctx);
-		service.invoke(ctx);
-		System.out.println(ctx.ret);
+    service.lookUp(ctx);
+    service.invoke(ctx);
+    System.out.println(ctx.ret);
 
-		method = "memory_getString";
-		param = new Object[] { "aaa" };
-		ctx.name = domain;
-		ctx.method = method;
-		ctx.params = param;
+    method = "memory_getString";
+    param = new Object[]{"aaa"};
+    ctx.name = domain;
+    ctx.method = method;
+    ctx.params = param;
 
-		service.lookUp(ctx);
-		service.invoke(ctx);
-		System.out.println(ctx.ret);
-	}
+    service.lookUp(ctx);
+    service.invoke(ctx);
+    System.out.println(ctx.ret);
+  }
 }

@@ -4,14 +4,14 @@ import java.util.List;
 
 public class OnlyList {
 
-	protected List<Long> data;
+  protected List<Long> data;
 
-	public List<Long> getData() {
-		return data;
-	}
+  public List<Long> getData() {
+    return data;
+  }
 
-	public void setData(List<Long> data) {
-		this.data = data;
-	}
+  public void setData(List<Long> data) {
+    this.data = data;
+  }
 
 }

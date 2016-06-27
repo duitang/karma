@@ -23,120 +23,120 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class JavaRouter implements Router<BinaryPacketRaw> {
 
-    final static Logger out = Logger.getLogger(JavaRouter.class);
-    final static int CORE_SIZE = 150;
+  final static Logger out = Logger.getLogger(JavaRouter.class);
+  final static int CORE_SIZE = 150;
 
-    protected RPCHandler handler;
-    protected ThreadPoolExecutor execPool = new ThreadPoolExecutor(CORE_SIZE, 200, 300L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(10000));
+  protected RPCHandler handler;
+  protected ThreadPoolExecutor execPool = new ThreadPoolExecutor(CORE_SIZE, 200, 300L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(10000));
 
-    protected AtomicLong pingCount = new AtomicLong(0);
-    protected int maxQueuingLatency = 0;
+  protected AtomicLong pingCount = new AtomicLong(0);
+  protected int maxQueuingLatency = 0;
+
+  @Override
+  public void setHandler(RPCHandler handler) {
+    this.handler = handler;
+  }
+
+  public void setMaxQueuingLatency(int maxQueuingLatency) {
+    this.maxQueuingLatency = maxQueuingLatency;
+  }
+
+  @Override
+  public void route(RPCContext ctx, BinaryPacketRaw raw) throws KarmaException {
+    KarmaJobRunner k = new KarmaJobRunner(ctx, raw);
+    Future<?> future = execPool.submit(k);
+    k.future = future;
+    int sz = execPool.getActiveCount();
+    if (sz >= CORE_SIZE) {
+      out.warn("JavaRouter_threads_exceed:" + sz);
+    }
+  }
+
+  class KarmaJobRunner implements Runnable {
+
+    RPCContext ctx;
+    BinaryPacketRaw raw;
+    long submitTime;
+    long schdTime;
+    SimpleDateFormat sdf;
+    Future<?> future;
+
+    private String LATENCY_NAME = JavaRouter.class.getCanonicalName() + ".latency";
+
+    public KarmaJobRunner(RPCContext ctx, BinaryPacketRaw rawPack) {
+      this.ctx = ctx;
+      this.raw = rawPack;
+      this.submitTime = System.nanoTime();
+      this.schdTime = 0;
+      this.sdf = new SimpleDateFormat("HH:mm:ss.S");
+    }
 
     @Override
-    public void setHandler(RPCHandler handler) {
-        this.handler = handler;
-    }
+    public void run() {
+      BinaryPacketData data = null;
+      schdTime = System.nanoTime();
+      long latencyNanos = this.schdTime - this.submitTime;
+      long latency = TimeUnit.NANOSECONDS.toMillis(latencyNanos);
+      do {
+        try {
+          MetricCenter.record(LATENCY_NAME, latencyNanos);
+          if (latency > 200L) {
+            String info = String.format("router_latency:%d,remaining capacity:%d",
+                latency, execPool.getQueue().remainingCapacity()
+            );
+            out.warn(info);
+          }
 
-    public void setMaxQueuingLatency(int maxQueuingLatency) {
-        this.maxQueuingLatency = maxQueuingLatency;
-    }
-
-    @Override
-    public void route(RPCContext ctx, BinaryPacketRaw raw) throws KarmaException {
-        KarmaJobRunner k = new KarmaJobRunner(ctx, raw);
-        Future<?> future = execPool.submit(k);
-        k.future = future;
-        int sz = execPool.getActiveCount();
-        if (sz >= CORE_SIZE) {
-            out.warn("JavaRouter_threads_exceed:" + sz);
-        }
-    }
-
-    class KarmaJobRunner implements Runnable {
-
-        RPCContext ctx;
-        BinaryPacketRaw raw;
-        long submitTime;
-        long schdTime;
-        SimpleDateFormat sdf;
-        Future<?> future;
-
-        private String LATENCY_NAME = JavaRouter.class.getCanonicalName() + ".latency";
-
-        public KarmaJobRunner(RPCContext ctx, BinaryPacketRaw rawPack) {
-            this.ctx = ctx;
-            this.raw = rawPack;
-            this.submitTime = System.nanoTime();
-            this.schdTime = 0;
-            this.sdf = new SimpleDateFormat("HH:mm:ss.S");
-        }
-
-        @Override
-        public void run() {
-            BinaryPacketData data = null;
-            schdTime = System.nanoTime();
-            long latencyNanos = this.schdTime - this.submitTime;
-            long latency = TimeUnit.NANOSECONDS.toMillis(latencyNanos);
-            do {
-                try {
-                    MetricCenter.record(LATENCY_NAME, latencyNanos);
-                    if (latency > 200L) {
-                        String info = String.format("router_latency:%d,remaining capacity:%d",
-                                latency, execPool.getQueue().remainingCapacity()
-                        );
-                        out.warn(info);
-                    }
-
-                    data = BinaryPacketHelper.fromRawToData(raw);
-                    if (BinaryPacketHelper.isPing(data)) {
-                        long g = pingCount.incrementAndGet();
-                        if (g % 10000 == 0) {
-                            out.info("channel ping checkpoint: " + g);
-                        }
-                        break;
-                    }
-                    if (data.conf != null && data.conf.isValid()) {
-                        TraceChainDO chain = (TraceChainDO) data.conf.getConf(CCT.RPC_CONF_KEY);
-                        if (chain != null) {
-                            chain.reset();
-                            long currtime = System.currentTimeMillis();
-                            long timebase = currtime;
-                            Serializable obj = data.conf.getConf("timebase");
-                            if (obj != null && obj instanceof Long) {
-                                timebase = (long) obj;
-                                chain.setTimedelta(timebase - currtime);
-                            }
-                            CCT.setForcibly(chain);
-                        }
-                    }
-                    //如果延迟超过maxQueuingLatency说明系统过载，直接报错不再执行业务逻辑
-                    if (latency >= maxQueuingLatency) throw new KarmaOverloadException(data.method);
-
-                    ctx.name = data.domain;
-                    ctx.method = data.method;
-                    ctx.params = data.param;
-                    handler.lookUp(ctx);
-                    try {
-                        CCT.call(data.domain + "::" + data.method, false);
-                        handler.invoke(ctx);
-                    } finally {
-                        CCT.ret();
-                    }
-                    data.ret = ctx.ret;
-                } catch (Throwable e) {
-                    if (data == null) {
-                        data = new BinaryPacketData();
-                    }
-                    int tries = 0;
-                    Throwable root = e;
-                    while (root.getCause() != null && tries++ < 5) root = root.getCause();
-                    data.ex = root;
-                }
-            } while (false);
-
-            if (raw.ctx != null) {
-                raw.ctx.writeAndFlush(data.getBytes());
+          data = BinaryPacketHelper.fromRawToData(raw);
+          if (BinaryPacketHelper.isPing(data)) {
+            long g = pingCount.incrementAndGet();
+            if (g % 10000 == 0) {
+              out.info("channel ping checkpoint: " + g);
             }
+            break;
+          }
+          if (data.conf != null && data.conf.isValid()) {
+            TraceChainDO chain = (TraceChainDO) data.conf.getConf(CCT.RPC_CONF_KEY);
+            if (chain != null) {
+              chain.reset();
+              long currtime = System.currentTimeMillis();
+              long timebase = currtime;
+              Serializable obj = data.conf.getConf("timebase");
+              if (obj != null && obj instanceof Long) {
+                timebase = (long) obj;
+                chain.setTimedelta(timebase - currtime);
+              }
+              CCT.setForcibly(chain);
+            }
+          }
+          //如果延迟超过maxQueuingLatency说明系统过载，直接报错不再执行业务逻辑
+          if (latency >= maxQueuingLatency) throw new KarmaOverloadException(data.method);
+
+          ctx.name = data.domain;
+          ctx.method = data.method;
+          ctx.params = data.param;
+          handler.lookUp(ctx);
+          try {
+            CCT.call(data.domain + "::" + data.method, false);
+            handler.invoke(ctx);
+          } finally {
+            CCT.ret();
+          }
+          data.ret = ctx.ret;
+        } catch (Throwable e) {
+          if (data == null) {
+            data = new BinaryPacketData();
+          }
+          int tries = 0;
+          Throwable root = e;
+          while (root.getCause() != null && tries++ < 5) root = root.getCause();
+          data.ex = root;
         }
+      } while (false);
+
+      if (raw.ctx != null) {
+        raw.ctx.writeAndFlush(data.getBytes());
+      }
     }
+  }
 }

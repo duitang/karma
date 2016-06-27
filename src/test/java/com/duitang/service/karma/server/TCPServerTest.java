@@ -1,9 +1,5 @@
 package com.duitang.service.karma.server;
 
-import java.io.IOException;
-
-import org.junit.Test;
-
 import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.demo.DemoJsonRPCImpl;
 import com.duitang.service.karma.demo.DemoJsonRPCService;
@@ -12,41 +8,45 @@ import com.duitang.service.karma.demo.MemoryCacheService;
 import com.duitang.service.karma.handler.ReflectRPCHandler;
 import com.duitang.service.karma.router.JavaRouter;
 
+import org.junit.Test;
+
+import java.io.IOException;
+
 public class TCPServerTest {
 
-	// @Test
-	public void test0() throws IOException, InterruptedException {
-		// NioSocketAcceptor acceptor = new NioSocketAcceptor();
-		// acceptor.setHandler(new LogOnly());
-		// acceptor.bind(new InetSocketAddress(9999));
-		// Thread.sleep(10000000);
-	}
+  // @Test
+  public void test0() throws IOException, InterruptedException {
+    // NioSocketAcceptor acceptor = new NioSocketAcceptor();
+    // acceptor.setHandler(new LogOnly());
+    // acceptor.bind(new InetSocketAddress(9999));
+    // Thread.sleep(10000000);
+  }
 
-	@Test
-	public void test1() throws KarmaException, InterruptedException {
-		ServiceConfig conf = new ServiceConfig();
-		MemoryCacheService mms = new MemoryCacheService();
-		DemoJsonRPCService demoJson = new DemoJsonRPCImpl();
-		mms.memory_setString("aaaa", "bbbb", 5000);
-		System.out.println("aaaa ---> " + mms.memory_getString("aaaa"));
+  @Test
+  public void test1() throws KarmaException, InterruptedException {
+    ServiceConfig conf = new ServiceConfig();
+    MemoryCacheService mms = new MemoryCacheService();
+    DemoJsonRPCService demoJson = new DemoJsonRPCImpl();
+    mms.memory_setString("aaaa", "bbbb", 5000);
+    System.out.println("aaaa ---> " + mms.memory_getString("aaaa"));
 
-		conf.addService(DemoJsonRPCService.class, demoJson);
-		conf.addService(IDemoService.class, mms);
+    conf.addService(DemoJsonRPCService.class, demoJson);
+    conf.addService(IDemoService.class, mms);
 
-		ReflectRPCHandler rpc = new ReflectRPCHandler();
-		rpc.setConf(conf);
-		rpc.init();
+    ReflectRPCHandler rpc = new ReflectRPCHandler();
+    rpc.setConf(conf);
+    rpc.init();
 
-		JavaRouter rt = new JavaRouter();
-		rt.setHandler(rpc);
+    JavaRouter rt = new JavaRouter();
+    rt.setHandler(rpc);
 
-		TCPServer tcps = new TCPServer();
-		tcps.setRouter(rt);
-		tcps.setPort(9999);
-		tcps.start();
+    TCPServer tcps = new TCPServer();
+    tcps.setRouter(rt);
+    tcps.setPort(9999);
+    tcps.start();
 
-		Thread.sleep(10000000);
-	}
+    Thread.sleep(10000000);
+  }
 
 }
 

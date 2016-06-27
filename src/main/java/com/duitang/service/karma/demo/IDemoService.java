@@ -5,24 +5,24 @@ import java.util.Set;
 
 public interface IDemoService {
 
-	String memory_getString(String key);
+  String memory_getString(String key);
 
-	boolean memory_setString(String key, String value, int ttl);
+  boolean memory_setString(String key, String value, int ttl);
 
-	byte[] memory_getBytes(String key);
+  byte[] memory_getBytes(String key);
 
-	boolean memory_setBytes(String key, byte[] value, int ttl);
+  boolean memory_setBytes(String key, byte[] value, int ttl);
 
-	String trace_msg(String key, long ttl);
+  String trace_msg(String key, long ttl);
 
-	Map getmap(String name);
+  Map getmap(String name);
 
-	boolean setmap(String name, Map data);
+  boolean setmap(String name, Map data);
 
-	Set<String> noparam();
+  Set<String> noparam();
 
-	Map getM(Set s);
+  Map getM(Set s);
 
-	void getError();
+  void getError();
 
 }

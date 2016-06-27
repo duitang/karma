@@ -17,13 +17,14 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- *  MetricCenter.record("com.duitang.example.service.SomeService.methodName", 20); // record in nanos
+ * MetricCenter.record("com.duitang.example.service.SomeService.methodName", 20); // record in
+ * nanos
  */
 public class MetricCenter {
   private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  final static String[] NOT_IN_PACKAGE_NAME = { "com.duitang.service.karma" };// "com.duitang.webx",
-  
+  final static String[] NOT_IN_PACKAGE_NAME = {"com.duitang.service.karma"};// "com.duitang.webx",
+
   private static ConcurrentHashMap<String, MetricUnit> metricUnits = new ConcurrentHashMap<>();
 
   /**
@@ -62,7 +63,7 @@ public class MetricCenter {
 
     b.append(clientId.isClient() ? ".CLIENT" : ".SERVER");
 
-    if(failure) {
+    if (failure) {
       b.append(".FAILURE");
     }
     return b.toString();
@@ -96,7 +97,7 @@ public class MetricCenter {
   }
 
   /**
-   *  HOSTNAME or randomly generated string
+   * HOSTNAME or randomly generated string
    */
   static public String getHostname() {
     return InstanceTagHolder.getHostname();
@@ -175,6 +176,7 @@ public class MetricCenter {
     KarmaMetricHolder.getReporterDaemon().addReporter(
         KarmaMetricHolder.getMetricHolder().reporter());
   }
+
   @Deprecated
   public static void enableDWMetricReporter() {
     addCustomReporter(new DWMetricReporter());
@@ -201,6 +203,7 @@ public class MetricCenter {
     KarmaMetricHolder.getReporterDaemon().addReporter(
         KarmaMetricHolder.getMetricHolder().reporter());
   }
+
   public static void startDWMetricReporter(boolean isEnabled) {
     if (!isEnabled) {
       return;
@@ -219,6 +222,6 @@ public class MetricCenter {
   public static void addCustomReporter(CustomDataReporter r) {
     KarmaMetricHolder.getReporterDaemon().addReporter(r);
   }
-  
+
 }
 

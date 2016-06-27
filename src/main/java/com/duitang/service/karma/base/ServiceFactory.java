@@ -3,12 +3,12 @@ package com.duitang.service.karma.base;
 
 public interface ServiceFactory<T> {
 
-	T create();
+  T create();
 
-	void release(T srv);
+  void release(T srv);
 
-	String getServiceName();
+  String getServiceName();
 
-	Class getServiceType();
+  Class getServiceType();
 
 }

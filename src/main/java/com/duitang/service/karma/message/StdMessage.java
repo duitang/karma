@@ -1,113 +1,112 @@
 package com.duitang.service.karma.message;
 
-import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Map;
+
 /**
- * 
  * @author kevx
  * @since 1:17:10 PM Aug 19, 2015
  */
-@JsonIgnoreProperties(ignoreUnknown=true)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class StdMessage {
 
-    private String act;
-    
-    @JsonProperty("sbj_id")
-    private String subjectId;
-    
-    @JsonProperty("sbj_t")
-    private Integer subjectType;
-    
-    @JsonProperty("obj_id")
-    private String objectId;
-    
-    @JsonProperty("obj_t")
-    private Integer objectType;
-    
-    @JsonProperty("obj_owner")
-    private String objectOwner;
-    
-    @JsonProperty("gmt_created")
-    private Long gmtCreated;
-    
-    private Map<String, Object> data;
-    
-    @JsonProperty("_v")
-    private int version = 0;
+  private String act;
 
-    public String getAct() {
-        return act;
-    }
+  @JsonProperty("sbj_id")
+  private String subjectId;
 
-    public void setAct(String act) {
-        this.act = act;
-    }
+  @JsonProperty("sbj_t")
+  private Integer subjectType;
 
-    public String getSubjectId() {
-        return subjectId;
-    }
+  @JsonProperty("obj_id")
+  private String objectId;
 
-    public void setSubjectId(String subjectId) {
-        this.subjectId = subjectId;
-    }
+  @JsonProperty("obj_t")
+  private Integer objectType;
 
-    public Integer getSubjectType() {
-        return subjectType;
-    }
+  @JsonProperty("obj_owner")
+  private String objectOwner;
 
-    public void setSubjectType(Integer subjectType) {
-        this.subjectType = subjectType;
-    }
+  @JsonProperty("gmt_created")
+  private Long gmtCreated;
 
-    public String getObjectId() {
-        return objectId;
-    }
+  private Map<String, Object> data;
 
-    public void setObjectId(String objectId) {
-        this.objectId = objectId;
-    }
+  @JsonProperty("_v")
+  private int version = 0;
 
-    public Integer getObjectType() {
-        return objectType;
-    }
+  public String getAct() {
+    return act;
+  }
 
-    public void setObjectType(Integer objectType) {
-        this.objectType = objectType;
-    }
+  public void setAct(String act) {
+    this.act = act;
+  }
 
-    public String getObjectOwner() {
-        return objectOwner;
-    }
+  public String getSubjectId() {
+    return subjectId;
+  }
 
-    public void setObjectOwner(String objectOwner) {
-        this.objectOwner = objectOwner;
-    }
+  public void setSubjectId(String subjectId) {
+    this.subjectId = subjectId;
+  }
 
-    public Long getGmtCreated() {
-        return gmtCreated;
-    }
+  public Integer getSubjectType() {
+    return subjectType;
+  }
 
-    public void setGmtCreated(Long gmtCreated) {
-        this.gmtCreated = gmtCreated;
-    }
+  public void setSubjectType(Integer subjectType) {
+    this.subjectType = subjectType;
+  }
 
-    public Map<String, Object> getData() {
-        return data;
-    }
+  public String getObjectId() {
+    return objectId;
+  }
 
-    public void setData(Map<String, Object> data) {
-        this.data = data;
-    }
+  public void setObjectId(String objectId) {
+    this.objectId = objectId;
+  }
 
-    public int getVersion() {
-        return version;
-    }
+  public Integer getObjectType() {
+    return objectType;
+  }
 
-    public void setVersion(int version) {
-        this.version = version;
-    }
-    
+  public void setObjectType(Integer objectType) {
+    this.objectType = objectType;
+  }
+
+  public String getObjectOwner() {
+    return objectOwner;
+  }
+
+  public void setObjectOwner(String objectOwner) {
+    this.objectOwner = objectOwner;
+  }
+
+  public Long getGmtCreated() {
+    return gmtCreated;
+  }
+
+  public void setGmtCreated(Long gmtCreated) {
+    this.gmtCreated = gmtCreated;
+  }
+
+  public Map<String, Object> getData() {
+    return data;
+  }
+
+  public void setData(Map<String, Object> data) {
+    this.data = data;
+  }
+
+  public int getVersion() {
+    return version;
+  }
+
+  public void setVersion(int version) {
+    this.version = version;
+  }
+
 }

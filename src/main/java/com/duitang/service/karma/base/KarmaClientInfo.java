@@ -4,6 +4,6 @@ import com.duitang.service.karma.client.KarmaClient;
 
 public interface KarmaClientInfo {
 
-	KarmaClient getProxy();
+  KarmaClient getProxy();
 
 }
