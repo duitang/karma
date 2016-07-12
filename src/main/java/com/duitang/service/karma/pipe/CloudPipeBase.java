@@ -1,6 +1,7 @@
 package com.duitang.service.karma.pipe;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 
 import org.apache.log4j.Logger;
 import org.apache.zookeeper.WatchedEvent;
@@ -8,13 +9,13 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
 
-import kafka.javaapi.producer.Producer;
-import kafka.producer.KeyedMessage;
-import kafka.producer.ProducerConfig;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import kafka.javaapi.producer.Producer;
+import kafka.producer.KeyedMessage;
+import kafka.producer.ProducerConfig;
 
 
 /**
@@ -25,14 +26,13 @@ public abstract class CloudPipeBase {
 
   protected static final ObjectMapper mapper = new ObjectMapper();
   protected static final Logger log = Logger.getLogger("cloudPipe");
-  protected static final String zkBase = "/config/kafka_clusters";
+  protected static final String zkBase = "/config/kafka_clusters/";
+  private static final List<String> clusters = Lists.newArrayList("msg-a", "msg-comm", "msg-dev");
 
   private Producer<String, String> producer;
   private String clusterBrokers;
-  private Long updated;
 
   protected CloudPipeBase() {
-    createProducer();
     Runtime.getRuntime().addShutdownHook(new Thread() {
       @Override
       public void run() {
@@ -52,9 +52,8 @@ public abstract class CloudPipeBase {
   }
 
   private String fetchClusterMetadata(ZooKeeper zk) throws Exception {
-    List<String> clusters = zk.getChildren(zkBase, false);
     for (String c : clusters) {
-      List<String> bizs = zk.getChildren(zkBase + '/' + c, false);
+      List<String> bizs = zk.getChildren(zkBase + c, false);
       if (bizs.contains(getBiz())) {
         return c;
       }
@@ -65,17 +64,19 @@ public abstract class CloudPipeBase {
   private String fetchClusterBrokers() {
     ZooKeeper zk = null;
     try {
-      zk = new ZooKeeper(zkCommEndpoint(), 3000, new Watcher() {
+      zk = new ZooKeeper(zkCommEndpoint(), 8000, new Watcher() {
         @Override
         public void process(WatchedEvent event) {
           log.warn("got event" + event.toString());
         }
       });
       String meta = fetchClusterMetadata(zk);
+      log.info("got meta: " + meta);
       if (meta == null) {
         return null;
       }
-      String path = zkBase + '/' + meta;
+
+      String path = zkBase + meta;
       byte[] bs = zk.getData(path, false, new Stat());
       List<String> bizs = zk.getChildren(path, false);
       if (bizs == null || !bizs.contains(getBiz())) {
@@ -102,13 +103,10 @@ public abstract class CloudPipeBase {
     Properties props;
     try {
       props = prepareKafkaParams();
+      producer = new Producer<>(new ProducerConfig(props));
     } catch (RuntimeException e) {
-      return;
+      log.error("failed to create producer: ", e);
     }
-    if (props == null) {
-      return;
-    }
-    producer = new Producer<String, String>(new ProducerConfig(props));
   }
 
   protected void pumpString(String msg) {
@@ -137,9 +135,8 @@ public abstract class CloudPipeBase {
   protected abstract String getBiz();
 
   protected Properties prepareKafkaParams() {
-    if (updated == null || System.currentTimeMillis() - updated > 1000 * 90) {
+    if (clusterBrokers == null) {
       clusterBrokers = fetchClusterBrokers();
-      updated = System.currentTimeMillis();
     }
     Properties props = new Properties();
     props.put("metadata.broker.list", clusterBrokers);

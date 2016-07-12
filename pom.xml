@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.duitang.service</groupId>
     <artifactId>karma</artifactId>
-    <version>160530.1800</version>
+    <version>160712.1600</version>
     <packaging>jar</packaging>
     <name>karma</name>
     <properties>
