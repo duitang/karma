@@ -35,11 +35,12 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
   final static protected KarmaIOPool pool = new KarmaIOPool();
   final static protected Logger error = LoggerFactory.getLogger(KarmaClient.class);
   final static protected AtomicBoolean lock = new AtomicBoolean(false);
+  final static private Long DEFAULT_TIMEOUT = 1000L;
 
   protected ClientId clientid;
   protected String domainName;
   protected Map<String, Boolean> cutoffNames;
-  protected long timeout = 500;
+  protected long timeout = DEFAULT_TIMEOUT;
   protected T dummy;
   protected IOBalance router;
 
@@ -84,7 +85,7 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
       List<String> urls,
       String group
   ) throws KarmaException {
-    return createKarmaClient(iface, urls, group, 500);
+    return createKarmaClient(iface, urls, group, DEFAULT_TIMEOUT);
   }
 
   @SuppressWarnings("unchecked")

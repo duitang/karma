@@ -15,7 +15,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
   final static protected Logger err = Logger.getLogger("error");
   protected String url;
   protected List<String> serviceURL;
-  protected long timeout = 500;
+  protected long timeout = 1000;
   protected String clientid;
   protected int sz = 0;
   protected String group = "default";
