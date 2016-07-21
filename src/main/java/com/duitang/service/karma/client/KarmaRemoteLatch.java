@@ -4,10 +4,10 @@ import com.duitang.service.karma.KarmaRuntimeException;
 import com.duitang.service.karma.KarmaTimeoutException;
 import com.duitang.service.karma.support.TraceChainDO;
 
-import io.netty.util.AttributeKey;
-
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import io.netty.util.AttributeKey;
 
 public class KarmaRemoteLatch {
 
@@ -73,18 +73,11 @@ public class KarmaRemoteLatch {
     return result;
   }
 
-  //	protected void throwIt(Throwable t) throws KarmaRuntimeException {
-  //		KarmaRuntimeException ret = null;
-  //		if (t == null) {
-  //			ret = new KarmaRuntimeException("rpc call timeout = " + timeout + "ms");
-  //		} else {
-  //			if (!KarmaRuntimeException.class.isAssignableFrom(t.getClass())) {
-  //				ret = new KarmaRuntimeException(t.getCause());
-  //			} else {
-  //				ret = (KarmaRuntimeException) t;
-  //			}
-  //		}
-  //		throw ret;
-  //	}
-
+  /**
+   * Get the result without timeout.
+   * @return result
+   */
+  public Object readResult() {
+    return result;
+  }
 }

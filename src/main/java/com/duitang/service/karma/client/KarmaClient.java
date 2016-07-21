@@ -31,23 +31,21 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @SuppressWarnings("rawtypes")
 public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 
-  final static public String CLINET_ATTR_NAME = "_KARMACLIENT_";
   final static protected Map<String, Method> mgrCallbacks;
   final static protected KarmaIOPool pool = new KarmaIOPool();
   final static protected Logger error = LoggerFactory.getLogger(KarmaClient.class);
   final static protected AtomicBoolean lock = new AtomicBoolean(false);
-
-  static String zkURL = null;
+  final static private Long DEFAULT_TIMEOUT = 1000L;
 
   protected ClientId clientid;
   protected String domainName;
   protected Map<String, Boolean> cutoffNames;
-  protected long timeout = 500;
+  protected long timeout = DEFAULT_TIMEOUT;
   protected T dummy;
   protected IOBalance router;
 
   static {
-    mgrCallbacks = new HashMap<String, Method>();
+    mgrCallbacks = new HashMap<>();
     Class[] ifaces = new Class[]
         {
             LifeCycle.class,
@@ -58,12 +56,10 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
       }
     }
     Runtime.getRuntime().addShutdownHook(new Thread() {
-
       @Override
       public void run() {
         shutdownIOPool();
       }
-
     });
   }
 
@@ -87,17 +83,15 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
   static public <T> KarmaClient<T> createKarmaClient(
       Class<T> iface,
       List<String> urls,
-      String clientid,
       String group
   ) throws KarmaException {
-    return createKarmaClient(iface, urls, clientid, group, 500);
+    return createKarmaClient(iface, urls, group, DEFAULT_TIMEOUT);
   }
 
   @SuppressWarnings("unchecked")
   static public <T> KarmaClient<T> createKarmaClient(
       Class<T> iface,
       List<String> urls,
-      String clientid,
       String group,
       long timeout
   ) throws KarmaException {
@@ -110,7 +104,7 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
     KarmaClient client = new KarmaClient(iface, iob);
     client.timeout = timeout;
     client.clientid = new ClientId(iface.getCanonicalName(), true);
-    client.dummy = (T) Enhancer.create(
+    client.dummy = Enhancer.create(
         null,
         new Class[]{iface, KarmaClientInfo.class},
         client
@@ -121,7 +115,7 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
   KarmaClient(Class<T> iface, IOBalance bl) throws KarmaException {
     this.router = bl;
     this.domainName = iface.getName();
-    this.cutoffNames = new HashMap<String, Boolean>();
+    this.cutoffNames = new HashMap<>();
     Boolean useEx = false;
     for (Method m : iface.getDeclaredMethods()) {
       for (Class eClz : m.getExceptionTypes()) {
@@ -146,7 +140,7 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
   }
 
   @Override
-  public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws KarmaRuntimeException, Throwable {
+  public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
     String name = method.getName();
     if (!cutoffNames.containsKey(name) && !mgrCallbacks.containsKey(name)) {
       return proxy.invokeSuper(obj, args);
@@ -175,7 +169,6 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
     boolean failure = false;
     KarmaIoSession iosession = null;
     String u = null;
-    boolean pong = false;
     try {
       u = this.router.next(null);
       iosession = pool.getIOSession(u);
@@ -191,16 +184,23 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
     } catch (Throwable e) {
       router.fail(u);
       failure = true;
-      boolean reachable = true;
-      if (iosession != null) {
-        pong = iosession.ping();
-        if (!pong) reachable = iosession.reachable();
-      }
+
       if (e instanceof KarmaTimeoutException) {
-        error.error(String.format("%s call method[%s]@%s timeout/err_pong=%s,reachable=%s",
-            iosession, name, u, pong, reachable)
-        );
-        throw e;
+        boolean reachable = true;
+        if (iosession != null) {
+          reachable = iosession.reachable();
+        }
+        // still possible to get the result, which should be treated as a success
+        Object result = latch.readResult();
+        if (result != null) {
+          ret = result;
+          error.info("Hooray! recover the result: " + result);
+        } else {
+          error.error(String.format("%s method: %s timeout, network reachable: %s",
+                  iosession, name, reachable)
+          );
+          throw e;
+        }
       } else {
         throw new KarmaRuntimeException(e);
       }

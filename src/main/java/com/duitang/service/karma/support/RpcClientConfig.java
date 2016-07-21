@@ -22,7 +22,7 @@ public class RpcClientConfig extends Observable implements Watcher {
   private String group;
   private String connString;
   private boolean usingStaticRpcEndpoint;
-  private long timeout = 500;
+  private long timeout = 1000;
   private String staticRpcEndpoint;
   private ZooKeeper zk;
   private List<String> children = null;

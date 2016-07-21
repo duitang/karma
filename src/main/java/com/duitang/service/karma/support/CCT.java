@@ -51,7 +51,7 @@ public class CCT {
 
   public static void call(String target, boolean isRoot) {
     TraceChainDO tc = chainHolder.get();
-    if (tc == null && isRoot == true) {
+    if (tc == null && isRoot) {
       tc = new TraceChainDO(generateToken());
       chainHolder.set(tc);
     }
