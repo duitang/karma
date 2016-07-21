@@ -1,7 +1,6 @@
 package com.duitang.service.karma.client;
 
 import com.duitang.service.karma.KarmaException;
-import com.duitang.service.karma.base.MetricCenter;
 import com.duitang.service.karma.demo.IDemoService;
 
 import org.apache.log4j.Level;
@@ -19,7 +18,7 @@ public class KarmaClientTest {
   public void test() throws KarmaException, IOException, Exception {
     Logger.getLogger(KarmaClient.class).setLevel(Level.DEBUG);
     List<String> urls = Arrays.asList(new String[]{"localhost:9999"});
-    KarmaClient<IDemoService> cli = KarmaClient.createKarmaClient(IDemoService.class, urls, MetricCenter.genClientIdFromCode(), "dev1");
+    KarmaClient<IDemoService> cli = KarmaClient.createKarmaClient(IDemoService.class, urls, "dev1");
     IDemoService client = cli.getService();
     System.out.println(client.memory_getString("aaaa"));
     System.out.println(client.trace_msg("laurence", 200));

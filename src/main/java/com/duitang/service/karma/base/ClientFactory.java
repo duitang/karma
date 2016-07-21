@@ -7,16 +7,14 @@ import com.duitang.service.karma.client.KarmaClient;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class ClientFactory<T> implements ServiceFactory<T> {
 
   final static protected Logger err = Logger.getLogger("error");
-
   protected String url;
   protected List<String> serviceURL;
-  protected AtomicInteger hashid = new AtomicInteger(0);
   protected long timeout = 500;
   protected String clientid;
   protected int sz = 0;
@@ -44,10 +42,8 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
   public void setUrl(String url) {
     this.url = url;
     String[] urlitems = url.split(";");
-    this.serviceURL = new ArrayList<String>();
-    for (String u : urlitems) {
-      this.serviceURL.add(u);
-    }
+    this.serviceURL = new ArrayList<>();
+    Collections.addAll(this.serviceURL, urlitems);
     this.sz = this.serviceURL.size();
   }
 
@@ -76,9 +72,10 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
     }
     KarmaClient<T> ret;
     try {
-      ret = KarmaClient.createKarmaClient(getServiceType(), serviceURL, clientid, group, getTimeout());
+      ret = KarmaClient.createKarmaClient(getServiceType(), serviceURL, group, getTimeout());
       return ret.getService();
     } catch (KarmaException e) {
+      err.error("failed to create karma client: ", e);
     }
     return null;
   }
@@ -89,8 +86,7 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 
   public static <T1> ClientFactory<T1> createFactory(final Class<T1> clz) {
     final String name = clz.getName();
-    ClientFactory<T1> ret = new ClientFactory<T1>() {
-
+    return new ClientFactory<T1>() {
       @Override
       public String getServiceName() {
         return name;
@@ -101,22 +97,10 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
       public Class getServiceType() {
         return clz;
       }
-
     };
-    //		MetricCenter.initMetric(clz, ret.clientid);
-    return ret;
   }
 
   public void reset() {
-    //	    if (ClusterZKRouter.setReset()) {
-    //	        ClusterZKRouter.reset(group, ClusterZKRouter.fairLoad(serviceURL));
-    //	    }
     KarmaClient.reset(group, serviceURL);
   }
-
-  @SuppressWarnings("rawtypes")
-  static public ClientFactory createServiceFactory(String serviceName) throws Exception {
-    return ClientFactory.createFactory(Class.forName(serviceName));
-  }
-
 }

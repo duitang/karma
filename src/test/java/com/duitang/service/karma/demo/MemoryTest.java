@@ -1,7 +1,6 @@
 package com.duitang.service.karma.demo;
 
 import com.duitang.service.karma.base.ClientFactory;
-import com.duitang.service.karma.base.MetricCenter;
 import com.duitang.service.karma.client.KarmaClient;
 
 import junit.framework.Assert;
@@ -17,7 +16,7 @@ public class MemoryTest {
   public void test0() throws Exception {
     List<String> urls = new ArrayList<String>();
     urls.add("localhost:9999");
-    KarmaClient<IDemoService> client = KarmaClient.createKarmaClient(IDemoService.class, urls, MetricCenter.genClientIdFromCode(), "dev1");
+    KarmaClient<IDemoService> client = KarmaClient.createKarmaClient(IDemoService.class, urls, "dev1");
     IDemoService cli = client.getService();
     long ts = System.currentTimeMillis();
     String msg = cli.trace_msg("this will timeout ", 1000);
