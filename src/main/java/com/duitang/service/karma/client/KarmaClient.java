@@ -190,10 +190,17 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
         if (iosession != null) {
           reachable = iosession.reachable();
         }
-        error.error(String.format("%s method: %s timeout, machine reachable: %s",
-                iosession, name, reachable)
-        );
-        throw e;
+        // still possible to get the result, which should be treated as a success
+        Object result = latch.readResult();
+        if (result != null) {
+          ret = result;
+          error.info("Hooray! recover the result: " + result);
+        } else {
+          error.error(String.format("%s method: %s timeout, network reachable: %s",
+                  iosession, name, reachable)
+          );
+          throw e;
+        }
       } else {
         throw new KarmaRuntimeException(e);
       }
