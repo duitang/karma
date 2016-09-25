@@ -10,8 +10,6 @@ import com.duitang.service.karma.base.LifeCycle;
 import com.duitang.service.karma.base.MetricCenter;
 import com.duitang.service.karma.meta.BinaryPacketData;
 import com.duitang.service.karma.meta.RPCConfig;
-import com.duitang.service.karma.support.CCT;
-import com.duitang.service.karma.support.TraceChainDO;
 
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
@@ -151,13 +149,7 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
     }
     long startNanos = System.nanoTime();
     RPCConfig rpcConfig = new RPCConfig();
-    TraceChainDO tc = CCT.get();
-    if (tc != null) {
-      tc = tc.clone();
-      rpcConfig.addConf(CCT.RPC_CONF_KEY, tc);
-    }
     rpcConfig.addConf("timebase", System.currentTimeMillis());
-
     BinaryPacketData data = new BinaryPacketData();
     data.domain = domainName;
     data.method = name;
@@ -178,7 +170,6 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
       iosession.setAttribute(latch);
       iosession.write(data);
       ret = latch.getResult();
-      CCT.mergeTraceChain(latch.getRemoteTc());
     } catch (KarmaOverloadException e) {
       throw e;
     } catch (Throwable e) {

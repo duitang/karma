@@ -4,8 +4,6 @@ import com.duitang.service.karma.client.KarmaRemoteLatch;
 import com.duitang.service.karma.meta.BinaryPacketData;
 import com.duitang.service.karma.meta.BinaryPacketHelper;
 import com.duitang.service.karma.meta.BinaryPacketRaw;
-import com.duitang.service.karma.support.CCT;
-import com.duitang.service.karma.support.TraceChainDO;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,9 +27,7 @@ public class JavaClientHandler extends SimpleChannelInboundHandler<BinaryPacketR
       error.warn("wanted uuid => " + latch.getUuid() + ", got uuid => " + data.uuid);
       return;
     }
-    if (data.conf != null && data.conf.getConf(CCT.RPC_CONF_KEY) != null) {
-      CCT.mergeTraceChain((TraceChainDO) data.conf.getConf(CCT.RPC_CONF_KEY));
-    }
+
     if (data.ex != null) {
       latch.offerError(data.ex);
     } else {

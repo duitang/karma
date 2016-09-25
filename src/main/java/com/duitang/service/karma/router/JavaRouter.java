@@ -8,12 +8,9 @@ import com.duitang.service.karma.handler.RPCHandler;
 import com.duitang.service.karma.meta.BinaryPacketData;
 import com.duitang.service.karma.meta.BinaryPacketHelper;
 import com.duitang.service.karma.meta.BinaryPacketRaw;
-import com.duitang.service.karma.support.CCT;
-import com.duitang.service.karma.support.TraceChainDO;
 
 import org.apache.log4j.Logger;
 
-import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Future;
@@ -95,20 +92,7 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
             }
             break;
           }
-          if (data.conf != null && data.conf.isValid()) {
-            TraceChainDO chain = (TraceChainDO) data.conf.getConf(CCT.RPC_CONF_KEY);
-            if (chain != null) {
-              chain.reset();
-              long currtime = System.currentTimeMillis();
-              long timebase = currtime;
-              Serializable obj = data.conf.getConf("timebase");
-              if (obj != null && obj instanceof Long) {
-                timebase = (long) obj;
-                chain.setTimedelta(timebase - currtime);
-              }
-              CCT.setForcibly(chain);
-            }
-          }
+
           //如果延迟超过maxQueuingLatency说明系统过载，直接报错不再执行业务逻辑
           if (latency >= maxQueuingLatency) throw new KarmaOverloadException(data.method);
 
@@ -116,12 +100,7 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
           ctx.method = data.method;
           ctx.params = data.param;
           handler.lookUp(ctx);
-          try {
-            CCT.call(data.domain + "::" + data.method, false);
-            handler.invoke(ctx);
-          } finally {
-            CCT.ret();
-          }
+          handler.invoke(ctx);
           data.ret = ctx.ret;
         } catch (Throwable e) {
           if (data == null) {

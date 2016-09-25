@@ -2,7 +2,6 @@ package com.duitang.service.karma.client;
 
 import com.duitang.service.karma.KarmaRuntimeException;
 import com.duitang.service.karma.KarmaTimeoutException;
-import com.duitang.service.karma.support.TraceChainDO;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -19,7 +18,6 @@ public class KarmaRemoteLatch {
   protected long timeout;
   protected boolean canThrowIt;
   protected long uuid;
-  protected TraceChainDO remoteTc;
 
   public KarmaRemoteLatch() {
     this(500);
@@ -33,14 +31,6 @@ public class KarmaRemoteLatch {
     this.timeout = timeout;
     this.latch = new CountDownLatch(1);
     this.canThrowIt = canThrowIt;
-  }
-
-  public TraceChainDO getRemoteTc() {
-    return remoteTc;
-  }
-
-  public void setRemoteTc(TraceChainDO remoteTc) {
-    this.remoteTc = remoteTc;
   }
 
   public long getUuid() {
