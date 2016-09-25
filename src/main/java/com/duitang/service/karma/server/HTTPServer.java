@@ -1,6 +1,7 @@
 package com.duitang.service.karma.server;
 
 import com.duitang.service.karma.KarmaException;
+import com.duitang.service.karma.router.JsonRouter;
 import com.duitang.service.karma.router.Router;
 import com.duitang.service.karma.transport.JsonServlet;
 
@@ -30,7 +31,7 @@ public class HTTPServer implements RPCService {
 
   @Override
   public void setRouter(Router router) {
-    this.servlet.setRouter(router);
+    this.servlet.setRouter((JsonRouter) router);
   }
 
   @Override

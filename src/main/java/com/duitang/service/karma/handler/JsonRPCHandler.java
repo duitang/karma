@@ -27,7 +27,7 @@ public class JsonRPCHandler implements RPCHandler {
   protected Map<String, IgnCaseInvoker> lowercase;
 
   public JsonRPCHandler(ReflectRPCHandler handler) {
-    this.lowercase = new HashMap<String, IgnCaseInvoker>();
+    this.lowercase = new HashMap<>();
     for (Entry<String, ReflectInvoker> en : handler.services.entrySet()) {
       this.lowercase.put(en.getKey().toLowerCase(), new IgnCaseInvoker(en.getValue()));
     }
@@ -106,7 +106,7 @@ public class JsonRPCHandler implements RPCHandler {
     }
     if (tClz.isPrimitive()) {
       if (boolean.class.isAssignableFrom(tClz)) {
-        return Boolean.valueOf(v.toString()).booleanValue();
+        return Boolean.valueOf(v.toString());
       } else {
         return getNumberValue(0, tClz);
       }
@@ -127,7 +127,7 @@ public class JsonRPCHandler implements RPCHandler {
       } else if (v instanceof Map) {
         // FIXME check map key/value generic parameter type
         Set<Entry> mm = ((Map) v).entrySet();
-        HashMap ret1 = new HashMap();
+        HashMap<Object, Object> ret1 = new HashMap<>();
         Object retK, retV;
         for (Entry en : mm) {
           retK = mapper.convertValue(en.getKey(), pType[0]);

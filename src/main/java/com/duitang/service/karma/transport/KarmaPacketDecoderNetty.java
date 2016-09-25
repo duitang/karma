@@ -4,20 +4,15 @@ import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.meta.BinaryPacketData;
 import com.duitang.service.karma.meta.BinaryPacketRaw;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 
-public class KarmaPacketDecoderNetty {
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
 
-  final static Logger error = LoggerFactory.getLogger(KarmaPacketDecoderNetty.class);
+public class KarmaPacketDecoderNetty {
 
   final static int EMPTY_READ_WATERMARK = 50;
 
@@ -31,7 +26,7 @@ public class KarmaPacketDecoderNetty {
   protected int suspect_loop = 0;
   protected int empty_read = 0;
 
-  public void decode(ChannelHandlerContext ctx, ByteBuf in, List out) throws Exception {
+  public void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
     ByteBuffer buf;
     boolean flag = true; // force return
     while (in.readableBytes() > 1 && flag) {

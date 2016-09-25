@@ -17,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +67,7 @@ public class ClusterZKRouter implements IOBalance {
         try {
           helpLock.acquire();
         } catch (InterruptedException e) {
+          //ignored
         }
         synchronized (tinyLock) {
           if (zkUtil == null) {
@@ -79,6 +79,7 @@ public class ClusterZKRouter implements IOBalance {
               // zkUtil.checkExists().forPath(KARMA_CLUSTER_LOAD_NAME);
               ep.ensure(zkUtil.getZookeeperClient());
             } catch (Exception e1) {
+              err.error("ensure error: ", e1);
             }
             cfgCache = new PathChildrenCache(zkUtil, KARMA_CLUSTER_LOAD_NAME, true);
             cfgCache.getListenable().addListener(new LBReceiver());
@@ -93,6 +94,7 @@ public class ClusterZKRouter implements IOBalance {
         try {
           Thread.sleep(30000);
         } catch (InterruptedException e) {
+          //ignored
         }
       }
     }
@@ -113,6 +115,7 @@ public class ClusterZKRouter implements IOBalance {
           cfgCache.close();
           cfgCache = null;
         } catch (IOException e) {
+          err.error("disable error: ", e);
         }
       }
       if (zkUtil != null) {
@@ -144,18 +147,17 @@ public class ClusterZKRouter implements IOBalance {
   }
 
   static Map<String, Integer> toLoadList(byte[] src) {
+    Map<String, Integer> ret = new HashMap<>();
     try {
       HashMap lst = mapper.readValue(src, HashMap.class);
       Set<Entry> es = lst.entrySet();
-      Map<String, Integer> ret = new HashMap<String, Integer>();
       for (Entry en : es) {
         ret.put(en.getKey().toString(), Integer.valueOf(en.getValue().toString()));
       }
-      return ret;
     } catch (Exception e) {
       err.error("deserialization load list json: ", e);
-      return Collections.EMPTY_MAP;
     }
+    return ret;
   }
 
   static class LBReceiver implements PathChildrenCacheListener {
@@ -187,7 +189,7 @@ public class ClusterZKRouter implements IOBalance {
   }
 
   static public Map<String, Integer> fairLoad(List<String> url) {
-    Map<String, Integer> ret = new HashMap<String, Integer>();
+    Map<String, Integer> ret = new HashMap<>();
     for (String s : url) {
       ret.put(s, 1);
     }
@@ -253,9 +255,9 @@ public class ClusterZKRouter implements IOBalance {
     }
     Float delta0 = 1f / load.keySet().size() * lower;
     Float delta1 = 1f / load.keySet().size() * upper;
-    NavigableMap<Float, String> ret = new TreeMap<Float, String>();
+    NavigableMap<Float, String> ret = new TreeMap<>();
     Float v = 0f;
-    Float vv = 0f;
+    Float vv;
     Float vvv = 0f;
     for (Entry<String, Integer> en : load.entrySet()) {
       ret.put(v, en.getKey());

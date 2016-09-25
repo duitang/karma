@@ -19,10 +19,7 @@ public class MemoryServer {
 
   static protected void reloadLog4J() {
     LogManager.resetConfiguration();
-    // DOMConfigurator.configure("conf/test/log4j.xml");
   }
-
-  static protected IDemoService one;
 
   public static void main(String[] args) {
     Map<String, String> param = argsToMap(args);
@@ -104,7 +101,6 @@ public class MemoryServer {
     msg = genMsg(msg);
 
     int t = Integer.valueOf(thread);
-    int s = Integer.valueOf(console_print);
     int l = Integer.valueOf(loop);
 
     boolean usemap = false;
@@ -134,9 +130,7 @@ public class MemoryServer {
     fac.setUrl(host + ":" + port);
 
     CountDownLatch latch = new CountDownLatch(t);
-    if (one) {
-      // LoadRunner.one = fac.create();
-    }
+
     Thread[] ths = new Thread[t];
     for (int i = 0; i < ths.length; i++) {
       ths[i] = new Thread(new LoadRunner(latch, l, msg, fac, usemap, trace));
@@ -159,7 +153,7 @@ public class MemoryServer {
   }
 
   static Map<String, String> argsToMap(String[] args) {
-    Map<String, String> ret = new HashMap<String, String>();
+    Map<String, String> ret = new HashMap<>();
     for (String item : args) {
       if (item.startsWith("--")) {
         String line = item.substring("--".length());
@@ -213,11 +207,11 @@ class LoadRunner implements Runnable {
     long ts = System.currentTimeMillis();
     try {
       IDemoService cli = null;
-      String val = null;
-      Map vvv = new HashMap();
+      String val;
+      Map<String, String> vvv = new HashMap<>();
       vvv.put("aaa", msg);
-      Map v = new HashMap(vvv);
-      Map vv = null;
+      Map<String, String> v = new HashMap<>(vvv);
+      Map vv;
       try {
         cli = fac.create();
         if (usemap) {
@@ -237,9 +231,6 @@ class LoadRunner implements Runnable {
       cli = fac.create();
       for (i = 0; i < loop; i++) {
         try {
-          // cli = one;
-          // if (one == null) {
-          // }
           if (trace > 0) {
             val = cli.trace_msg(name, trace);
             if (val.length() != name.length()) {
@@ -254,15 +245,12 @@ class LoadRunner implements Runnable {
             val = cli.memory_getString(name);
             // if (val.length() != msg.length()) {
             if (val == null) {
-              throw new Exception("value error: " + val);
+              throw new Exception("value error: ");
             }
           }
         } catch (Exception e) {
           e.printStackTrace();
           err++;
-        } finally {
-          // if (one == null) {
-          // }
         }
       }
       fac.release(cli);

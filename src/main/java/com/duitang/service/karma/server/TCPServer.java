@@ -4,6 +4,8 @@ import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.router.Router;
 import com.duitang.service.karma.transport.JavaServerHandler;
 
+import java.net.InetSocketAddress;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
@@ -11,8 +13,6 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
-
-import java.net.InetSocketAddress;
 
 public class TCPServer implements RPCService, GenericFutureListener {
 
@@ -61,10 +61,12 @@ public class TCPServer implements RPCService, GenericFutureListener {
     try {
       boss.shutdownGracefully().await(1000);//sync();
     } catch (InterruptedException e) {
+      // ignored
     }
     try {
       worker.shutdownGracefully().await(1000);//.sync();
     } catch (InterruptedException e) {
+      // ignored
     }
   }
 

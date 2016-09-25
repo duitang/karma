@@ -74,12 +74,14 @@ public class KarmaIOPool implements LifeCycle {
         try {
           session.close();
         } catch (IOException e) {
+          //ignored
         }
         return;
       }
       try {
         pool.invalidateObject(session);
       } catch (Exception e) {
+        //ignored
       }
     }
   }
@@ -95,7 +97,8 @@ public class KarmaIOPool implements LifeCycle {
     cfg.setMinEvictableIdleTimeMillis(120000);
     // cfg.setTestOnReturn(true); // may release it if idle
     cfg.setTestOnBorrow(true); // may release it if idle
-    return new GenericObjectPool(new ReflectServiceFactory(url), cfg);
+    ReflectServiceFactory factory = new ReflectServiceFactory(url);
+    return new GenericObjectPool(factory, cfg);
   }
 
   class ReflectServiceFactory implements PooledObjectFactory<KarmaIoSession> {
@@ -111,7 +114,7 @@ public class KarmaIOPool implements LifeCycle {
       try {
         KarmaIoSession session = new KarmaIoSession(url, timeout);
         // ret.init();
-        return new DefaultPooledObject<KarmaIoSession>(session);
+        return new DefaultPooledObject<>(session);
       } catch (Exception e) {
         err.error("create for service: " + url, e);
         throw e;
