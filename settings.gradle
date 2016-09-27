@@ -1,0 +1,8 @@
+
+rootProject.name = 'karma'
+
+include ':karma-core'
+include ':karma-http'
+include ':karma-cluster'
+include ':karma-trace'
+include ':karma-demo'

@@ -1,0 +1,80 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'maven'
+apply plugin: 'findbugs'
+apply plugin: 'jacoco'
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.8'
+}
+
+buildscript {
+  repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+}
+
+subprojects {
+    apply plugin: 'groovy'
+    apply plugin: 'java'
+    apply plugin: 'eclipse'
+    apply plugin: 'idea'
+    apply plugin: 'maven'
+    apply plugin: 'findbugs'
+    apply plugin: 'jacoco'
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        compile project(':karma-core')
+        testCompile project(':karma-core').sourceSets.test.output
+    }
+
+test {
+	testLogging {
+		showStandardStreams = true
+	}
+}
+
+version =  '1.0'
+group = 'com.duitang.service'
+
+task pom << {
+    pom {
+        project {
+            inceptionYear '2016'
+        }
+    }.writeTo("pom.xml")
+}
+
+eclipse {
+    classpath {
+       downloadSources=true
+       defaultOutputDir = file('build/classes/main/')
+    }
+}
+
+test {
+    exclude 'java/**'
+    exclude 'com/**'
+}
+
+task runTests(type: Test) {
+    exclude 'com/**'
+    exclude 'java/**'
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled false
+        csv.enabled false
+        html.destination "${buildDir}/jacocoHtml"
+    }
+}
+
+}
