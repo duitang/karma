@@ -4,6 +4,9 @@ apply plugin: 'maven'
 apply plugin: 'findbugs'
 apply plugin: 'jacoco'
 
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
 task wrapper(type: Wrapper) {
     gradleVersion = '2.8'
 }
@@ -17,13 +20,33 @@ buildscript {
 }
 
 subprojects {
-//    apply plugin: 'groovy'
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
+
     apply plugin: 'java'
     apply plugin: 'eclipse'
     apply plugin: 'idea'
     apply plugin: 'maven'
 //    apply plugin: 'findbugs'
 //    apply plugin: 'jacoco'
+
+
+configurations {
+
+    providedCompile
+    all*.exclude group: 'javax.jms', module: 'jms'
+    all*.exclude group: 'com.sun.jdmk', module: 'jmxtools'
+    all*.exclude group: 'com.sun.jmx', module: 'jmxri'
+    published
+
+}
+
+configurations.all {
+    exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+}
+
+version =  '1.0'
+group = 'com.duitang.service'
 
     repositories {
         mavenCentral()

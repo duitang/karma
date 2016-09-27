@@ -1,21 +1,4 @@
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
-
-configurations { 
-
-    providedCompile
-    all*.exclude group: 'javax.jms', module: 'jms'
-    all*.exclude group: 'com.sun.jdmk', module: 'jmxtools'
-    all*.exclude group: 'com.sun.jmx', module: 'jmxri'
-    published
-    
-}
-
-configurations.all { 
-    exclude group: 'org.slf4j', module: 'slf4j-log4j12' 
-}
-
 task fatjar(type: Jar) {
     manifest {
         attributes 'Implementation-Title': 'demo service',
@@ -31,17 +14,9 @@ dependencies {
 
     compile project(":karma-core")   
     compile project(":karma-trace")
+    compile project(":karma-http")
     compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.7'
        
     testCompile("junit:junit:4.11")
 }
-
-test {
-	testLogging {
-		showStandardStreams = true
-	}
-}
-
-version =  '1.0'
-group = 'com.duitang.service'
 

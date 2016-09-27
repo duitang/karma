@@ -8,6 +8,7 @@ import com.duitang.service.karma.client.KarmaClient;
 import com.duitang.service.karma.handler.RPCHandler;
 import com.duitang.service.karma.handler.ReflectRPCHandler;
 import com.duitang.service.karma.router.JavaRouter;
+import com.duitang.service.karma.server.CoreEnhanced;
 import com.duitang.service.karma.server.ServiceConfig;
 import com.duitang.service.karma.server.TCPServer;
 import com.duitang.service.karma.support.NameUtil;
@@ -66,11 +67,17 @@ public class ServerBootstrap {
 
 		tcp = new TCPServer();
 		tcp.setRouter(javaRouter);
-		tcp.setPort(port + 1);
+		tcp.setPort(port);
 		tcp.start();
-		System.err.println("TCP SERVER LISTENING AT PORT: " + (port + 1));
+		System.err.println("TCP SERVER LISTENING AT PORT: " + (port));
 
 		System.err.println(info);
+
+		// now enhance extra RPC service
+		CoreEnhanced extraService = KarmaFinders.findProtocolSupport();
+		if (extraService != null) {
+			extraService.enhanced(this);
+		}
 	}
 
 	/**
@@ -172,6 +179,14 @@ public class ServerBootstrap {
 			e.printStackTrace(System.err);
 		}
 
+	}
+
+	public JavaRouter getCoreRouter() {
+		return javaRouter;
+	}
+
+	public ReflectRPCHandler getCoreHandler() {
+		return rpc0;
 	}
 
 }
