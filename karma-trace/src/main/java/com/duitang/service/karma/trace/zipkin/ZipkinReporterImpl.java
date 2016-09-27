@@ -31,7 +31,12 @@ public class ZipkinReporterImpl implements TracerReporter {
 			while (true) {
 				try {
 					List<byte[]> item = items.take();
-					sender.sendSpans(item, noop);
+					if (sender != null) {
+						sender.sendSpans(item, noop);
+					}
+					if (useConsole) {
+						console_1.sendSpans(item, noop);
+					}
 				} catch (InterruptedException e) {
 					//
 				}
@@ -43,7 +48,8 @@ public class ZipkinReporterImpl implements TracerReporter {
 	protected Sender sender;
 	protected Codec codec;
 
-	protected ConsoleSender console_1 = new ConsoleSender();
+	public static boolean useConsole = false;
+	protected static ConsoleSender console_1 = new ConsoleSender();
 
 	/**
 	 * notice: currently no safe insurance
@@ -91,7 +97,7 @@ public class ZipkinReporterImpl implements TracerReporter {
 		@Override
 		public void sendSpans(List<byte[]> encodedSpans, Callback callback) {
 			for (byte[] b : encodedSpans) {
-				Span item = Codec.JSON.readSpan(b);
+				Span item = Codec.THRIFT.readSpan(b);
 				System.out.println(item);
 			}
 		}
@@ -103,7 +109,8 @@ public class ZipkinReporterImpl implements TracerReporter {
 		reporterDaemon.start();
 		codec = Codec.THRIFT;
 		if (url == null || url.toLowerCase().equals("console")) {
-			sender = console_1;
+			useConsole = true;
+			sender = null;
 		}
 		if (url.startsWith("kafka://")) {
 			sender = KafkaSender.create(url.substring("kafka://".length()));

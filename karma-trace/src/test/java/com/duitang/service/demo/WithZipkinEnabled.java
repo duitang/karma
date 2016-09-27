@@ -22,7 +22,8 @@ public class WithZipkinEnabled {
 	public static void main(String[] args) throws Exception {
 //		Finder.enableZipkin(null, "console");
 //		Finder.enableZipkin(null, "thrift://localhost:9410");
-		Finder.enableZipkin(null, "http://192.168.1.180:9411");
+		Finder.enableConsole(true);
+		Finder.enableZipkin(null, "http://192.168.10.216:9411");
 
 		System.out.println("starting server .....");
 		new Thread() {
