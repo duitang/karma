@@ -7,7 +7,6 @@ package com.duitang.service.karma.demo.impl;
 
 import java.util.Arrays;
 
-import com.duitang.service.karma.boot.KarmaClientConfig;
 import com.duitang.service.karma.client.KarmaClient;
 import com.duitang.service.karma.demo.ServiceA;
 import com.duitang.service.karma.trace.Finder;

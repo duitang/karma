@@ -17,8 +17,6 @@ public class ServerBootstrap {
 	static {
 		// just make sure 2 config is loaded
 		Class clz = null;
-		clz = KarmaClientConfig.class;
-		System.err.println("loading ...... " + clz.getName());
 		clz = KarmaServerConfig.class;
 		System.err.println("loading ...... " + clz.getName());
 		clz = null;

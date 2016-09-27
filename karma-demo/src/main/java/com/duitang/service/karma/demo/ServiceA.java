@@ -3,9 +3,9 @@ package com.duitang.service.karma.demo;
 /**
  * <pre>
  * 
- * 					|  ->  E
- * A  ->  B  ->  C  | 
- * 					|  ->  F  -> G
+ * 					           |  ->  E
+ * A  ->  B  ->  C  ->  D  ->  |      |
+ * 					           |  ->  F  -> G
  * 
  * </pre>
  * 

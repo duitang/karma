@@ -25,6 +25,7 @@ import com.duitang.service.karma.handler.ReflectRPCHandler;
 import com.duitang.service.karma.router.JavaRouter;
 import com.duitang.service.karma.server.ServiceConfig;
 import com.duitang.service.karma.server.TCPServer;
+import com.duitang.service.karma.trace.Finder;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -56,6 +57,8 @@ public class RunService {
 	 * @throws InstantiationException
 	 */
 	public static void main(String[] args) throws Throwable {
+		Finder.enableConsole(true);
+		Finder.enableZipkin(null, "http://192.168.10.216:9411");
 		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 		root.setLevel(Level.INFO);
 		String name = args[0];

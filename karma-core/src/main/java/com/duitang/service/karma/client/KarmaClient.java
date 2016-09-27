@@ -30,6 +30,13 @@ import net.sf.cglib.proxy.MethodProxy;
 @SuppressWarnings("rawtypes")
 public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 
+	static {
+		// just make sure 2 config is loaded
+		Class clz = null;
+		clz = KarmaClientConfig.class;
+		System.err.println("loading ...... " + clz.getName());
+	}
+
 	final static protected Map<String, Method> mgrCallbacks;
 	final static protected KarmaIOPool pool = new KarmaIOPool();
 	final static protected Logger error = LoggerFactory.getLogger(KarmaClient.class);
