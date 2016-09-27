@@ -67,6 +67,9 @@ ext {
 dependencies {
 
     compile project(":karma-core")   
+    compile project(":karma-trace")
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.7'
+       
     testCompile("junit:junit:4.11")
 }
 

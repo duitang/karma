@@ -1,22 +1,20 @@
 package com.duitang.service.karma.client;
 
-import com.duitang.service.karma.KarmaException;
-import com.duitang.service.karma.demo.IDemoService;
-
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.junit.Test;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
+import org.junit.Test;
+
+import com.duitang.service.karma.KarmaException;
+import com.duitang.service.karma.demo.IDemoService;
+
 public class KarmaClientTest {
 
   @Test
   public void test() throws KarmaException, IOException, Exception {
-    Logger.getLogger(KarmaClient.class).setLevel(Level.DEBUG);
+//    Logger.getLogger(KarmaClient.class).setLevel(Level.DEBUG);
     List<String> urls = Arrays.asList(new String[]{"localhost:9999"});
     KarmaClient<IDemoService> cli = KarmaClient.createKarmaClient(IDemoService.class, urls, "dev1");
     IDemoService client = cli.getService();
