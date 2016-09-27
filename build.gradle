@@ -18,21 +18,16 @@ buildscript {
 }
 
 subprojects {
-    apply plugin: 'groovy'
+//    apply plugin: 'groovy'
     apply plugin: 'java'
     apply plugin: 'eclipse'
     apply plugin: 'idea'
     apply plugin: 'maven'
-    apply plugin: 'findbugs'
-    apply plugin: 'jacoco'
+//    apply plugin: 'findbugs'
+//    apply plugin: 'jacoco'
 
     repositories {
         mavenCentral()
-    }
-
-    dependencies {
-        compile project(':karma-core')
-        testCompile project(':karma-core').sourceSets.test.output
     }
 
 test {

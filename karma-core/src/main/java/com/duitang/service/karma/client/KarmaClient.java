@@ -82,7 +82,7 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 		if (!iface.isInterface()) {
 			throw new KarmaException("not a valid interface: " + iface.getName());
 		}
-		IOBalance iob = KarmaClientConfig.balanceRouter.get(group);
+		IOBalance iob = KarmaClientConfig.getOrCreateIOBalance(group, urls);
 		KarmaClient client = new KarmaClient(iface, iob);
 		client.group = group;
 		client.timeout = timeout;

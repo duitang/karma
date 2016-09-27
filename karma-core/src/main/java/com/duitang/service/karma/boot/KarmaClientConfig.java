@@ -22,7 +22,7 @@ import com.duitang.service.karma.trace.TraceVisitor;
 public class KarmaClientConfig {
 
 	static Logger logger = LoggerFactory.getLogger(KarmaClientConfig.class);
-	
+
 	protected static IOBalanceFactory simpleFactory = new RRRFactory();
 	protected static TraceVisitor simpleVisitor = new NoopTraceVisitor();
 
@@ -63,14 +63,14 @@ public class KarmaClientConfig {
 		tracer = Collections.unmodifiableMap(m);
 	}
 
-	public static IOBalance getIOBalance(String group) {
+	public static IOBalance getOrCreateIOBalance(String group, List<String> urls) {
 		IOBalance ret = balanceRouter.get(group);
 		if (ret == null) {
 			IOBalanceFactory fac = routerFac.get(group);
 			if (fac == null) {
 				fac = simpleFactory;
 			}
-			ret = fac.createIOBalance(Collections.EMPTY_LIST);
+			ret = fac.createIOBalance(urls);
 		}
 		return ret;
 	}

@@ -14,6 +14,13 @@ import java.util.concurrent.CountDownLatch;
 import org.slf4j.LoggerFactory;
 
 import com.duitang.service.karma.client.KarmaClient;
+import com.duitang.service.karma.demo.ServiceA;
+import com.duitang.service.karma.demo.ServiceB;
+import com.duitang.service.karma.demo.ServiceC;
+import com.duitang.service.karma.demo.ServiceD;
+import com.duitang.service.karma.demo.ServiceE;
+import com.duitang.service.karma.demo.ServiceF;
+import com.duitang.service.karma.demo.ServiceG;
 import com.duitang.service.karma.handler.ReflectRPCHandler;
 import com.duitang.service.karma.router.JavaRouter;
 import com.duitang.service.karma.server.ServiceConfig;
@@ -33,13 +40,13 @@ public class RunService {
 	static {
 		ports = new HashMap<>();
 		int base = 11220;
-		ports.put(A.class, base++);
-		ports.put(B.class, base++);
-		ports.put(C.class, base++);
-		ports.put(D.class, base++);
-		ports.put(E.class, base++);
-		ports.put(F.class, base++);
-		ports.put(G.class, base++);
+		ports.put(ServiceA.class, base++);
+		ports.put(ServiceB.class, base++);
+		ports.put(ServiceC.class, base++);
+		ports.put(ServiceD.class, base++);
+		ports.put(ServiceE.class, base++);
+		ports.put(ServiceF.class, base++);
+		ports.put(ServiceG.class, base++);
 	}
 
 	/**
@@ -53,9 +60,11 @@ public class RunService {
 		root.setLevel(Level.INFO);
 		String name = args[0];
 		Class svc = Class.forName("com.duitang.service.karma.demo.impl." + name);
+		Class iface = svc.getInterfaces()[0];
 		Object obj = svc.newInstance();
 		ServiceConfig conf = new ServiceConfig();
-		conf.addService(svc, obj);
+		conf.addService(iface, obj);
+		initService(iface, obj);
 		TCPServer tcps = new TCPServer();
 
 		ReflectRPCHandler rpc = new ReflectRPCHandler();
@@ -66,7 +75,7 @@ public class RunService {
 		rt.setHandler(rpc);
 
 		tcps.setRouter(rt);
-		tcps.setPort(ports.get(svc));
+		tcps.setPort(ports.get(iface));
 		tcps.start();
 
 		System.out.println("started for: " + args[0]);
@@ -74,9 +83,12 @@ public class RunService {
 	}
 
 	static void initService(Class svc, Object obj) throws Throwable {
-		Field[] fields = svc.getClass().getDeclaredFields();
+		Field[] fields = obj.getClass().getDeclaredFields();
 		for (Field f : fields) {
 			Class t = f.getType();
+			if (!t.getSimpleName().startsWith("Service")) {
+				return;
+			}
 			int port = ports.get(t);
 			KarmaClient cli = KarmaClient.createKarmaClient(t, Arrays.asList("localhost:" + port), "dev1");
 			f.setAccessible(true);

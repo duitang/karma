@@ -1,11 +1,12 @@
 package com.duitang.service.karma.support;
 
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.duitang.service.karma.boot.ServerBootstrap;
 import com.google.common.collect.Lists;
-
-import org.apache.log4j.Logger;
-
-import java.util.List;
 
 
 /**
@@ -23,7 +24,7 @@ public class ServicesExporter {
   private int maxQueuingLatency = 500;
   private ServerBootstrap boot;
 
-  private final Logger log = Logger.getLogger("server");
+  private final Logger log = LoggerFactory.getLogger("server");
 
   public void init() {
     try {

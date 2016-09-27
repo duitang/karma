@@ -1,27 +1,27 @@
 package com.duitang.service.karma.client;
 
-import com.duitang.service.karma.KarmaException;
-import com.duitang.service.karma.KarmaNoMoreConnException;
-import com.duitang.service.karma.base.LifeCycle;
-
-import com.google.common.collect.Sets;
-
-import org.apache.commons.pool2.PooledObject;
-import org.apache.commons.pool2.PooledObjectFactory;
-import org.apache.commons.pool2.impl.DefaultPooledObject;
-import org.apache.commons.pool2.impl.GenericObjectPool;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.apache.log4j.Logger;
-
 import java.io.IOException;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.pool2.PooledObject;
+import org.apache.commons.pool2.PooledObjectFactory;
+import org.apache.commons.pool2.impl.DefaultPooledObject;
+import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.duitang.service.karma.KarmaException;
+import com.duitang.service.karma.KarmaNoMoreConnException;
+import com.duitang.service.karma.base.LifeCycle;
+import com.google.common.collect.Sets;
+
 public class KarmaIOPool implements LifeCycle {
 
-  final static protected Logger err = Logger.getLogger("error");
+  final static protected Logger err = LoggerFactory.getLogger("error");
   protected ConcurrentHashMap<String, GenericObjectPool<KarmaIoSession>> ioPool = new ConcurrentHashMap<String, GenericObjectPool<KarmaIoSession>>();
   protected long timeout;
   protected volatile boolean closed = false;

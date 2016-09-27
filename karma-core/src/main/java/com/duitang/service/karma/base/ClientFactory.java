@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.KarmaRuntimeException;
@@ -14,7 +15,7 @@ import com.duitang.service.karma.support.NameUtil;
 
 public abstract class ClientFactory<T> implements ServiceFactory<T> {
 
-	final static protected Logger err = Logger.getLogger("error");
+	final static protected Logger err = LoggerFactory.getLogger("error");
 	protected String url;
 	protected List<String> serviceURL;
 	protected long timeout = 1000;
