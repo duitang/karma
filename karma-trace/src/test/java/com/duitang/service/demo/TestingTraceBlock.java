@@ -6,14 +6,14 @@
 package com.duitang.service.demo;
 
 import com.duitang.service.karma.trace.Finder;
-import com.duitang.service.karma.trace.TracePoint;
+import com.duitang.service.karma.trace.TraceStone;
 
 /**
  * @author laurence
  * @since 2016年9月28日
  *
  */
-public class TestingAutoTrace {
+public class TestingTraceBlock {
 
 	public static void main(String[] args) throws Throwable {
 		// Finder.enableZipkin(null, "http://192.168.10.216:9411");
@@ -32,14 +32,17 @@ public class TestingAutoTrace {
 	}
 
 	static void test2() throws Throwable {
-		TracePoint tp = new TracePoint();
+		TraceStone tp = new TraceStone();
+		tp.setAttribute("commment1", "bilibilbili");
+		tp.setAttribute("happy", "world");
 		Thread.sleep(100);
 		test3();
 		tp.close();
 	}
 
 	static void test3() throws Throwable {
-		try (TracePoint tp = new TracePoint()) {
+		try (TraceStone tp = new TraceStone()) {
+			tp.setAttribute("foo", "bar");
 			Thread.sleep(500);
 		}
 	}

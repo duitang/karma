@@ -14,6 +14,16 @@ import java.util.List;
  */
 public abstract class BaseReporter implements TracerReporter {
 
+	abstract protected void report0(List<TraceCell> tc);
+
+	@Override
+	public void report(List<TraceCell> tc) {
+		report0(tc);
+		if (ReporterSender.useConsole) {
+			ReporterSender.console.report(tc);
+		}
+	}
+
 	@Override
 	public void commit(List<TraceCell> tc) {
 		ReporterSender.items.add(tc);

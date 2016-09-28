@@ -7,13 +7,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.duitang.service.karma.trace.zipkin.ZipkinReporterImpl;
-
 public class BaseVisitor implements TraceVisitor {
 
 	protected volatile Map<String, TracerReporter> reporters = new HashMap<String, TracerReporter>();
-	protected ZipkinReporterImpl console = ZipkinReporterImpl.console;
-
+	protected ConsoleReporter console = new ConsoleReporter();
+	
+	
 	@Override
 	public void visit(TraceCell tc) {
 		visits(Arrays.asList(tc));

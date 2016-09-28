@@ -15,7 +15,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import com.duitang.service.karma.support.IPUtils;
 import com.duitang.service.karma.trace.zipkin.ZipkinReporterImpl;
 
-import zipkin.Codec;
 import zipkin.reporter.Sender;
 import zipkin.reporter.kafka08.KafkaSender;
 import zipkin.reporter.libthrift.LibthriftSender;
@@ -51,21 +50,19 @@ public class ReporterSender {
 	};
 
 	static public boolean useConsole = false;
+	static public ConsoleReporter console = new ConsoleReporter();
 	static protected Set<TracerReporter> senders;
-	static protected Codec codec;
 
 	static {
 		senders = new HashSet<TracerReporter>();
-		senders.add(ZipkinReporterImpl.console);
 		reporterDaemon.setDaemon(true);
 		reporterDaemon.start();
-		codec = Codec.THRIFT;
 	}
 
-	static public ZipkinReporterImpl addZipkinSender(String url) throws URISyntaxException {
+	static public TracerReporter addZipkinSender(String url) throws URISyntaxException {
 		Sender sender = null;
 		if (url == null || url.toLowerCase().equals("console")) {
-			return ZipkinReporterImpl.console;
+			return console;
 		}
 		if (url.startsWith("kafka://")) {
 			sender = KafkaSender.create(url.substring("kafka://".length()));
