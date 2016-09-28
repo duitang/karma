@@ -26,8 +26,8 @@ abstract public class ReporterFactory {
 		throw new RuntimeException("not found: " + type + ", with url: " + url);
 	}
 
-	public static TracerLogger createLogger(String url, int port) {
-		return new UDPGELFLogger(url, port);
+	public static TracerLogger createLogger(String host, int port) {
+		return new UDPGELFLogger(host, port);
 	}
 
 }

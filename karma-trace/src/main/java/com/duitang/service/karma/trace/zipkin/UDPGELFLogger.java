@@ -30,16 +30,16 @@ public class UDPGELFLogger implements TracerLogger {
 	 * @param url graylog host. such as 192.168.0.1 ,udp:192.168.0.1 or tcp:192.168.0.1
 	 * @param port graylog port.
 	 */
-	public UDPGELFLogger(String url, int port) {
-		initGELFLogger(url, port);
+	public UDPGELFLogger(String host, int port) {
+		initGELFLogger(host, port);
 	}
 
-	private void initGELFLogger(String url, int port) {
+	private void initGELFLogger(String host, int port) {
 		LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
 
 		GelfAppender gelfAppender = new GelfAppender();
 		gelfAppender.setName("gelfudp");
-		gelfAppender.setGraylogHost(url);
+		gelfAppender.setGraylogHost(host);
 		gelfAppender.setGraylogPort(port);
 		gelfAppender.setOriginHost("myKarmaZipkin");
 		gelfAppender.setLevelIncluded(true);
