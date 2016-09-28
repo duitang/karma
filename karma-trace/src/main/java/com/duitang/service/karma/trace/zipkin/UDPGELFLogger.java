@@ -28,7 +28,7 @@ public class UDPGELFLogger implements TracerLogger {
 	/**
 	 *
 	 *
-	 * @param url graylog host. such as 192.168.0.1. support udp default.
+	 * @param host graylog host. such as 192.168.0.1. support udp default.
 	 * @param port graylog port.
 	 */
 	public UDPGELFLogger(String host, int port) {
@@ -81,7 +81,7 @@ public class UDPGELFLogger implements TracerLogger {
 	@Override
 	public void log(TraceCell tc) {
 		//todo how to use TraceCell
-		logger.info("log to graylog");
+		logger.info(tc.toString());
 
 	}
 

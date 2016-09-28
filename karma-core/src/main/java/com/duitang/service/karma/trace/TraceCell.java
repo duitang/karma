@@ -5,6 +5,7 @@
  */
 package com.duitang.service.karma.trace;
 
+import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -128,4 +129,27 @@ public class TraceCell {
 		return this.parentId != null;
 	}
 
+	@Override
+	public String toString() {
+		return "TraceCell{" +
+				"timestamp=" + timestamp +
+				", sampled=" + sampled +
+				", traceId=" + traceId +
+				", spanId=" + spanId +
+				", parentId=" + parentId +
+				", clazzName='" + clazzName + '\'' +
+				", name='" + name + '\'' +
+				", type=" + Arrays.toString(type) +
+				", ts1=" + ts1 +
+				", ts2=" + ts2 +
+				", host='" + host + '\'' +
+				", port=" + port +
+				", pid=" + pid +
+				", isLocal=" + isLocal +
+				", group='" + group + '\'' +
+				", duration=" + duration +
+				", successful=" + successful +
+				", err='" + err + '\'' +
+				'}';
+	}
 }
