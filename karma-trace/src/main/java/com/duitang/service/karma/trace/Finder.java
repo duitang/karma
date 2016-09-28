@@ -16,11 +16,11 @@ import com.duitang.service.karma.boot.KarmaFinder;
  */
 public class Finder implements KarmaFinder {
 
-	static public BaseVisitor visitor;
+	static public BaseVisitor visitor = null;
 	static public TracerLogger logger = null;
 
 	static {
-		visitor = new BaseVisitor();
+		initVisitor();
 		logger = new TracerLogger() {
 
 			@Override
@@ -31,12 +31,15 @@ public class Finder implements KarmaFinder {
 		};
 	}
 
-	@Override
-	synchronized public <T> T find(Class<T> clazz) {
+	synchronized static void initVisitor() {
 		if (visitor == null) {
 			visitor = new BaseVisitor();
 		}
-		System.out.println(visitor);
+	}
+
+	@Override
+	public <T> T find(Class<T> clazz) {
+		initVisitor();
 		return (T) visitor;
 	}
 

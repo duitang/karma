@@ -36,6 +36,9 @@ public class ReporterSender {
 			while (true) {
 				try {
 					List<TraceCell> item = items.take();
+					if (senders.isEmpty()) {
+						console.report(item);
+					}
 					for (TracerReporter s : senders) {
 						if (s != null) {
 							s.report(item);
@@ -51,12 +54,14 @@ public class ReporterSender {
 
 	static public boolean useConsole = false;
 	static public ConsoleReporter console = new ConsoleReporter();
-	static protected Set<TracerReporter> senders;
+	static protected Set<TracerReporter> senders = null;
 
 	static {
+
 		senders = new HashSet<TracerReporter>();
 		reporterDaemon.setDaemon(true);
 		reporterDaemon.start();
+
 	}
 
 	static public TracerReporter addZipkinSender(String url) throws URISyntaxException {
