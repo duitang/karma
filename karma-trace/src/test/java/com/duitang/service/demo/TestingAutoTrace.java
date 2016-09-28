@@ -41,7 +41,6 @@ public class TestingAutoTrace {
 		try (TracePoint tp = new TracePoint()) {
 			Thread.sleep(500);
 		}
-		// tp.close();
 	}
 
 }
