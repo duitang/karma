@@ -24,6 +24,7 @@ local.properties
 .Rhistory
 .classpath
 .project
+pom.xml
 
 # External tool builders
 .externalToolBuilders/
