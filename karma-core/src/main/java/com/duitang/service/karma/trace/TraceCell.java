@@ -32,7 +32,7 @@ public class TraceCell {
 	public Long parentId; // maybe null
 	public String clazzName; // which class name
 	public String name; // name
-	public String[] type; // {c,s} => cs, cr, ss, sr
+	public String[] type; // {c,s} => cs, cr, ss, sr, lr, ls
 	// ...
 
 	public long ts1; // begin time
@@ -41,6 +41,7 @@ public class TraceCell {
 	public String host; // hostname
 	public Integer port; // service port
 	public Long pid; // PID
+	public boolean isLocal = false; // is local call
 
 	public String group; // group name
 	public long duration; // lasting
@@ -66,10 +67,8 @@ public class TraceCell {
 			String group) {
 		this.timestamp = TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis());
 		this.type = client ? types[0] : types[1];
-		this.parentId = spanId;
 		this.sampled = sampled == null ? false : sampled;
-		this.traceId = traceId == null ? rnd.nextLong() : traceId;
-		this.spanId = this.parentId == null ? this.traceId : rnd.nextLong();
+		setIds(traceId, spanId);
 		this.clazzName = clazName;
 		this.name = name;
 		this.group = group;
@@ -87,15 +86,19 @@ public class TraceCell {
 		fillInfo(cfg, clazName, name, group);
 	}
 
+	public void setIds(Long traceId, Long spanId) {
+		this.parentId = spanId;
+		this.traceId = traceId == null ? rnd.nextLong() : traceId;
+		this.spanId = this.parentId == null ? this.traceId : rnd.nextLong();
+	}
+
 	public void fillInfo(RPCConfig cfg, String clazName, String name, String group) {
 		if (cfg != null) {
 			Long traceId = (Long) cfg.getConf(TRACE_ID);
 			Long spanId = (Long) cfg.getConf(SPAN_ID);
 			Boolean sampled = (Boolean) cfg.getConf(SAMPLED);
 			this.sampled = sampled == null ? false : sampled;
-			this.traceId = traceId == null ? rnd.nextLong() : traceId;
-			this.parentId = spanId;
-			this.spanId = this.parentId == null ? this.traceId : rnd.nextLong();
+			setIds(traceId, spanId);
 		}
 		this.clazzName = clazName;
 		this.name = name;

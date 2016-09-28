@@ -34,9 +34,14 @@ public class ZipkinUtils {
 				r.parentId(tc.parentId);
 			}
 
-			Annotation an1 = Annotation.create(tc.ts1, tc.type[0], addr);
-			Annotation an2 = Annotation.create(tc.ts2, tc.type[1], addr);
-			r.addAnnotation(an1).addAnnotation(an2);
+			if (tc.isLocal){
+				Annotation an1 = Annotation.create(tc.ts1, "lc", addr);
+				r.addAnnotation(an1);
+			}else{				
+				Annotation an1 = Annotation.create(tc.ts1, tc.type[0], addr);
+				Annotation an2 = Annotation.create(tc.ts2, tc.type[1], addr);
+				r.addAnnotation(an1).addAnnotation(an2);
+			}
 			if (tc.err != null) {
 				BinaryAnnotation err = BinaryAnnotation.create("error", tc.err, addr);
 				r.addBinaryAnnotation(err);

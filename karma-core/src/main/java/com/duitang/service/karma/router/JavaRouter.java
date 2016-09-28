@@ -114,6 +114,9 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
 						ctx.name = data.domain;
 						ctx.method = data.method;
 						ctx.params = data.param;
+						ctx.tc = new TraceCell(false, host, port); // no leak
+						ctx.tc.setIds(tc.traceId, tc.spanId);
+						ctx.tc.isLocal = true;
 						handler.lookUp(ctx);
 						handler.invoke(ctx);
 						data.ret = ctx.ret;

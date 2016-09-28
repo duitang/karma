@@ -1,28 +1,8 @@
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
-
-configurations { 
-
-    providedCompile
-    all*.exclude group: 'javax.jms', module: 'jms'
-    all*.exclude group: 'com.sun.jdmk', module: 'jmxtools'
-    all*.exclude group: 'com.sun.jmx', module: 'jmxri'
-    published
-    
-}
-
-configurations.all { 
-    exclude group: 'org.slf4j', module: 'slf4j-log4j12' 
-}
-
 dependencies {
 
     compile project(":karma-core")
     compile group: 'io.zipkin.reporter', name: 'zipkin-reporter', version: '0.5.2'
-//    compile group: 'io.zipkin.reporter', name: 'zipkin-reporter-kafka08', version: '0.2.0'
-//    compile group: 'io.zipkin.reporter', name: 'zipkin-reporter-urlconnection', version: '0.2.0'
-    
     compile group: 'io.zipkin.reporter', name: 'zipkin-sender-kafka08', version: '0.5.2'
     compile group: 'io.zipkin.reporter', name: 'zipkin-sender-libthrift', version: '0.5.2'
     compile group: 'io.zipkin.reporter', name: 'zipkin-sender-urlconnection', version: '0.5.2'
@@ -31,13 +11,4 @@ dependencies {
     testCompile("junit:junit:4.11")
     testCompile("log4j:log4j:1.2.17")
 }
-
-test {
-	testLogging {
-		showStandardStreams = true
-	}
-}
-
-version =  '1.0'
-group = 'com.duitang.service'
 

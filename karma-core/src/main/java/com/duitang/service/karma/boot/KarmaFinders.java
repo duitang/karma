@@ -8,7 +8,7 @@ package com.duitang.service.karma.boot;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.duitang.service.karma.server.RPCService;
+import com.duitang.service.karma.server.CoreEnhanced;
 import com.duitang.service.karma.trace.TraceVisitor;
 
 /**
@@ -46,8 +46,8 @@ public class KarmaFinders {
 		return findKarmaImpl(TraceVisitor.class, KARMA_TRACE);
 	}
 
-	public static RPCService[] findProtocolSupport() {
-		return findKarmaImpl(RPCService[].class, KARMA_HTTP);
+	public static CoreEnhanced findProtocolSupport() {
+		return findKarmaImpl(CoreEnhanced.class, KARMA_HTTP);
 	}
 
 }
