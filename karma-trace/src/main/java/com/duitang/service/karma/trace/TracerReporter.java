@@ -17,10 +17,10 @@ public interface TracerReporter {
 	public void report(List<TraceCell> tc);
 
 	/**
-	 * report item in async mode
+	 * report item in async mode, later report will be invoke
 	 * 
 	 * @param tc
 	 */
-	public void asyncReport(List<TraceCell> tc);
+	public void commit(List<TraceCell> tc);
 
 }

@@ -8,7 +8,6 @@ package com.duitang.service.karma.trace;
 import java.net.URISyntaxException;
 
 import com.duitang.service.karma.boot.KarmaFinder;
-import com.duitang.service.karma.trace.zipkin.ZipkinReporterImpl;
 
 /**
  * @author laurence
@@ -43,7 +42,7 @@ public class Finder implements KarmaFinder {
 	}
 
 	public static void enableConsole(boolean enabled) {
-		ZipkinReporterImpl.useConsole = enabled;
+		ReporterSender.useConsole = enabled;
 	}
 
 	public static void enableLogger(String url) {

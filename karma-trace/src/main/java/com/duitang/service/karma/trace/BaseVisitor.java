@@ -7,9 +7,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.duitang.service.karma.trace.zipkin.ZipkinReporterImpl;
+
 public class BaseVisitor implements TraceVisitor {
 
 	protected volatile Map<String, TracerReporter> reporters = new HashMap<String, TracerReporter>();
+	protected ZipkinReporterImpl console = ZipkinReporterImpl.console;
 
 	@Override
 	public void visit(TraceCell tc) {
@@ -25,13 +28,17 @@ public class BaseVisitor implements TraceVisitor {
 			}
 			grp.get(tc.group).add(tc);
 		}
-		for (Entry<String, List<TraceCell>> en : grp.entrySet()) {
-			if (reporters.containsKey(en.getKey())) {
-				reporters.get(en.getKey()).asyncReport(en.getValue());
-			} else {
-				TracerReporter rpt = reporters.get(null); // special
-				if (rpt != null) {
-					rpt.asyncReport(en.getValue());
+		if (reporters.isEmpty()) { // default console using zipkin json
+			console.commit(tcs);
+		} else {
+			for (Entry<String, List<TraceCell>> en : grp.entrySet()) {
+				if (reporters.containsKey(en.getKey())) {
+					reporters.get(en.getKey()).commit(en.getValue());
+				} else {
+					TracerReporter rpt = reporters.get(null); // special
+					if (rpt != null) {
+						rpt.commit(en.getValue());
+					}
 				}
 			}
 		}

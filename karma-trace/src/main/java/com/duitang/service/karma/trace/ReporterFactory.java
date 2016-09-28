@@ -8,7 +8,6 @@ package com.duitang.service.karma.trace;
 import java.net.URISyntaxException;
 
 import com.duitang.service.karma.trace.zipkin.UDPGELFLogger;
-import com.duitang.service.karma.trace.zipkin.ZipkinReporterImpl;
 
 /**
  * @author laurence
@@ -21,7 +20,7 @@ abstract public class ReporterFactory {
 
 	public static TracerReporter createReporter(String type, String url) throws URISyntaxException {
 		if (ZIPKIN.equals(type)) {
-			return ZipkinReporterImpl.addSender(url);
+			return ReporterSender.addZipkinSender(url);
 		}
 		throw new RuntimeException("not found: " + type + ", with url: " + url);
 	}
