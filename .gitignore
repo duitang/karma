@@ -5,7 +5,7 @@
 *.war
 *.ear
 target/
-
+build/
 
 ## Eclipse ##
 
