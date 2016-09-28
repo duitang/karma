@@ -2,8 +2,10 @@ package com.duitang.service.karma.trace.zipkin;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -23,19 +25,18 @@ import zipkin.reporter.okhttp3.OkHttpSender;
 
 public class ZipkinReporterImpl implements TracerReporter {
 
-	protected BlockingQueue<List<byte[]>> items = new LinkedBlockingQueue<>();
-	protected Thread reporterDaemon = new Thread() {
+	static protected BlockingQueue<List<byte[]>> items = new LinkedBlockingQueue<>();
+	static protected Thread reporterDaemon = new Thread() {
 
 		@Override
 		public void run() {
 			while (true) {
 				try {
 					List<byte[]> item = items.take();
-					if (sender != null) {
-						sender.sendSpans(item, noop);
-					}
-					if (useConsole) {
-						console_1.sendSpans(item, noop);
+					for (Sender s : senders) {
+						if (s != null) {
+							s.sendSpans(item, noop);
+						}
 					}
 				} catch (InterruptedException e) {
 					//
@@ -45,16 +46,23 @@ public class ZipkinReporterImpl implements TracerReporter {
 
 	};
 
-	protected Sender sender;
-	protected Codec codec;
+	static public boolean useConsole = false;
+	static protected Set<Sender> senders;
+	static protected Codec codec;
 
-	public static boolean useConsole = false;
 	protected static ConsoleSender console_1 = new ConsoleSender();
+	static {
+		senders = new HashSet<Sender>();
+		senders.add(console_1);
+		reporterDaemon.setDaemon(true);
+		reporterDaemon.start();
+		codec = Codec.THRIFT;
+	}
 
 	/**
 	 * notice: currently no safe insurance
 	 */
-	protected Callback noop = new Callback() {
+	static protected Callback noop = new Callback() {
 
 		@Override
 		public void onError(Throwable t) {
@@ -96,20 +104,21 @@ public class ZipkinReporterImpl implements TracerReporter {
 
 		@Override
 		public void sendSpans(List<byte[]> encodedSpans, Callback callback) {
-			for (byte[] b : encodedSpans) {
-				Span item = Codec.THRIFT.readSpan(b);
-				System.out.println(item);
+			if (useConsole) {
+				for (byte[] b : encodedSpans) {
+					Span item = Codec.THRIFT.readSpan(b);
+					System.out.println(item);
+				}
 			}
 		}
 
 	}
 
-	public ZipkinReporterImpl(String url) throws URISyntaxException {
-		reporterDaemon.setDaemon(true);
-		reporterDaemon.start();
-		codec = Codec.THRIFT;
+	static ZipkinReporterImpl dummy = new ZipkinReporterImpl();
+
+	static public ZipkinReporterImpl addSender(String url) throws URISyntaxException {
+		Sender sender = null;
 		if (url == null || url.toLowerCase().equals("console")) {
-			useConsole = true;
 			sender = null;
 		}
 		if (url.startsWith("kafka://")) {
@@ -132,6 +141,10 @@ public class ZipkinReporterImpl implements TracerReporter {
 			String only = "( kafka:// | thrift:// | console )";
 			throw new RuntimeException("not valid: " + url + " ; please using prefix => " + only);
 		}
+		if (sender != null) {
+			senders.add(sender);
+		}
+		return dummy;
 	}
 
 	@Override

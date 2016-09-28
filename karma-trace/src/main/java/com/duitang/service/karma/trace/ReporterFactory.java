@@ -21,7 +21,7 @@ abstract public class ReporterFactory {
 
 	public static TracerReporter createReporter(String type, String url) throws URISyntaxException {
 		if (ZIPKIN.equals(type)) {
-			return new ZipkinReporterImpl(url);
+			return ZipkinReporterImpl.addSender(url);
 		}
 		throw new RuntimeException("not found: " + type + ", with url: " + url);
 	}
