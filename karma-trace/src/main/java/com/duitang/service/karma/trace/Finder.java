@@ -46,8 +46,8 @@ public class Finder implements KarmaFinder {
 		ZipkinReporterImpl.useConsole = enabled;
 	}
 
-	public static void enableLogger(String url) {
-		logger = ReporterFactory.createLogger(url);
+	public static void enableLogger(String url, int port) {
+		logger = ReporterFactory.createLogger(url, port);
 	}
 
 }
