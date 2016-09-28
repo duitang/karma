@@ -18,6 +18,7 @@ public class UDPGELFLoggerTest {
 	@Test
 	public void testLog() throws Exception {
 		TracerLogger logger = ReporterFactory.createLogger("61.152.115.82", 30011);
+
 		logger.log(new TraceCell(false, "", 1));
 	}
 

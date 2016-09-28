@@ -90,6 +90,8 @@ public class UDPGELFLogger implements TracerLogger {
 			e.printStackTrace();
 		}
 
+		logger.info(tc.toString());
+
 	}
 
 }
