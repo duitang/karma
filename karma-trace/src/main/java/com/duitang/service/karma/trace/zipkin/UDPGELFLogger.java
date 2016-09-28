@@ -8,6 +8,8 @@ package com.duitang.service.karma.trace.zipkin;
 import com.duitang.service.karma.trace.TraceCell;
 import com.duitang.service.karma.trace.TracerLogger;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pukkaone.gelf.logback.GelfAppender;
 
 import org.slf4j.LoggerFactory;
@@ -22,7 +24,7 @@ import ch.qos.logback.classic.LoggerContext;
  *
  */
 public class UDPGELFLogger implements TracerLogger {
-
+	static ObjectMapper mapper = new ObjectMapper();
 	private Logger logger = (Logger) LoggerFactory.getLogger(UDPGELFLogger.class);
 
 	/**
@@ -80,8 +82,13 @@ public class UDPGELFLogger implements TracerLogger {
 
 	@Override
 	public void log(TraceCell tc) {
+		//mapper.writeValueAsString(tc) ?
 		//todo how to use TraceCell
-		logger.info(tc.toString());
+		try {
+			logger.info(mapper.writeValueAsString(tc));
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		}
 
 	}
 
