@@ -38,9 +38,10 @@ public class TestingAutoTrace {
 	}
 
 	static void test3() throws Throwable {
-		TracePoint tp = new TracePoint();
-		Thread.sleep(500);
-		tp.close();
+		try (TracePoint tp = new TracePoint()) {
+			Thread.sleep(500);
+		}
+		// tp.close();
 	}
 
 }

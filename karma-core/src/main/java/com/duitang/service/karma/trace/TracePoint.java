@@ -1,6 +1,5 @@
 package com.duitang.service.karma.trace;
 
-import java.io.Closeable;
 import java.io.IOException;
 
 import com.duitang.service.karma.boot.KarmaServerConfig;
@@ -15,7 +14,7 @@ import com.duitang.service.karma.boot.KarmaServerConfig;
  * @since 2016年9月28日
  *
  */
-public class TracePoint implements Closeable {
+public class TracePoint implements AutoCloseable {
 
 	protected TraceCell tc;
 
