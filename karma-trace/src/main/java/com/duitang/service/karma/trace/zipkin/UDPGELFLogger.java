@@ -27,11 +27,30 @@ public class UDPGELFLogger implements TracerLogger {
 
 	/**
 	 *
-	 * @param url graylog host. such as 192.168.0.1 ,udp:192.168.0.1 or tcp:192.168.0.1
+	 *
+	 * @param url graylog host. such as 192.168.0.1. support udp default.
 	 * @param port graylog port.
 	 */
 	public UDPGELFLogger(String host, int port) {
 		initGELFLogger(host, port);
+	}
+
+	/**
+	 * configurable appender
+	 * @param gelfAppender
+	 */
+	public UDPGELFLogger(GelfAppender gelfAppender) {
+		intiGELFLoggerWithConfig(gelfAppender);
+	}
+
+	private void intiGELFLoggerWithConfig(GelfAppender gelfAppender) {
+		LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+		gelfAppender.setContext(lc);
+		gelfAppender.start();
+
+		logger.addAppender(gelfAppender);
+		logger.setLevel(Level.INFO);
+		logger.setAdditive(true);
 	}
 
 	private void initGELFLogger(String host, int port) {
@@ -55,7 +74,7 @@ public class UDPGELFLogger implements TracerLogger {
 		gelfAppender.start();
 
 		logger.addAppender(gelfAppender);
-		logger.setLevel(Level.DEBUG);
+		logger.setLevel(Level.INFO);
 		logger.setAdditive(false);
 	}
 
