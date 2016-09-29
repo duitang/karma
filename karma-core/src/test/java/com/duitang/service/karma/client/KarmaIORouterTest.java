@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 
-import com.duitang.service.karma.client.impl.RoundRobinRouter;
+import com.duitang.service.karma.client.impl.NaiveBalancer;
 
 public class KarmaIORouterTest {
 
@@ -17,7 +17,7 @@ public class KarmaIORouterTest {
 		List<String> lst = Arrays.asList(new String[] { "a", "b", "c", "d", "e", "f" });
 
 		StringBuilder sb = new StringBuilder();
-		RoundRobinRouter router = new RoundRobinRouter(lst);
+		NaiveBalancer router = new NaiveBalancer(lst);
 		String s = null;
 		for (int i = 0; i < lst.size() * 1000 + 1; i++) {
 			s = router.next(null);

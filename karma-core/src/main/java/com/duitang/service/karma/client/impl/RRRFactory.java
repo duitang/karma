@@ -14,7 +14,7 @@ public class RRRFactory implements IOBalanceFactory {
 
 	@Override
 	public IOBalance createIOBalance(List<String> urls) {
-		return new RoundRobinRouter(urls);
+		return new NaiveBalancer(urls);
 	}
 
 }

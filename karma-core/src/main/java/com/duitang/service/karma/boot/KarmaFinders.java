@@ -8,6 +8,7 @@ package com.duitang.service.karma.boot;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.duitang.service.karma.client.IOBalanceFactory;
 import com.duitang.service.karma.server.CoreEnhanced;
 import com.duitang.service.karma.trace.TraceVisitor;
 
@@ -48,6 +49,10 @@ public class KarmaFinders {
 
 	public static CoreEnhanced findProtocolSupport() {
 		return findKarmaImpl(CoreEnhanced.class, KARMA_HTTP);
+	}
+
+	public static IOBalanceFactory findClusterIOBalance() {
+		return findKarmaImpl(IOBalanceFactory.class, KARMA_CLUSTER);
 	}
 
 }

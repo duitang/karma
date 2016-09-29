@@ -1,10 +1,14 @@
 package com.duitang.service.lb;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.duitang.service.karma.client.IOBalance;
+import com.duitang.service.karma.trace.TraceCell;
 
 /**
  * DYNAMIC LOAD BALANCE
@@ -38,7 +42,7 @@ import org.slf4j.LoggerFactory;
  * @author laurence
  *
  */
-public class DynamicLB {
+public class DynamicLB implements IOBalance{
 
 	static Logger log = LoggerFactory.getLogger(DynamicLB.class);
 
@@ -170,6 +174,24 @@ public class DynamicLB {
 			}
 		}
 		return choice.length - 1;
+	}
+
+	@Override
+	public String next(String token) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void traceFeed(String token, TraceCell tc) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setNodes(List<String> nodes) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

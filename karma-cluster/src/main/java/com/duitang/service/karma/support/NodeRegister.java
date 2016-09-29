@@ -1,12 +1,13 @@
 package com.duitang.service.karma.support;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
@@ -14,13 +15,13 @@ import org.apache.zookeeper.ZooDefs.Perms;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Stat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 /**
  * 服务自动发现机制
@@ -35,7 +36,7 @@ import java.util.Map;
 public class NodeRegister {
   private static final String zkGroupBase = "/rpc_groups";
 
-  private final static Logger log = Logger.getLogger(NodeRegister.class);
+  private final static Logger log = LoggerFactory.getLogger(NodeRegister.class);
   private final static ObjectMapper mapper = new ObjectMapper();
 
   private final Map<String, String> extraData = Maps.newHashMap();

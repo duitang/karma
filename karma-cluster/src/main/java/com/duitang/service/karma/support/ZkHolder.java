@@ -1,15 +1,16 @@
 package com.duitang.service.karma.support;
 
-import com.google.common.collect.Sets;
-
-import org.apache.log4j.Logger;
-import org.apache.zookeeper.ZooKeeper;
-import org.apache.zookeeper.ZooKeeper.States;
-
 import java.net.InetAddress;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.ZooKeeper.States;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Sets;
 
 /**
  * @author kevx
@@ -17,7 +18,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class ZkHolder {
 
-  private final static Logger log = Logger.getLogger(ZkHolder.class);
+  private final static Logger log = LoggerFactory.getLogger(ZkHolder.class);
 
   private static CountDownLatch latch = null;
 

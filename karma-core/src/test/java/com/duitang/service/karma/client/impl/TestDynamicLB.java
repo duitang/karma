@@ -1,12 +1,10 @@
-package com.duitang.service.lb;
+package com.duitang.service.karma.client.impl;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.slf4j.LoggerFactory;
@@ -16,7 +14,6 @@ import com.duitang.service.karma.trace.NoopTraceVisitor;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-
 
 public class TestDynamicLB {
 
@@ -54,16 +51,15 @@ public class TestDynamicLB {
 	}
 
 	static void test(int loop, int count, int[] profiles) {
-		DynamicLB lb = new DynamicLB(profiles.length, 100, 5000);
+		AutoReBalance lb = new AutoReBalance(profiles.length);
 		for (int i = 0; i < loop; i++) { // turn
-			List<Integer> samples = new ArrayList<Integer>();
+			Integer[] samples = new Integer[10000];
 			simulation(profiles, count, lb);
-			for (int j = 0; j < 10000; j++) {
+			for (int j = 0; j < samples.length; j++) {
 				int pos = lb.sample();
-				samples.add(pos);
+				samples[j] = pos;
 			}
-			Map<Integer, Long> ret = samples.stream()
-					.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+			Map<Integer, AtomicInteger> ret = printSample(samples);
 			String[] title = new String[profiles.length];
 			for (int j = 0; j < profiles.length; j++) {
 				title[j] = caption[profiles[j]];
@@ -72,7 +68,19 @@ public class TestDynamicLB {
 		}
 	}
 
-	static void simulation(int[] profile, int count, DynamicLB lb) {
+	static protected Map<Integer, AtomicInteger> printSample(Integer[] arr) {
+		HashMap<Integer, AtomicInteger> ret = new HashMap<>();
+		for (Integer a : arr) {
+			if (!ret.containsKey(a)) {
+				ret.put(a, new AtomicInteger(0));
+			}
+			ret.get(a).incrementAndGet();
+		}
+		System.out.println(ret);
+		return ret;
+	}
+
+	static void simulation(int[] profile, int count, AutoReBalance lb) {
 		Random r = new Random();
 		NormalDistribution[] profiles = new NormalDistribution[profile.length];
 
@@ -84,19 +92,19 @@ public class TestDynamicLB {
 			loads[i] = new NormalDistribution(loadSample[profile[i]][0], loadSample[profile[i]][1]);
 		}
 
-		int[] load = new int[lb.nodeCount()];
-		for (int j = 0; j < lb.nodeCount(); j++) {
+		double[] load = new double[lb.size()];
+		for (int j = 0; j < lb.size(); j++) {
 			for (int i = 0; i < count; i++) { // how many records
 				double resp = profiles[j].sample();
 				boolean ok = r.nextDouble() < opOKSample[profile[j]] ? true : false;
-				lb.updateOneResp(j, resp, ok); // after every RPC_CALL finished
+				lb.updateResponse(j, resp, ok); // after every RPC_CALL finished
 			}
 			load[j] = Double.valueOf(loads[profile[j]].sample()).intValue();
 		}
 
 		// at checkpoint
-		lb.updateActive(load);
-		lb.flashChoice(); // checkpoint for choice probability update
+		lb.updateLoad(load);
+		lb.checkpoint(); // checkpoint for choice probability update
 
 	}
 

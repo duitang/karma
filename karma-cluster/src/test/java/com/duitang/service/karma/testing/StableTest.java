@@ -1,13 +1,13 @@
 package com.duitang.service.karma.testing;
 
+import org.junit.Test;
+
+import com.duitang.service.demo.IDemoService;
+import com.duitang.service.demo.MemoryCacheService;
 import com.duitang.service.karma.KarmaRuntimeException;
 import com.duitang.service.karma.base.ClientFactory;
 import com.duitang.service.karma.base.LifeCycle;
-import com.duitang.service.karma.base.ServerBootstrap;
-import com.duitang.service.karma.demo.IDemoService;
-import com.duitang.service.karma.demo.MemoryCacheService;
-
-import org.junit.Test;
+import com.duitang.service.karma.boot.ServerBootstrap;
 
 public class StableTest {
 

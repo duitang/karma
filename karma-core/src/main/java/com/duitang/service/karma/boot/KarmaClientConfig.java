@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.duitang.service.karma.client.IOBalance;
 import com.duitang.service.karma.client.IOBalanceFactory;
-import com.duitang.service.karma.client.impl.RRRFactory;
+import com.duitang.service.karma.client.impl.TraceableBalancerFactory;
 import com.duitang.service.karma.trace.NoopTraceVisitor;
 import com.duitang.service.karma.trace.TraceVisitor;
 
@@ -23,7 +23,7 @@ public class KarmaClientConfig {
 
 	static Logger logger = LoggerFactory.getLogger(KarmaClientConfig.class);
 
-	protected static IOBalanceFactory simpleFactory = new RRRFactory();
+	protected static IOBalanceFactory simpleFactory = new TraceableBalancerFactory(60 * 1000, 0, false);
 	protected static TraceVisitor simpleVisitor = new NoopTraceVisitor();
 
 	public static volatile Map<String, IOBalance> balanceRouter = new HashMap<String, IOBalance>();
@@ -38,6 +38,12 @@ public class KarmaClientConfig {
 			simpleVisitor = tr;
 		}
 		logger.info("using TraceVisitor: " + simpleVisitor.getClass().getName());
+
+		IOBalanceFactory fac = KarmaFinders.findClusterIOBalance();
+		if (fac != null) {
+			simpleFactory = fac;
+		}
+		logger.info("using default IOBalanceFactory: " + simpleFactory.getClass().getName());
 	}
 
 	synchronized public static void updateFactory(String group, IOBalanceFactory fac) {

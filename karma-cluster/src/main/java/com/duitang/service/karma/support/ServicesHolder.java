@@ -1,16 +1,5 @@
 package com.duitang.service.karma.support;
 
-import com.duitang.service.karma.base.ClientFactory;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.log4j.Logger;
-import org.apache.zookeeper.data.Stat;
-
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -19,6 +8,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.zookeeper.data.Stat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.duitang.service.karma.base.ClientFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 
 /**
  * @author kevx
@@ -34,7 +34,7 @@ public class ServicesHolder implements Observer {
   private ClientFactory<Object> cf = null;
   private static final String zkGroupBase = "/rpc_groups";
 
-  private static final Logger log = Logger.getLogger("main");
+  private static final Logger log = LoggerFactory.getLogger("main");
   private static final ObjectMapper mapper = new ObjectMapper();
 
   @SuppressWarnings("unchecked")
