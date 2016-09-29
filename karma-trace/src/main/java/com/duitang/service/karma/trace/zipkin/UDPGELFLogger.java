@@ -5,6 +5,7 @@
  */
 package com.duitang.service.karma.trace.zipkin;
 
+import com.duitang.service.karma.trace.FormatTraceCellVisitor;
 import com.duitang.service.karma.trace.TraceCell;
 import com.duitang.service.karma.trace.TracerLogger;
 
@@ -81,16 +82,16 @@ public class UDPGELFLogger implements TracerLogger {
 	}
 
 	@Override
-	public void log(TraceCell tc) {
-		//mapper.writeValueAsString(tc) ?
-		//todo how to use TraceCell
-		try {
-			logger.info(mapper.writeValueAsString(tc));
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
+	public void log(FormatTraceCellVisitor visitor, TraceCell tc) {
+		if (visitor == null) {  //如果不传visitor,即采用默认的方式,直接整个对象转成json.
+			try {
+				logger.info(mapper.writeValueAsString(tc));
+			} catch (JsonProcessingException e) {
+				e.printStackTrace();
+			}
+		} else {
+			logger.info(visitor.visit(tc));
 		}
-
-		logger.info(tc.toString());
 
 	}
 
