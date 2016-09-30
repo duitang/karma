@@ -9,6 +9,9 @@ import java.net.URISyntaxException;
 
 import com.duitang.service.karma.boot.KarmaFinder;
 
+import com.github.pukkaone.gelf.logback.GelfAppender;
+import com.github.pukkaone.gelf.protocol.GelfAMQPSender;
+
 /**
  * @author laurence
  * @since 2016年9月26日
@@ -56,8 +59,12 @@ public class Finder implements KarmaFinder {
 		ReporterSender.useConsole = enabled;
 	}
 
-	public static void enableLogger(String url) {
-		logger = ReporterFactory.createLogger(url);
+	public static void enableLogger(String host, int port) {
+		logger = ReporterFactory.createLogger(host, port);
+	}
+
+	public static void enableConfigurableLogger(GelfAppender gelfAppender) {
+		logger = ReporterFactory.createConfigurableLogger(gelfAppender);
 	}
 
 }
