@@ -110,6 +110,26 @@ public class AutoReBalance implements BalancePolicy {
 		cdd = cdd1;
 	}
 
+	@Override
+	public double[] getWeights() {
+		return cdd.choice;
+	}
+
+	@Override
+	public String[] getStats() {
+		Candidates cdd1 = cdd;
+		String[] ret = new String[cdd1.count];
+		for (int i = 0; i < ret.length; i++) {
+			StringBuilder sb = new StringBuilder();
+			sb.append("Current[" + minWin + "]: resp=").append(cdd1.resp[i].getMean()).append("s ; failure=")
+					.append(cdd1.fail[i].getMean()).append(" ; load=").append(cdd1.load[i]);
+			sb.append(". History[" + moreWin + "]: resp=").append(cdd1.resp[i].getMean()).append("s ; failure=")
+					.append(cdd1.fail[i].getMean()).append(" ; load=").append(cdd1.load[i]);
+			ret[i] = sb.toString();
+		}
+		return ret;
+	}
+
 }
 
 class Candidates {

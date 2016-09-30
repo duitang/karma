@@ -9,7 +9,7 @@ import org.junit.Test;
 import org.slf4j.MDC;
 
 import com.duitang.service.karma.trace.ReporterFactory;
-import com.duitang.service.karma.trace.TraceStone;
+import com.duitang.service.karma.trace.TraceBlock;
 import com.duitang.service.karma.trace.TracerLogger;
 
 /**
@@ -20,7 +20,7 @@ public class UDPGELFLoggerTest {
 	@Test
 	public void testLog() throws Exception {
 		TracerLogger logger = ReporterFactory.createGELFUDPLogger("61.152.115.82", 30011);
-		TraceStone ts = new TraceStone();
+		TraceBlock ts = new TraceBlock();
 		ts.tc.host = "cwj_home3";
 		RuntimeMXBean runtimeBean = ManagementFactory.getRuntimeMXBean();
 
