@@ -7,6 +7,6 @@ package com.duitang.service.karma.trace;
  */
 public interface TracerLogger {
 
-	void log(TraceCell tc);
+	void log(FormatTraceCellVisitor visitor, TraceCell tc);
 
 }
