@@ -125,7 +125,7 @@ class NodesAndPolicy {
 		double[] ret = new double[load.size()];
 		for (int i = 0; i < nodes.size(); i++) {
 			ret[i] = load.get(nodes.get(i)).get();
-			ret[i] = ret[i] > 0 ? ret[i] : 0.000000001;
+			ret[i] = ret[i] > 0 ? ret[i] : Candidates.VERY_TRIVIA;
 		}
 		return ret;
 	}

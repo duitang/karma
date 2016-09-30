@@ -134,7 +134,7 @@ public class AutoReBalance implements BalancePolicy {
 
 class Candidates {
 
-	final static double VERY_TRIVIA = 0.000001d;
+	public final static double VERY_TRIVIA = 0.000001d;
 
 	protected double wResp = 0.3; // weight of response
 	// protected double wLoad = 0.15; // weight of Load
