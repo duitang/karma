@@ -19,7 +19,7 @@ public class UDPGELFLoggerTest {
 	public void testLog() throws Exception {
 		TracerLogger logger = ReporterFactory.createLogger("61.152.115.82", 30011);
 
-		logger.log(new TraceCell(false, "", 1));
+		logger.log(null, new TraceCell(false, "", 1));
 	}
 
 
@@ -42,6 +42,6 @@ public class UDPGELFLoggerTest {
 		gelfAppender.addAdditionalField("environment=dev");
 
 		TracerLogger logger = ReporterFactory.createConfigurableLogger(gelfAppender);
-		logger.log(new TraceCell(false, "", 1));
+		logger.log(null, new TraceCell(false, "", 1));
 	}
 }
