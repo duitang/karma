@@ -6,11 +6,9 @@
 package com.duitang.service.karma.trace;
 
 import java.net.URISyntaxException;
+import java.util.Map;
 
 import com.duitang.service.karma.boot.KarmaFinder;
-
-import com.github.pukkaone.gelf.logback.GelfAppender;
-import com.github.pukkaone.gelf.protocol.GelfAMQPSender;
 
 /**
  * @author laurence
@@ -27,7 +25,12 @@ public class Finder implements KarmaFinder {
 		logger = new TracerLogger() {
 
 			@Override
-			public void log(TraceCell tc) {
+			public void log(String msg, TraceCellVisitor<Map> visitor, TraceCell tc) {
+				// ignore
+			}
+
+			@Override
+			public void log(String msg, TraceCell tc) {
 				// ignore
 			}
 
@@ -59,12 +62,8 @@ public class Finder implements KarmaFinder {
 		ReporterSender.useConsole = enabled;
 	}
 
-	public static void enableLogger(String host, int port) {
-		logger = ReporterFactory.createLogger(host, port);
-	}
-
-	public static void enableConfigurableLogger(GelfAppender gelfAppender) {
-		logger = ReporterFactory.createConfigurableLogger(gelfAppender);
+	public static void enableGELFUDP(String host, int port) {
+		logger = ReporterFactory.createGELFUDPLogger(host, port);
 	}
 
 }

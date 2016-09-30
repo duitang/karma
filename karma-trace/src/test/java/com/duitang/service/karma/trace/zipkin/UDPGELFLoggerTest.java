@@ -1,14 +1,16 @@
 package com.duitang.service.karma.trace.zipkin;
 
-import com.duitang.service.karma.trace.ReporterFactory;
-import com.duitang.service.karma.trace.TraceCell;
-import com.duitang.service.karma.trace.TracerLogger;
-
-import com.github.pukkaone.gelf.logback.GelfAppender;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.lang.management.ThreadMXBean;
+import java.util.Date;
 
 import org.junit.Test;
+import org.slf4j.MDC;
 
-import static org.junit.Assert.*;
+import com.duitang.service.karma.trace.ReporterFactory;
+import com.duitang.service.karma.trace.TraceStone;
+import com.duitang.service.karma.trace.TracerLogger;
 
 /**
  * Created by water on 9/28/16.
@@ -17,31 +19,30 @@ public class UDPGELFLoggerTest {
 
 	@Test
 	public void testLog() throws Exception {
-		TracerLogger logger = ReporterFactory.createLogger("61.152.115.82", 30011);
+		TracerLogger logger = ReporterFactory.createGELFUDPLogger("61.152.115.82", 30011);
+		TraceStone ts = new TraceStone();
+		ts.tc.host = "cwj_home3";
+		RuntimeMXBean runtimeBean = ManagementFactory.getRuntimeMXBean();
 
-		logger.log(null, new TraceCell(false, "", 1));
+		String jvmName = runtimeBean.getName();
+		System.out.println("JVM Name = " + jvmName);
+		long pid = Long.valueOf(jvmName.split("@")[0]);
+		System.out.println("JVM PID  = " + pid);
+
+		ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+
+		int peakThreadCount = bean.getPeakThreadCount();
+		System.out.println("Peak Thread Count = " + peakThreadCount);
+
+		MDC.put("PID", String.valueOf(pid));
+		MDC.put("JVM", jvmName);
+		MDC.put("Peak Thread", String.valueOf(peakThreadCount));
+		System.out.println(MDC.getCopyOfContextMap());
+		Thread.sleep(100);
+		ts.close();
+		logger.log(new Date() + " finished in cwj_home3", ts.tc);
+
+		Thread.sleep(10000);
 	}
 
-
-	@Test
-	public void testConfigurableAppender() {
-
-		GelfAppender gelfAppender = new GelfAppender();
-		gelfAppender.setName("gelfudp");
-		gelfAppender.setGraylogHost("61.152.115.82");
-		gelfAppender.setGraylogPort(30011);
-		gelfAppender.setOriginHost("myKarmaZipkin");
-		gelfAppender.setLevelIncluded(true);
-		gelfAppender.setLocationIncluded(true);
-		gelfAppender.setLoggerIncluded(true);
-		gelfAppender.setMarkerIncluded(true);
-		gelfAppender.setMdcIncluded(true);
-		gelfAppender.setThreadIncluded(false);
-		gelfAppender.setFacility("gelf-java");
-		gelfAppender.addAdditionalField("application=karma");
-		gelfAppender.addAdditionalField("environment=dev");
-
-		TracerLogger logger = ReporterFactory.createConfigurableLogger(gelfAppender);
-		logger.log(null, new TraceCell(false, "", 1));
-	}
 }

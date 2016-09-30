@@ -7,7 +7,7 @@ dependencies {
     compile group: 'io.zipkin.reporter', name: 'zipkin-sender-libthrift', version: '0.5.2'
     compile group: 'io.zipkin.reporter', name: 'zipkin-sender-urlconnection', version: '0.5.2'
     compile group: 'io.zipkin.reporter', name: 'zipkin-sender-okhttp3', version: '0.5.2'
-    
+    compile "org.graylog2:gelfclient:1.4.0"    
     testCompile("junit:junit:4.11")
     testCompile("log4j:log4j:1.2.17")
 }

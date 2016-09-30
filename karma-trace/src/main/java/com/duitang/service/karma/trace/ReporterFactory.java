@@ -9,8 +9,6 @@ import java.net.URISyntaxException;
 
 import com.duitang.service.karma.trace.zipkin.UDPGELFLogger;
 
-import com.github.pukkaone.gelf.logback.GelfAppender;
-
 /**
  * @author laurence
  * @since 2016年9月26日
@@ -27,12 +25,8 @@ abstract public class ReporterFactory {
 		throw new RuntimeException("not found: " + type + ", with url: " + url);
 	}
 
-	public static TracerLogger createLogger(String host, int port) {
+	public static TracerLogger createGELFUDPLogger(String host, int port) {
 		return new UDPGELFLogger(host, port);
-	}
-
-	public static TracerLogger createConfigurableLogger(GelfAppender appender) {
-		return new UDPGELFLogger(appender);
 	}
 
 }

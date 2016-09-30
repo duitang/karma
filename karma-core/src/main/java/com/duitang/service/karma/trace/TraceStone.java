@@ -16,7 +16,7 @@ import com.duitang.service.karma.boot.KarmaServerConfig;
  */
 public class TraceStone implements AutoCloseable {
 
-	protected TraceBlock tc;
+	public TraceBlock tc;
 
 	public TraceStone() {
 		String[] names = getNames();
