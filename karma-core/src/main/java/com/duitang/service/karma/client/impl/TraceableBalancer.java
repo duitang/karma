@@ -28,6 +28,7 @@ import com.duitang.service.karma.trace.TraceCell;
  */
 public abstract class TraceableBalancer implements IOBalance {
 
+	public static final String KEY = "traceload";
 	static final String myName = TraceableBalancer.class.getName();
 
 	volatile protected NodesAndPolicy nap;
@@ -71,7 +72,7 @@ public abstract class TraceableBalancer implements IOBalance {
 		// maybe checkpoint
 		if (hitPoint()) {
 			// hit TraceVisitor here
-			TraceBlock ts = new TraceBlock(myName, "traceFeed");
+			TraceBlock ts = new TraceBlock(myName, KEY);
 			n.policy.updateLoad(n.fetchLoads());
 			ts.tc.props.put("nodes", n.nodes.toString());
 			ts.tc.props.put("old_samples", Arrays.toString(n.policy.getWeights()));
