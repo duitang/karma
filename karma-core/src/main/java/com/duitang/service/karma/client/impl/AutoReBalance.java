@@ -55,7 +55,7 @@ public class AutoReBalance implements BalancePolicy {
 
 	@Override
 	public void updateResponse(int i, double resp1, boolean ok1) {
-		cdd.updateByIdx(i, new double[] { resp1, ok1 ? 0.1 : 1, -1 });
+		cdd.updateByIdx(i, new double[] { resp1, ok1 ? 0.000000001 : 1, -1 });
 	}
 
 	@Override
@@ -114,23 +114,22 @@ public class AutoReBalance implements BalancePolicy {
 
 class Candidates {
 
-	protected double RESP_REF = 0.5d; // 500ms ==> 100%
-	protected double LOAD_REF = 50d; // 50 connections ==> 100%
+	final static double VERY_TRIVIA = 0.000001d;
 
-	protected double wResp = 0.2; // weight of response
-	protected double wLoad = 0.15; // weight of Load
+	protected double wResp = 0.3; // weight of response
+	// protected double wLoad = 0.15; // weight of Load
 	protected double wFail = 0.4; // weight of Failure
 
 	protected double wRespAvg = 0.1; // weight of response history
-	protected double wLoadAvg = 0.05; // weight of Load history
-	protected double wFailAvg = 0.1; // weight of Failure history
+	// protected double wLoadAvg = 0.05; // weight of Load history
+	protected double wFailAvg = 0.2; // weight of Failure history
 
 	int count;
 	double[] choice;
 
 	DescriptiveStatistics[] resp; // 0
 	DescriptiveStatistics[] fail; // 1
-	DescriptiveStatistics[] load; // 2
+	double[] load; // 2
 
 	DescriptiveStatistics[] respAvg; // 3
 	DescriptiveStatistics[] failAvg; // 4
@@ -139,8 +138,13 @@ class Candidates {
 	public Candidates(int sz, int minWin, int moreWin) {
 		count = sz;
 		choice = new double[sz];
+		// initial for equal probabilities
+		choice[0] = 1d / sz;
+		for (int i = 1; i < sz; i++) {
+			choice[i] += choice[i - 1];
+		}
 		resp = new DescriptiveStatistics[count];
-		load = new DescriptiveStatistics[count];
+		load = new double[count];
 		fail = new DescriptiveStatistics[count];
 
 		respAvg = new DescriptiveStatistics[count];
@@ -150,15 +154,14 @@ class Candidates {
 		for (int i = 0; i < count; i++) {
 			resp[i] = new DescriptiveStatistics();
 			resp[i].setWindowSize(minWin);
-			load[i] = new DescriptiveStatistics();
-			load[i].setWindowSize(minWin);
+			load[i] = VERY_TRIVIA;
 			fail[i] = new DescriptiveStatistics();
 			fail[i].setWindowSize(minWin);
 
 			respAvg[i] = new DescriptiveStatistics();
 			respAvg[i].setWindowSize(moreWin);
 			loadAvg[i] = new DescriptiveStatistics();
-			loadAvg[i].setWindowSize(moreWin);
+			loadAvg[i].setWindowSize(minWin); // special
 			failAvg[i] = new DescriptiveStatistics();
 			failAvg[i].setWindowSize(moreWin);
 		}
@@ -178,7 +181,7 @@ class Candidates {
 			}
 
 			if (vals[2] > 0) {
-				load[idx].addValue(vals[2]);
+				load[idx] = vals[2];
 				loadAvg[idx].addValue(vals[2]);
 			}
 		}
@@ -186,30 +189,33 @@ class Candidates {
 
 	public void checkpoint() {
 		double total = 0d;
+
+		double l;
+		double l2;
+
 		for (int i = 0; i < choice.length; i++) {
+			l = load[i];
 			double resp_snap = resp[i].getMean();
-			double load_snap = load[i].getMean();
+			double load_snap = l > 0 ? l : VERY_TRIVIA;
 			double fail_snap = fail[i].getMean();
 
+			l2 = loadAvg[i].getMean();
 			double respAvg_snap = respAvg[i].getMean();
-			double loadAvg_snap = loadAvg[i].getMean();
+			double loadAvg_snap = l2 > 0 ? l2 : VERY_TRIVIA;
 			double failAvg_snap = failAvg[i].getMean();
 
-			double resp_rate = Math.min(resp_snap / RESP_REF, 1d);
-			double load_rate = Math.min(load_snap / LOAD_REF, 1d);
-			double fail_rate = fail_snap;
+			choice[i] = (wResp * resp_snap * l + wRespAvg * respAvg_snap * l2)
+					+ (wFail * fail_snap * l + wFailAvg * failAvg_snap * l2);
+			choice[i] = 1d / (1 + choice[i]);
 
-			double respAvg_rate = Math.min(respAvg_snap / RESP_REF, 1d);
-			double loadAvg_rate = Math.min(loadAvg_snap / LOAD_REF, 1d);
-			double failAvg_rate = failAvg_snap;
-
-			choice[i] = (-1) * (wResp * Math.log(resp_rate) + wLoad * Math.log(load_rate)
-					+ wRespAvg * Math.log(respAvg_rate) + wLoadAvg * Math.log(loadAvg_rate)
-					+ wFail * Math.log(fail_rate) + wFailAvg * Math.log(failAvg_rate));
+			if (AutoReBalance.log.isDebugEnabled()) {
+				AutoReBalance.log.debug("checkpoint => " + choice[i] + ", statistics = "
+						+ Arrays.asList(resp_snap, load_snap, fail_snap, respAvg_snap, loadAvg_snap, failAvg_snap));
+			}
 			total += choice[i];
 		}
 		for (int i = 0; i < choice.length; i++) {
-			choice[i] /= total;
+			choice[i] = choice[i] / total;
 			if (i > 0) {
 				choice[i] += choice[i - 1];
 			}

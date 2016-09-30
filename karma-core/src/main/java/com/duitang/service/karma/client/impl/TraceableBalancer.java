@@ -27,7 +27,20 @@ public abstract class TraceableBalancer implements IOBalance {
 
 	volatile protected NodesAndPolicy nap;
 
+	/**
+	 * check if hit checkpoint
+	 * 
+	 * @return
+	 */
 	abstract boolean hitPoint();
+
+	/**
+	 * increase 1 count
+	 * 
+	 * @param token
+	 * @return
+	 */
+	abstract int count1(String token);
 
 	public TraceableBalancer(List<String> urls) {
 		setNodes(urls);
@@ -38,6 +51,7 @@ public abstract class TraceableBalancer implements IOBalance {
 		NodesAndPolicy n = nap;
 		String ret = n.nodes.get(n.policy.sample());
 		n.updateLoad(ret, 1);
+		count1(ret);
 		return ret;
 	}
 
@@ -92,6 +106,7 @@ class NodesAndPolicy {
 		double[] ret = new double[load.size()];
 		for (int i = 0; i < nodes.size(); i++) {
 			ret[i] = load.get(nodes.get(i)).get();
+			ret[i] = ret[i] > 0 ? ret[i] : 0.000000001;
 		}
 		return ret;
 	}

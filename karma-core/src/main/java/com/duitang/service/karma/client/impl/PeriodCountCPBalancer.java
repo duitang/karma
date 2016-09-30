@@ -24,17 +24,19 @@ public class PeriodCountCPBalancer extends TraceableBalancer {
 	protected AtomicInteger watermark = new AtomicInteger(0);
 
 	// hit if now > nextpoint
-	protected long nextPoint = Long.MAX_VALUE;
+	protected long nextPoint;
 
 	public PeriodCountCPBalancer(List<String> urls) {
 		super(urls);
+		nextPoint = System.currentTimeMillis() + period;
 	}
 
 	public PeriodCountCPBalancer(List<String> urls, long period, int count, boolean and) {
-		super(urls);
+		this(urls);
 		this.period = period;
 		this.count = count;
 		this.and = and;
+		nextPoint = System.currentTimeMillis() + period;
 	}
 
 	@Override
@@ -45,8 +47,7 @@ public class PeriodCountCPBalancer extends TraceableBalancer {
 			hitPeriod = nextPoint < System.currentTimeMillis();
 		}
 		if (count > 0) {
-			// hitPoint increase 1 count every invoke which enabled count
-			int nowCount = watermark.incrementAndGet();
+			int nowCount = watermark.get();
 			hitCount = count <= nowCount;
 		}
 
@@ -58,6 +59,11 @@ public class PeriodCountCPBalancer extends TraceableBalancer {
 			watermark.set(0); // force reset, ignore racing
 		}
 		return ret;
+	}
+
+	@Override
+	int count1(String token) {
+		return watermark.incrementAndGet();
 	}
 
 }
