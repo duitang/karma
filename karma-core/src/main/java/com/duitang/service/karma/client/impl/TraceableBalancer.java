@@ -6,8 +6,10 @@
 package com.duitang.service.karma.client.impl;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -93,6 +95,7 @@ public abstract class TraceableBalancer implements IOBalance {
 	synchronized public void setNodes(List<String> nodes) {
 		if (nodes != null) {
 			NodesAndPolicy ret = new NodesAndPolicy();
+			nodes =  new ArrayList<String>(new HashSet<String>(nodes));
 			ret.nodes = nodes;
 			ret.policy = new AutoReBalance(nodes.size());
 			ret.idx = new HashMap<String, Integer>();
