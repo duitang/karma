@@ -22,6 +22,7 @@ import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.client.AsyncRegistryReader;
 import com.duitang.service.karma.client.BalancePolicy;
 import com.duitang.service.karma.client.IOBalance;
+import com.duitang.service.karma.client.RegistryInfo;
 import com.duitang.service.karma.trace.TraceBlock;
 import com.duitang.service.karma.trace.TraceCell;
 
@@ -74,6 +75,7 @@ public abstract class TraceableBalancer implements IOBalance {
 		Set<String> ns = new HashSet<String>();
 		List<String> ret = new ArrayList<String>();
 		for (String s : nodes) {
+			s = RegistryInfo.getConnectionURL(s);
 			if (!ns.contains(s)) {
 				ret.add(s);
 				ns.add(s);
@@ -98,7 +100,9 @@ public abstract class TraceableBalancer implements IOBalance {
 
 	public TraceableBalancer(List<String> urls) {
 		urls = getSafeNodes(urls);
-		setNodes(urls);
+		// setNodes(urls);
+		this.stagingNodes1 = urls;
+		syncReload();
 		for (AsyncRegistryReader cfg : configs) {
 			try {
 				cfg.register(this);
