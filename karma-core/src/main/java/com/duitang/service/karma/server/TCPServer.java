@@ -2,6 +2,8 @@ package com.duitang.service.karma.server;
 
 import java.net.InetSocketAddress;
 import java.util.Date;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.boot.KarmaServerConfig;
@@ -35,6 +37,28 @@ public class TCPServer implements RPCService, GenericFutureListener {
 	protected String grp;
 	protected boolean online = false;
 
+	static class DaemonThreadFactory implements ThreadFactory {
+		private static final AtomicInteger poolNumber = new AtomicInteger(1);
+		private final ThreadGroup group;
+		private final AtomicInteger threadNumber = new AtomicInteger(1);
+		private final String namePrefix;
+
+		DaemonThreadFactory() {
+			SecurityManager s = System.getSecurityManager();
+			group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
+			namePrefix = "server-pool-" + poolNumber.getAndIncrement() + "-thread-";
+		}
+
+		public Thread newThread(Runnable r) {
+			Thread t = new Thread(group, r, namePrefix + threadNumber.getAndIncrement(), 0);
+			t.setDaemon(true);
+			if (t.getPriority() != Thread.NORM_PRIORITY)
+				t.setPriority(Thread.NORM_PRIORITY);
+			System.err.println(t.getName());
+			return t;
+		}
+	}
+
 	public int getPort() {
 		return port;
 	}
@@ -49,8 +73,8 @@ public class TCPServer implements RPCService, GenericFutureListener {
 		handler.setRouter(router);
 		starter = new KarmaHandlerInitializer(handler);
 
-		boss = new NioEventLoopGroup();
-		worker = new NioEventLoopGroup();
+		boss = new NioEventLoopGroup(0, new DaemonThreadFactory());
+		worker = new NioEventLoopGroup(0, new DaemonThreadFactory());
 		boot = new ServerBootstrap();
 		boot.group(boss, worker).channel(NioServerSocketChannel.class);
 		boot.option(ChannelOption.TCP_NODELAY, true);
@@ -73,15 +97,17 @@ public class TCPServer implements RPCService, GenericFutureListener {
 	public void stop() {
 		online = false;
 		try {
-			boss.shutdownGracefully().await(1000);// sync();
+			boss.shutdownGracefully().await(KarmaServerConfig.KARMA_SERVER_SHUTDOWN_TIMEOUT);// sync();
 		} catch (InterruptedException e) {
 			// ignored
 		}
 		try {
-			worker.shutdownGracefully().await(1000);// .sync();
+			worker.shutdownGracefully().await(KarmaServerConfig.KARMA_SERVER_SHUTDOWN_TIMEOUT);// .sync();
 		} catch (InterruptedException e) {
 			// ignored
 		}
+		boss = null;
+		worker = null;
 	}
 
 	@Override

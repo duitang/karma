@@ -129,7 +129,7 @@ public class ServerBootstrap {
 	}
 
 	public void shutdown() {
-		KarmaClient.shutdownIOPool();
+//		KarmaClient.shutdownIOPool();
 		if (tcp != null) {
 			try {
 				KarmaServerConfig.clusterAware.unRegisterWrite(tcp);
@@ -137,6 +137,14 @@ public class ServerBootstrap {
 				e.printStackTrace();
 			}
 			tcp.stop();
+		}
+		if (javaRouter != null) {
+			try {
+				javaRouter.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			javaRouter = null;
 		}
 	}
 

@@ -45,7 +45,8 @@ public class TestOnceServerAndClient {
 
 		Thread.sleep(500);
 
-		client.shutdownIOPool();
+		KarmaClient.shutdownIOPool();
+		// KarmaIoSession.shutdown();
 		boot.shutdown();
 	}
 

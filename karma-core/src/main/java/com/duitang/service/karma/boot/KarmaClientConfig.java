@@ -25,6 +25,8 @@ public class KarmaClientConfig {
 
 	static Logger logger = LoggerFactory.getLogger(KarmaClientConfig.class);
 
+	final static public long KARMA_CLIENT_TIMEOUT = 10 * 1000; // 10s
+
 	protected static ClusterRegistry clusterAware = new ClusterRegistry();
 	protected static IOBalanceFactory simpleFactory = new TraceableBalancerFactory(60 * 1000, 0, false);
 	protected static TraceVisitor simpleVisitor = new NoopTraceVisitor();

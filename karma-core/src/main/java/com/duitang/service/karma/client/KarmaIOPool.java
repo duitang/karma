@@ -124,7 +124,7 @@ public class KarmaIOPool implements LifeCycle {
 		@Override
 		public void destroyObject(PooledObject<KarmaIoSession> p) throws Exception {
 			KarmaIoSession obj = p.getObject();
-			 System.out.println("destroy ..... " + obj);
+			// System.out.println("destroy ..... " + obj);
 			obj.close();
 		}
 
@@ -151,7 +151,7 @@ public class KarmaIOPool implements LifeCycle {
 
 	}
 
-	public void close() {
+	synchronized public void close() {
 		// may be race condition, but currently ok
 		closed = true;
 		if (ioPool == null) {

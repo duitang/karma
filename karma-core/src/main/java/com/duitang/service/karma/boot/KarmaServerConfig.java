@@ -13,7 +13,8 @@ import com.duitang.service.karma.trace.TraceVisitor;
  *
  */
 public class KarmaServerConfig {
-
+	
+	final public static long KARMA_SERVER_SHUTDOWN_TIMEOUT = 10 * 1000L;
 	static Logger logger = LoggerFactory.getLogger(KarmaServerConfig.class);
 
 	protected static TraceVisitor simpleVisitor = new NoopTraceVisitor();

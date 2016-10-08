@@ -1,6 +1,16 @@
 package com.duitang.service.karma.client;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+
+import org.apache.commons.lang3.StringUtils;
+
 import com.duitang.service.karma.base.LifeCycle;
+import com.duitang.service.karma.boot.KarmaClientConfig;
 import com.duitang.service.karma.meta.BinaryPacketData;
 import com.duitang.service.karma.meta.BinaryPacketHelper;
 import com.duitang.service.karma.server.KarmaHandlerInitializer;
@@ -15,13 +25,6 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.Attribute;
 
-import org.apache.commons.lang3.StringUtils;
-
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.util.concurrent.atomic.AtomicLong;
-
 /**
  * support logic ping but will be discard if too many ping happened
  *
@@ -32,7 +35,7 @@ public class KarmaIoSession implements LifeCycle {
 	static final protected long default_timeout = 500; // 0.5s
 	static final protected int ERROR_WATER_MARK = 2;
 
-	static final EventLoopGroup worker = new NioEventLoopGroup();
+	static EventLoopGroup worker = null;
 	static final KarmaHandlerInitializer starter = new KarmaHandlerInitializer(new JavaClientHandler());
 
 	protected String url;
@@ -72,6 +75,13 @@ public class KarmaIoSession implements LifeCycle {
 		this.url = hostAndPort;
 		this.timeout = timeout;
 		this.conn = new Bootstrap();
+		if (worker == null) {
+			synchronized (KarmaIoSession.class) {
+				if (worker == null) {
+					worker = new NioEventLoopGroup(0, new DaemonThreadFactory());
+				}
+			}
+		}
 		this.conn.group(worker);
 		this.conn.option(ChannelOption.TCP_NODELAY, true);
 		this.conn.channel(NioSocketChannel.class).handler(new KarmaHandlerInitializer(new JavaClientHandler()));
@@ -176,6 +186,39 @@ public class KarmaIoSession implements LifeCycle {
 	@Override
 	public String toString() {
 		return url + ", timeout=" + timeout + ", errorCount=" + errorCount;
+	}
+
+	public static void shutdown() {
+		if (worker != null) {
+			try {
+				worker.shutdownGracefully().await(KarmaClientConfig.KARMA_CLIENT_TIMEOUT);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			worker = null;
+		}
+	}
+
+	static class DaemonThreadFactory implements ThreadFactory {
+		private static final AtomicInteger poolNumber = new AtomicInteger(1);
+		private final ThreadGroup group;
+		private final AtomicInteger threadNumber = new AtomicInteger(1);
+		private final String namePrefix;
+
+		DaemonThreadFactory() {
+			SecurityManager s = System.getSecurityManager();
+			group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
+			namePrefix = "client-pool-" + poolNumber.getAndIncrement() + "-thread-";
+		}
+
+		public Thread newThread(Runnable r) {
+			Thread t = new Thread(group, r, namePrefix + threadNumber.getAndIncrement(), 0);
+			t.setDaemon(true);
+			if (t.getPriority() != Thread.NORM_PRIORITY)
+				t.setPriority(Thread.NORM_PRIORITY);
+			System.err.println(t.getName());
+			return t;
+		}
 	}
 
 }
