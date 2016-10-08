@@ -1,15 +1,18 @@
 package com.duitang.service.karma.trace;
 
+import java.util.List;
+
 /**
  * Created by water on 9/29/16.
  */
-public class DemoFormatTraceCellVisitor implements FormatTraceCellVisitor{
+public class DemoFormatTraceCellVisitor implements TraceCellVisitor{
 
-	@Override
-	public String visit(TraceCell traceCell) {
-		String ret = new String();
-		// todo transfer the cell to string.
 
-		return ret;
+	@Override public Object transform(TraceCell src) {
+		return null;
+	}
+
+	@Override public List transform(List src) {
+		return null;
 	}
 }

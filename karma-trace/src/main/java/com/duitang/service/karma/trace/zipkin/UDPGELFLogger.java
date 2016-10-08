@@ -7,6 +7,7 @@ package com.duitang.service.karma.trace.zipkin;
 
 import com.duitang.service.karma.trace.FormatTraceCellVisitor;
 import com.duitang.service.karma.trace.TraceCell;
+import com.duitang.service.karma.trace.TraceCellVisitor;
 import com.duitang.service.karma.trace.TracerLogger;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -82,7 +83,7 @@ public class UDPGELFLogger implements TracerLogger {
 	}
 
 	@Override
-	public void log(FormatTraceCellVisitor visitor, TraceCell tc) {
+	public void log(TraceCellVisitor visitor, TraceCell tc) {
 		if (visitor == null) {  //如果不传visitor,即采用默认的方式,直接整个对象转成json.
 			try {
 				logger.info(mapper.writeValueAsString(tc));
@@ -90,7 +91,8 @@ public class UDPGELFLogger implements TracerLogger {
 				e.printStackTrace();
 			}
 		} else {
-			logger.info(visitor.visit(tc));
+			// obj 还是要转成str?
+			logger.info((String) visitor.transform(tc));
 		}
 
 	}
