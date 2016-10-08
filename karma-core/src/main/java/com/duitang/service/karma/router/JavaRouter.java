@@ -32,7 +32,7 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
 			new ArrayBlockingQueue<Runnable>(10000));
 
 	protected AtomicLong pingCount = new AtomicLong(0);
-	protected int maxQueuingLatency = 200;
+	protected int maxQueuingLatency = 500;
 
 	protected String host; // for trace information
 	protected int port; // for trace information

@@ -59,4 +59,18 @@ public interface BalancePolicy {
 	 */
 	void reload(double[] samples);
 
+	/**
+	 * get current weights for sampling
+	 * 
+	 * @return
+	 */
+	double[] getWeights();
+
+	/**
+	 * get statistics
+	 * 
+	 * @return
+	 */
+	String[] getStats();
+
 }

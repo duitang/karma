@@ -5,6 +5,8 @@
  */
 package com.duitang.service.karma.client.impl;
 
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.duitang.service.karma.client.BalancePolicy;
 import com.duitang.service.karma.client.IOBalance;
+import com.duitang.service.karma.trace.TraceBlock;
 import com.duitang.service.karma.trace.TraceCell;
 
 /**
@@ -25,9 +28,24 @@ import com.duitang.service.karma.trace.TraceCell;
  */
 public abstract class TraceableBalancer implements IOBalance {
 
+	static final String myName = TraceableBalancer.class.getName();
+
 	volatile protected NodesAndPolicy nap;
 
+	/**
+	 * check if hit checkpoint
+	 * 
+	 * @return
+	 */
 	abstract boolean hitPoint();
+
+	/**
+	 * increase 1 count
+	 * 
+	 * @param token
+	 * @return
+	 */
+	abstract int count1(String token);
 
 	public TraceableBalancer(List<String> urls) {
 		setNodes(urls);
@@ -38,6 +56,7 @@ public abstract class TraceableBalancer implements IOBalance {
 		NodesAndPolicy n = nap;
 		String ret = n.nodes.get(n.policy.sample());
 		n.updateLoad(ret, 1);
+		count1(ret);
 		return ret;
 	}
 
@@ -51,8 +70,21 @@ public abstract class TraceableBalancer implements IOBalance {
 		}
 		// maybe checkpoint
 		if (hitPoint()) {
+			// hit TraceVisitor here
+			TraceBlock ts = new TraceBlock(myName, "traceFeed");
 			n.policy.updateLoad(n.fetchLoads());
+			ts.tc.props.put("nodes", n.nodes.toString());
+			ts.tc.props.put("old_samples", Arrays.toString(n.policy.getWeights()));
+			ts.tc.props.put("old_statistics", Arrays.toString(n.policy.getStats()));
 			n.policy.checkpoint();
+			n = nap;
+			ts.tc.props.put("new_samples", Arrays.toString(n.policy.getWeights()));
+			ts.tc.props.put("new_statistics", Arrays.toString(n.policy.getStats()));
+			try {
+				ts.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -92,6 +124,7 @@ class NodesAndPolicy {
 		double[] ret = new double[load.size()];
 		for (int i = 0; i < nodes.size(); i++) {
 			ret[i] = load.get(nodes.get(i)).get();
+			ret[i] = ret[i] > 0 ? ret[i] : 0.000000001;
 		}
 		return ret;
 	}

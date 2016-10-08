@@ -5,20 +5,27 @@
  */
 package com.duitang.service.karma.trace.zipkin;
 
-import com.duitang.service.karma.trace.FormatTraceCellVisitor;
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.graylog2.gelfclient.GelfConfiguration;
+import org.graylog2.gelfclient.GelfMessage;
+import org.graylog2.gelfclient.GelfMessageBuilder;
+import org.graylog2.gelfclient.GelfMessageLevel;
+import org.graylog2.gelfclient.GelfTransports;
+import org.graylog2.gelfclient.transport.GelfTransport;
+import org.slf4j.MDC;
+import org.slf4j.event.Level;
+
+import com.duitang.service.karma.trace.TraceStone;
 import com.duitang.service.karma.trace.TraceCell;
 import com.duitang.service.karma.trace.TraceCellVisitor;
 import com.duitang.service.karma.trace.TracerLogger;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.pukkaone.gelf.logback.GelfAppender;
-
-import org.slf4j.LoggerFactory;
-
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.LoggerContext;
 
 /**
  * @author laurence
@@ -26,75 +33,101 @@ import ch.qos.logback.classic.LoggerContext;
  *
  */
 public class UDPGELFLogger implements TracerLogger {
+
 	static ObjectMapper mapper = new ObjectMapper();
-	private Logger logger = (Logger) LoggerFactory.getLogger(UDPGELFLogger.class);
+	static TraceCell2Map toMap = new TraceCell2Map();
+
+	protected GelfTransport transport;
+	protected GelfConfiguration config;
+	protected TraceCellVisitor visitor;
+	protected GelfMessageLevel level = GelfMessageLevel.INFO;
 
 	/**
 	 *
 	 *
-	 * @param host graylog host. such as 192.168.0.1. support udp default.
-	 * @param port graylog port.
+	 * @param host
+	 *            graylog host. such as 192.168.0.1. support udp default.
+	 * @param port
+	 *            graylog port.
 	 */
 	public UDPGELFLogger(String host, int port) {
+		this(host, port, new TraceCell2Map());
+	}
+
+	public UDPGELFLogger(String host, int port, TraceCellVisitor<Map> visitor) {
 		initGELFLogger(host, port);
-	}
-
-	/**
-	 * configurable appender
-	 * @param gelfAppender
-	 */
-	public UDPGELFLogger(GelfAppender gelfAppender) {
-		intiGELFLoggerWithConfig(gelfAppender);
-	}
-
-	private void intiGELFLoggerWithConfig(GelfAppender gelfAppender) {
-		LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-		gelfAppender.setContext(lc);
-		gelfAppender.start();
-
-		logger.addAppender(gelfAppender);
-		logger.setLevel(Level.INFO);
-		logger.setAdditive(true);
+		this.visitor = visitor;
 	}
 
 	private void initGELFLogger(String host, int port) {
-		LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+		config = new GelfConfiguration(new InetSocketAddress(host, port)).transport(GelfTransports.UDP).queueSize(5120)
+				.connectTimeout(5000).reconnectDelay(1000).tcpNoDelay(true).sendBufferSize(327680);
 
-		GelfAppender gelfAppender = new GelfAppender();
-		gelfAppender.setName("gelfudp");
-		gelfAppender.setGraylogHost(host);
-		gelfAppender.setGraylogPort(port);
-		gelfAppender.setOriginHost("myKarmaZipkin");
-		gelfAppender.setLevelIncluded(true);
-		gelfAppender.setLocationIncluded(true);
-		gelfAppender.setLoggerIncluded(true);
-		gelfAppender.setMarkerIncluded(true);
-		gelfAppender.setMdcIncluded(true);
-		gelfAppender.setThreadIncluded(false);
-		gelfAppender.setFacility("gelf-java");
-		gelfAppender.addAdditionalField("application=karma");
-		gelfAppender.addAdditionalField("environment=medishare");
-		gelfAppender.setContext(lc);
-		gelfAppender.start();
+		transport = GelfTransports.create(config);
+	}
 
-		logger.addAppender(gelfAppender);
-		logger.setLevel(Level.INFO);
-		logger.setAdditive(false);
+	public void setLevel(Level lv) {
+		if (Level.DEBUG == lv) {
+			level = GelfMessageLevel.DEBUG;
+		}
+		if (Level.INFO == lv) {
+			level = GelfMessageLevel.INFO;
+		}
+		if (Level.WARN == lv) {
+			level = GelfMessageLevel.WARNING;
+		}
+		if (Level.ERROR == lv) {
+			level = GelfMessageLevel.ERROR;
+		}
+	}
+
+	public void log(String msg, TraceCell tc) {
+		log(msg, visitor, tc);
 	}
 
 	@Override
-	public void log(TraceCellVisitor visitor, TraceCell tc) {
-		if (visitor == null) {  //如果不传visitor,即采用默认的方式,直接整个对象转成json.
-			try {
-				logger.info(mapper.writeValueAsString(tc));
-			} catch (JsonProcessingException e) {
-				e.printStackTrace();
-			}
+	public void log(String text, TraceCellVisitor<Map> visitor, TraceCell tc) {
+		String source = tc.host;
+
+		Map content = null;
+		if (visitor == null) { // 如果不传visitor,即采用默认的方式,直接整个对象转成json.
+			content = toMap.transform(tc);
 		} else {
-			// obj 还是要转成str?
-			logger.info((String) visitor.transform(tc));
+			content = visitor.transform(tc);
 		}
 
+		GelfMessageBuilder builder = new GelfMessageBuilder("", source).level(level);
+
+		builder.additionalFielUDPGELFLoggerds(content);
+		if (tc instanceof TraceStone) {
+			Map p = new HashMap<String, Object>(((TraceStone) tc).props);
+			content.putAll(p);
+		}
+		content.remove("props");
+		content.putAll(MDC.getMDCAdapter().getCopyOfContextMap());
+
+		GelfMessage msg = builder.message(text).timestamp(System.currentTimeMillis()).additionalFields(content).build();
+		// async mode
+		transport.trySend(msg);
+
+	}
+
+}
+
+class TraceCell2Map implements TraceCellVisitor<Map> {
+
+	@Override
+	public Map transform(TraceCell src) {
+		return transform(Arrays.asList(src)).get(0);
+	}
+
+	@Override
+	public List<Map> transform(List<TraceCell> src) {
+		List<Map> ret = new ArrayList<Map>();
+		for (TraceCell c : src) {
+			ret.add(UDPGELFLogger.mapper.convertValue(c, Map.class));
+		}
+		return ret;
 	}
 
 }

@@ -6,7 +6,7 @@
 package com.duitang.service.demo;
 
 import com.duitang.service.karma.trace.Finder;
-import com.duitang.service.karma.trace.TraceStone;
+import com.duitang.service.karma.trace.TraceBlock;
 
 /**
  * @author laurence
@@ -32,7 +32,7 @@ public class TestingTraceBlock {
 	}
 
 	static void test2() throws Throwable {
-		TraceStone tp = new TraceStone();
+		TraceBlock tp = new TraceBlock();
 		tp.setAttribute("commment1", "bilibilbili");
 		tp.setAttribute("happy", "world");
 		Thread.sleep(100);
@@ -41,7 +41,7 @@ public class TestingTraceBlock {
 	}
 
 	static void test3() throws Throwable {
-		try (TraceStone tp = new TraceStone()) {
+		try (TraceBlock tp = new TraceBlock()) {
 			tp.setAttribute("foo", "bar");
 			Thread.sleep(500);
 		}

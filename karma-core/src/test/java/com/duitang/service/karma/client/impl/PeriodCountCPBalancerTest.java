@@ -1,55 +1,165 @@
 package com.duitang.service.karma.client.impl;
 
-import static org.junit.Assert.*;
+import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.LoggerFactory;
+
+import com.duitang.service.karma.trace.TraceCell;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 
 public class PeriodCountCPBalancerTest {
 
+	static List<String> nodes = Arrays.asList("localhost:8888", "127.0.0.1:8888");
+	PeriodCountCPBalancer balancer = null;
+
 	@Before
 	public void setUp() throws Exception {
+		balancer = new PeriodCountCPBalancer(nodes);
 	}
 
 	@After
 	public void tearDown() throws Exception {
 	}
 
-	@Test
-	public void testHitPoint() {
-		fail("Not yet implemented");
+	// @Test
+	public void testHitPoint() throws Throwable {
+		// 5s
+		balancer = new PeriodCountCPBalancer(nodes, 5 * 1000, 0, false);
+		for (int i = 0; i < 3; i++) {
+			try {
+				Thread.sleep(5010); // approximate
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			Assert.assertTrue(balancer.hitPoint());
+		}
+
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 1000; j++) {
+				balancer.next(null);
+			}
+			Assert.assertFalse(balancer.hitPoint());
+		}
+
+		// 100 hit
+		balancer = new PeriodCountCPBalancer(nodes, 0, 100, false);
+		for (int i = 0; i < 3; i++) {
+
+			for (int j = 0; j < 95; j++) {
+				balancer.next(null);
+			}
+			Assert.assertFalse(balancer.hitPoint());
+			for (int j = 0; j < 5; j++) {
+				balancer.next(null);
+			}
+			Assert.assertTrue(balancer.hitPoint());
+		}
+		Thread.sleep(60 * 1000);
+		Assert.assertFalse(balancer.hitPoint());
+
+		// 5s or 100hit
+		balancer = new PeriodCountCPBalancer(nodes, 5 * 1000, 100, false);
+		for (int i = 0; i < 3; i++) {
+			Thread.sleep(5010);
+			Assert.assertTrue(balancer.hitPoint());
+			for (int j = 0; j < 95; j++) {
+				balancer.next(null);
+				Assert.assertFalse(balancer.hitPoint());
+			}
+			for (int j = 0; j < 5; j++) {
+				balancer.next(null);
+			}
+			Assert.assertTrue(balancer.hitPoint());
+		}
+
+		// 5s and 100hit
+		balancer = new PeriodCountCPBalancer(nodes, 5 * 1000, 100, true);
+		for (int i = 0; i < 3; i++) {
+			Thread.sleep(5010);
+			Assert.assertFalse(balancer.hitPoint());
+			for (int j = 0; j < 95; j++) {
+				balancer.next(null);
+				Assert.assertFalse(balancer.hitPoint());
+			}
+			for (int j = 0; j < 5; j++) {
+				balancer.next(null);
+			}
+			Assert.assertTrue(balancer.hitPoint());
+		}
+
 	}
 
 	@Test
-	public void testPeriodCountCPBalancerListOfString() {
-		fail("Not yet implemented");
-	}
+	public void testTraceFeed() throws Throwable {
+		Logger lg = (Logger) LoggerFactory.getLogger(AutoReBalance.class);
+		lg.setLevel(Level.DEBUG);
+		// only trace feed action validation is needed
+		// not here for correctness because of policy unit-test
+		List<String> cfg = Arrays.asList("a:9999", "b:9999", "c:9999");
 
-	@Test
-	public void testPeriodCountCPBalancerListOfStringLongIntBoolean() {
-		fail("Not yet implemented");
-	}
+		int count = 10000;
+		balancer = new PeriodCountCPBalancer(cfg, 0, count, false);
 
-	@Test
-	public void testTraceableBalancer() {
-		fail("Not yet implemented");
-	}
+		AutoReBalance arb = null;
+		Field f = null;
+		Candidates cdd = null;
 
-	@Test
-	public void testNext() {
-		fail("Not yet implemented");
-	}
+		arb = (AutoReBalance) balancer.nap.policy;
+		f = arb.getClass().getDeclaredField("cdd");
+		f.setAccessible(true);
+		cdd = (Candidates) f.get(balancer.nap.policy);
+		System.out.println(Arrays.toString(cdd.choice));
+		Random r = new Random(Double.valueOf(Math.random() * 10000000).longValue());
 
-	@Test
-	public void testTraceFeed() {
-		fail("Not yet implemented");
+		TraceCell tc = null;
+		String key = null;
+		int base = (count / 3 + 1);
+		int loop = 20;
+		for (int j = 0; j < loop * base; j++) {
+			key = cfg.get(0);
+			balancer.next(null);
+
+			tc = new TraceCell(false, null, null);
+			tc.duration = Double.valueOf(0.05d * r.nextDouble() * 1000000).longValue();
+			tc.successful = true;
+			balancer.traceFeed(key, tc);
+
+			key = cfg.get(1);
+			balancer.next(null);
+			tc = new TraceCell(false, null, null);
+			tc.duration = Double.valueOf(0.2d * r.nextDouble() * 1000000).longValue();
+			tc.successful = true;
+			balancer.traceFeed(key, tc);
+
+			key = cfg.get(2);
+			balancer.next(null);
+			tc = new TraceCell(false, null, null);
+			tc.duration = Double.valueOf(0.5d * r.nextDouble() * 1000000).longValue();
+			tc.successful = true;
+			balancer.traceFeed(key, tc);
+
+		}
+
 	}
 
 	@Test
 	public void testSetNodes() {
-		fail("Not yet implemented");
+		List<String> cfg = Arrays.asList("a:9999", "b:9999", "c:9999");
+		balancer = new PeriodCountCPBalancer(nodes);
+		balancer.setNodes(cfg);
+
+		NodesAndPolicy n = balancer.nap;
+		Assert.assertEquals(n.nodes, cfg);
+		Assert.assertTrue(n.policy.size() == cfg.size());
 	}
 
 }
-

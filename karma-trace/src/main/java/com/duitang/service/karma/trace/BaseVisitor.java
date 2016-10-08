@@ -11,8 +11,7 @@ public class BaseVisitor implements TraceVisitor {
 
 	protected volatile Map<String, TracerReporter> reporters = new HashMap<String, TracerReporter>();
 	protected ConsoleReporter console = new ConsoleReporter();
-	
-	
+
 	@Override
 	public void visit(TraceCell tc) {
 		visits(Arrays.asList(tc));

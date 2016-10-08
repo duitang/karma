@@ -7,7 +7,7 @@ import java.util.Map.Entry;
 
 import com.duitang.service.karma.boot.KarmaServerConfig;
 import com.duitang.service.karma.support.NameUtil;
-import com.duitang.service.karma.trace.TraceBlock;
+import com.duitang.service.karma.trace.TraceStone;
 import com.duitang.service.karma.trace.TraceCell;
 import com.duitang.service.karma.trace.TraceCellVisitor;
 
@@ -30,8 +30,8 @@ public class TraceCell2Span implements TraceCellVisitor<Span> {
 
 	protected void extra(TraceCell src, Builder dest) {
 		// ignore at TraceCell
-		if (src instanceof TraceBlock) {
-			for (Entry<String, String> en : ((TraceBlock) src).props.entrySet()) {
+		if (src instanceof TraceStone) {
+			for (Entry<String, String> en : ((TraceStone) src).props.entrySet()) {
 				dest.addBinaryAnnotation(BinaryAnnotation.create(en.getKey(), en.getValue(), addr));
 			}
 		}
