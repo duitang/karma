@@ -67,7 +67,7 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 		});
 	}
 
-	public static void reset(String group, List<String> urls) {
+	public static void reset(String group, List<String> urls) throws KarmaException {
 		if (lock.compareAndSet(false, true)) {
 			pool.resetPool();
 			KarmaClientConfig.updateBalance(group, urls);

@@ -1,6 +1,7 @@
 package com.duitang.service.lb;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
@@ -190,6 +191,12 @@ public class DynamicLB implements IOBalance{
 
 	@Override
 	public void setNodes(List<String> nodes) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setNodesWithWeights(LinkedHashMap<String, Double> nodes) {
 		// TODO Auto-generated method stub
 		
 	}

@@ -1,5 +1,6 @@
 package com.duitang.service.karma.client;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import com.duitang.service.karma.trace.TraceCell;
@@ -35,5 +36,12 @@ public interface IOBalance {
 	 * @param nodes
 	 */
 	public void setNodes(List<String> nodes);
+
+	/**
+	 * update nodes with weights
+	 * 
+	 * @param nodes
+	 */
+	public void setNodesWithWeights(LinkedHashMap<String, Double> nodes);
 
 }

@@ -2,8 +2,10 @@ package com.duitang.service.karma.client.impl;
 
 import java.util.List;
 
+import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.client.IOBalance;
 import com.duitang.service.karma.client.IOBalanceFactory;
+import com.duitang.service.karma.support.ClusterRegistry;
 
 /**
  * @author laurence
@@ -23,9 +25,11 @@ public class TraceableBalancerFactory implements IOBalanceFactory {
 	}
 
 	@Override
-	public IOBalance createIOBalance(List<String> urls) {
+	public IOBalance createIOBalance(ClusterRegistry clusterAware, List<String> urls) throws KarmaException {
 		// hit = 60s , no count need, using or
-		return new PeriodCountCPBalancer(urls, period, count, and);
+		PeriodCountCPBalancer ret = new PeriodCountCPBalancer(urls, period, count, and);
+		clusterAware.registerRead(ret);
+		return ret;
 	}
 
 }

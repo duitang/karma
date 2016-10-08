@@ -1,12 +1,14 @@
 package com.duitang.service.karma.server;
 
+import java.net.InetSocketAddress;
+import java.util.Date;
+
 import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.boot.KarmaServerConfig;
 import com.duitang.service.karma.router.Router;
+import com.duitang.service.karma.support.IPUtils;
 import com.duitang.service.karma.support.NameUtil;
 import com.duitang.service.karma.transport.JavaServerHandler;
-
-import java.net.InetSocketAddress;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -28,6 +30,10 @@ public class TCPServer implements RPCService, GenericFutureListener {
 	protected Router router;
 
 	protected int port = DEFAULT_TCP_PORT;
+
+	protected Date created;
+	protected String grp;
+	protected boolean online = false;
 
 	public int getPort() {
 		return port;
@@ -56,12 +62,16 @@ public class TCPServer implements RPCService, GenericFutureListener {
 			cf.channel().closeFuture().addListener(this);
 			router.setHostInfo(NameUtil.getHostname(), port);
 			KarmaServerConfig.updateHostInfo(NameUtil.getInstanceTag().ipv4, port);
+			created = new Date();
+			online = true;
 		} catch (Exception e) {
+			online = false;
 			throw new KarmaException(e);
 		}
 	}
 
 	public void stop() {
+		online = false;
 		try {
 			boss.shutdownGracefully().await(1000);// sync();
 		} catch (InterruptedException e) {
@@ -81,6 +91,42 @@ public class TCPServer implements RPCService, GenericFutureListener {
 
 	public void operationComplete(Future future) throws Exception {
 		stop();
+	}
+
+	@Override
+	public String getServiceURL() {
+		String ret = null;
+		try {
+			ret = "tcp://" + IPUtils.pickUpIpNot("127.0.0.") + ":" + this.port;
+		} catch (Exception e) {
+			ret = "tcp://localhost:" + this.port;
+		}
+		return ret;
+	}
+
+	@Override
+	public String getServiceProtocol() {
+		return "tcp";
+	}
+
+	@Override
+	public void setGroup(String grp) {
+		this.grp = grp;
+	}
+
+	@Override
+	public Date getUptime() {
+		return created;
+	}
+
+	@Override
+	public String getGroup() {
+		return grp;
+	}
+
+	@Override
+	public boolean online() {
+		return online;
 	}
 
 }

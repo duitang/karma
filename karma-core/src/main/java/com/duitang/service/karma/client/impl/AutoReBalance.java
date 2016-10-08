@@ -112,19 +112,25 @@ public class AutoReBalance implements BalancePolicy {
 
 	@Override
 	public double[] getWeights() {
-		return cdd.choice;
+		Candidates cdd1 = cdd;
+		double[] ret = new double[cdd1.choice.length];
+		ret[0] = cdd1.choice[0];
+		for (int i = 1; i < ret.length; i++) {
+			ret[i] = cdd1.choice[i] - cdd1.choice[i - 1];
+		}
+		return ret;
 	}
 
 	@Override
-	public String[] getStats() {
+	public String[] getDebugInfo() {
 		Candidates cdd1 = cdd;
 		String[] ret = new String[cdd1.count];
 		for (int i = 0; i < ret.length; i++) {
 			StringBuilder sb = new StringBuilder();
 			sb.append("Current[" + minWin + "]: resp=").append(cdd1.resp[i].getMean()).append("s ; failure=")
-					.append(cdd1.fail[i].getMean()).append(" ; load=").append(cdd1.load[i]);
+					.append(cdd1.fail[i].getMean()).append(" ; load=").append(cdd1.load[i]).append(" ; forceMode=");
 			sb.append(". History[" + moreWin + "]: resp=").append(cdd1.resp[i].getMean()).append("s ; failure=")
-					.append(cdd1.fail[i].getMean()).append(" ; load=").append(cdd1.load[i]);
+					.append(cdd1.fail[i].getMean()).append(" ; load=").append(cdd1.load[i]).append(" ; forceMode=");
 			ret[i] = sb.toString();
 		}
 		return ret;
@@ -240,6 +246,7 @@ class Candidates {
 				choice[i] += choice[i - 1];
 			}
 		}
+
 		if (AutoReBalance.log.isDebugEnabled()) {
 			AutoReBalance.log.debug("checkpoint choice = " + Arrays.toString(choice));
 		}
