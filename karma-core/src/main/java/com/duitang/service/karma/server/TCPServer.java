@@ -54,7 +54,6 @@ public class TCPServer implements RPCService, GenericFutureListener {
 			t.setDaemon(true);
 			if (t.getPriority() != Thread.NORM_PRIORITY)
 				t.setPriority(Thread.NORM_PRIORITY);
-			System.err.println(t.getName());
 			return t;
 		}
 	}

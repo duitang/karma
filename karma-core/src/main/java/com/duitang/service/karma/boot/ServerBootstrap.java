@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 
 import com.duitang.service.karma.KarmaException;
-import com.duitang.service.karma.client.KarmaClient;
 import com.duitang.service.karma.handler.RPCHandler;
 import com.duitang.service.karma.handler.ReflectRPCHandler;
 import com.duitang.service.karma.router.JavaRouter;
