@@ -1,5 +1,7 @@
 package com.duitang.service.karma.client.impl;
 
+import static org.junit.Assert.fail;
+
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
@@ -160,6 +162,56 @@ public class PeriodCountCPBalancerTest {
 		NodesAndPolicy n = balancer.nap;
 		Assert.assertEquals(n.nodes, cfg);
 		Assert.assertTrue(n.policy.size() == cfg.size());
+	}
+
+	@Test
+	public void testCount1() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testPeriodCountCPBalancerListOfString() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testPeriodCountCPBalancerListOfStringLongIntBoolean() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testGetSafeNodesListOfString() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testGetSafeNodesLinkedHashMapOfStringDouble() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testTraceableBalancer() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testNext() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testCheckpoint() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testSyncReload() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testSetNodesWithWeights() {
+		fail("Not yet implemented");
 	}
 
 }

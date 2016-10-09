@@ -38,7 +38,7 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 	}
 
 	final static protected Map<String, Method> mgrCallbacks;
-	final static protected KarmaIOPool pool = new KarmaIOPool();
+	static protected KarmaIOPool pool = new KarmaIOPool();
 	final static protected Logger error = LoggerFactory.getLogger(KarmaClient.class);
 	final static protected AtomicBoolean lock = new AtomicBoolean(false);
 	final static private Long DEFAULT_TIMEOUT = 1000L;
@@ -63,11 +63,12 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 			@Override
 			public void run() {
 				shutdownIOPool();
+				KarmaIoSession.shutdown();
 			}
 		});
 	}
 
-	public static void reset(String group, List<String> urls) {
+	public static void reset(String group, List<String> urls) throws KarmaException {
 		if (lock.compareAndSet(false, true)) {
 			pool.resetPool();
 			KarmaClientConfig.updateBalance(group, urls);
@@ -75,7 +76,11 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 	}
 
 	public static void shutdownIOPool() {
-		pool.close();
+		if (pool != null) {
+			pool.close();
+			pool = null;
+			KarmaIoSession.shutdown();
+		}
 	}
 
 	static public <T> KarmaClient<T> createKarmaClient(Class<T> iface, List<String> urls, String group)
@@ -159,6 +164,13 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 		Throwable err = null;
 		try {
 			u = router.next(null);
+			if (pool == null) {
+				synchronized (KarmaClient.class) {
+					if (pool == null) {
+						pool = new KarmaIOPool();
+					}
+				}
+			}
 			iosession = pool.getIOSession(u);
 			data.uuid = iosession.getUuid().incrementAndGet();
 			latch.setUuid(data.uuid);

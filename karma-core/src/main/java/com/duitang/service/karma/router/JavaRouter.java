@@ -1,5 +1,7 @@
 package com.duitang.service.karma.router;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Future;
@@ -22,7 +24,7 @@ import com.duitang.service.karma.support.InstanceTagHolder;
 import com.duitang.service.karma.trace.TraceCell;
 import com.duitang.service.karma.trace.TraceContextHolder;
 
-public class JavaRouter implements Router<BinaryPacketRaw> {
+public class JavaRouter implements Router<BinaryPacketRaw>, Closeable {
 
 	final static Logger out = LoggerFactory.getLogger(JavaRouter.class);
 	final static int CORE_SIZE = 150;
@@ -54,6 +56,14 @@ public class JavaRouter implements Router<BinaryPacketRaw> {
 		int sz = execPool.getActiveCount();
 		if (sz >= CORE_SIZE) {
 			out.warn("JavaRouter_threads_exceed:" + sz);
+		}
+	}
+
+	@Override
+	public void close() throws IOException {
+		if (execPool != null) {
+			execPool.shutdown();
+			execPool = null;
 		}
 	}
 

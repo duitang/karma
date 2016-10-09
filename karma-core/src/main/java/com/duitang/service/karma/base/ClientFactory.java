@@ -103,7 +103,8 @@ public abstract class ClientFactory<T> implements ServiceFactory<T> {
 		};
 	}
 
-	public void reset() {
+	public void reset() throws KarmaException {
 		KarmaClient.reset(group, serviceURL);
 	}
+	
 }

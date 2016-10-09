@@ -71,6 +71,6 @@ public interface BalancePolicy {
 	 * 
 	 * @return
 	 */
-	String[] getStats();
+	String[] getDebugInfo();
 
 }

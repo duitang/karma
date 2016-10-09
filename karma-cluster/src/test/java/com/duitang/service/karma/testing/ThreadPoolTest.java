@@ -1,10 +1,5 @@
 package com.duitang.service.karma.testing;
 
-import com.google.common.base.Stopwatch;
-import com.google.common.collect.Maps;
-
-import org.junit.Test;
-
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -13,6 +8,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.Test;
+
+import com.google.common.base.Stopwatch;
+import com.google.common.collect.Maps;
 
 /**
  * @author kevx

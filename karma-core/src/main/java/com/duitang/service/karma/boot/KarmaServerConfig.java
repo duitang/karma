@@ -3,6 +3,7 @@ package com.duitang.service.karma.boot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.duitang.service.karma.support.ClusterRegistry;
 import com.duitang.service.karma.trace.NoopTraceVisitor;
 import com.duitang.service.karma.trace.TraceVisitor;
 
@@ -12,10 +13,12 @@ import com.duitang.service.karma.trace.TraceVisitor;
  *
  */
 public class KarmaServerConfig {
-
-	static Logger logger = LoggerFactory.getLogger(KarmaServerConfig.class);
 	
+	final public static long KARMA_SERVER_SHUTDOWN_TIMEOUT = 10 * 1000L;
+	static Logger logger = LoggerFactory.getLogger(KarmaServerConfig.class);
+
 	protected static TraceVisitor simpleVisitor = new NoopTraceVisitor();
+	public static ClusterRegistry clusterAware = new ClusterRegistry();
 	public static volatile TraceVisitor tracer = simpleVisitor;
 
 	public static volatile int host;
@@ -29,6 +32,12 @@ public class KarmaServerConfig {
 			tracer = simpleVisitor;
 		}
 		logger.info("using TraceVisitor: " + simpleVisitor.getClass().getName());
+
+		ClusterRegistry aware = KarmaFinders.findClusterRegistry();
+		if (aware != null) {
+			clusterAware = aware;
+		}
+		logger.info("using ClusterAware: " + clusterAware.getInfo());
 	}
 
 	synchronized public static void useTracer(TraceVisitor v) {

@@ -2,14 +2,16 @@ package com.duitang.service.karma.trace;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 public class BaseVisitor implements TraceVisitor {
 
-	protected volatile Map<String, TracerReporter> reporters = new HashMap<String, TracerReporter>();
+	protected volatile Map<String, Set<TracerReporter>> reporters = new HashMap<String, Set<TracerReporter>>();
 	protected ConsoleReporter console = new ConsoleReporter();
 
 	@Override
@@ -19,6 +21,7 @@ public class BaseVisitor implements TraceVisitor {
 
 	@Override
 	public void visits(List<TraceCell> tcs) {
+		Map<String, Set<TracerReporter>> reporters = this.reporters;
 		Map<String, List<TraceCell>> grp = new HashMap<String, List<TraceCell>>();
 		for (TraceCell tc : tcs) {
 			if (!grp.containsKey(tc.group)) {
@@ -30,10 +33,13 @@ public class BaseVisitor implements TraceVisitor {
 			console.commit(tcs);
 		} else {
 			for (Entry<String, List<TraceCell>> en : grp.entrySet()) {
+				Set<TracerReporter> rpts = null;
 				if (reporters.containsKey(en.getKey())) {
-					reporters.get(en.getKey()).commit(en.getValue());
+					rpts = reporters.get(en.getKey());
 				} else {
-					TracerReporter rpt = reporters.get(null); // special
+					rpts = reporters.get(null); // special
+				}
+				for (TracerReporter rpt : rpts) {
 					if (rpt != null) {
 						rpt.commit(en.getValue());
 					}
@@ -43,14 +49,20 @@ public class BaseVisitor implements TraceVisitor {
 	}
 
 	synchronized public void addReporter(String grp, TracerReporter report) {
-		HashMap<String, TracerReporter> m = new HashMap<String, TracerReporter>(reporters);
-		m.put(grp, report);
+		HashMap<String, Set<TracerReporter>> m = new HashMap<String, Set<TracerReporter>>(reporters);
+		if (!m.containsKey(grp)) {
+			m.put(grp, new HashSet<TracerReporter>());
+			m.get(grp).add(console);
+		}
+		m.get(grp).add(report);
 		reporters = m;
 	}
 
 	synchronized public void removeReporter(String grp) {
-		HashMap<String, TracerReporter> m = new HashMap<String, TracerReporter>(reporters);
-		m.remove(grp);
+		HashMap<String, Set<TracerReporter>> m = new HashMap<String, Set<TracerReporter>>(reporters);
+		if (grp != null) {
+			m.remove(grp);
+		}
 		reporters = m;
 	}
 

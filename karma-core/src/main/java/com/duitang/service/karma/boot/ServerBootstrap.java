@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 
 import com.duitang.service.karma.KarmaException;
-import com.duitang.service.karma.client.KarmaClient;
 import com.duitang.service.karma.handler.RPCHandler;
 import com.duitang.service.karma.handler.ReflectRPCHandler;
 import com.duitang.service.karma.router.JavaRouter;
@@ -68,6 +67,7 @@ public class ServerBootstrap {
 		tcp = new TCPServer();
 		tcp.setRouter(javaRouter);
 		tcp.setPort(port);
+		KarmaServerConfig.clusterAware.registerWrite(tcp);
 		tcp.start();
 		System.err.println("TCP SERVER LISTENING AT PORT: " + (port));
 
@@ -128,9 +128,22 @@ public class ServerBootstrap {
 	}
 
 	public void shutdown() {
-		KarmaClient.shutdownIOPool();
+//		KarmaClient.shutdownIOPool();
 		if (tcp != null) {
+			try {
+				KarmaServerConfig.clusterAware.unRegisterWrite(tcp);
+			} catch (KarmaException e) {
+				e.printStackTrace();
+			}
 			tcp.stop();
+		}
+		if (javaRouter != null) {
+			try {
+				javaRouter.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			javaRouter = null;
 		}
 	}
 

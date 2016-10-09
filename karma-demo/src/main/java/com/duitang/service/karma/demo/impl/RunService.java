@@ -58,7 +58,7 @@ public class RunService {
 	 */
 	public static void main(String[] args) throws Throwable {
 		Finder.enableConsole(true);
-		Finder.enableZipkin(null, "http://192.168.10.216:9411");
+		Finder.enableZipkin(null, "http://192.168.1.180:9411");
 		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 		root.setLevel(Level.INFO);
 		String name = args[0];
