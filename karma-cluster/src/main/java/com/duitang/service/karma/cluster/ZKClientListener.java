@@ -66,10 +66,12 @@ public class ZKClientListener implements AsyncRegistryReader {
 			List<ClusterNode> nodes = worker.syncRead();
 			LinkedHashMap<String, Double> ret0 = new LinkedHashMap<>();
 			double total = 0;
+			double nload = 0d;
 			for (ClusterNode n : nodes) {
 				if (n.isAlive()) {
-					total += n.load;
-					ret0.put(RegistryInfo.getConnectionURL(n.url), Double.valueOf(n.load));
+					nload = n.load == null ? 1 : n.load;
+					total += nload;
+					ret0.put(RegistryInfo.getConnectionURL(n.url), nload);
 				}
 			}
 			for (Entry<String, Double> en : ret0.entrySet()) {

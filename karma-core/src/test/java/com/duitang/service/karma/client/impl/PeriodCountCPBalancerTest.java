@@ -1,9 +1,8 @@
 package com.duitang.service.karma.client.impl;
 
-import static org.junit.Assert.fail;
-
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -13,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
+import com.duitang.service.karma.support.RPCUrls;
 import com.duitang.service.karma.trace.TraceCell;
 
 import ch.qos.logback.classic.Level;
@@ -101,7 +101,7 @@ public class PeriodCountCPBalancerTest {
 	}
 
 	@Test
-	public void testTraceFeed() throws Throwable {
+	public void testNextAndTraceFeed() throws Throwable {
 		Logger lg = (Logger) LoggerFactory.getLogger(AutoReBalance.class);
 		lg.setLevel(Level.DEBUG);
 		// only trace feed action validation is needed
@@ -154,64 +154,46 @@ public class PeriodCountCPBalancerTest {
 	}
 
 	@Test
-	public void testSetNodes() {
-		List<String> cfg = Arrays.asList("a:9999", "b:9999", "c:9999");
+	public void testSetNodesWithWeights() {
+		LinkedHashMap<String, Double> r = new LinkedHashMap<>();
+		r.put("a:9999", 1.0d);
+		r.put("b:9999", 3.0d);
+		r.put("c:9999", 2.0d);
+		RPCUrls cfg = new RPCUrls(r);
 		balancer = new PeriodCountCPBalancer(nodes);
-		balancer.setNodes(cfg);
+		balancer.setNodes(cfg.getNodes());
+		Assert.assertNotEquals(balancer.nap.nodes, cfg);
 
-		NodesAndPolicy n = balancer.nap;
-		Assert.assertEquals(n.nodes, cfg);
-		Assert.assertTrue(n.policy.size() == cfg.size());
+		balancer.syncReload();
+		Assert.assertEquals(balancer.nap.nodes, cfg);
+		Assert.assertTrue(balancer.nap.policy.size() == cfg.getNodes().size());
 	}
 
 	@Test
-	public void testCount1() {
-		fail("Not yet implemented");
-	}
+	public void testSetNodes() {
+		RPCUrls cfg = new RPCUrls(Arrays.asList("a:9999", "b:9999", "c:9999"));
+		balancer = new PeriodCountCPBalancer(nodes);
+		balancer.setNodes(cfg.getNodes());
+		Assert.assertNotEquals(balancer.nap.nodes, cfg);
 
-	@Test
-	public void testPeriodCountCPBalancerListOfString() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testPeriodCountCPBalancerListOfStringLongIntBoolean() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testGetSafeNodesListOfString() {
-		fail("Not yet implemented");
+		balancer.syncReload();
+		Assert.assertEquals(balancer.nap.nodes, cfg);
+		Assert.assertTrue(balancer.nap.policy.size() == cfg.getNodes().size());
 	}
 
 	@Test
 	public void testGetSafeNodesLinkedHashMapOfStringDouble() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testTraceableBalancer() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testNext() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testCheckpoint() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testSyncReload() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testSetNodesWithWeights() {
-		fail("Not yet implemented");
+		LinkedHashMap<String, Double> m = new LinkedHashMap<>();
+		List<String> s = Arrays.asList(new String[] { "aaa:123", "tcp://bbb:456", "aaa:789" });
+		for (String ss : s) {
+			m.put(ss, 1.0d);
+		}
+		RPCUrls u = PeriodCountCPBalancer.getSafeNodes(m);
+		System.out.println(u.getNodes());
+		Assert.assertTrue(s.size() == u.getNodes().size());
+		for (String ss : s) {
+			Assert.assertTrue(u.getNodes().contains(RPCUrls.getRawConnURL(ss)));
+		}
 	}
 
 }

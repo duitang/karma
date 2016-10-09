@@ -79,7 +79,7 @@ class WorkerMocker extends CuratorClusterWorker {
 	}
 
 	@Override
-	public boolean syncClear(RPCService rpc) {
+	public boolean syncClearRPCNode(RPCService rpc) {
 		return clearQueue.add(rpc);
 	}
 

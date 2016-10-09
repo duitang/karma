@@ -13,6 +13,7 @@ import com.duitang.service.karma.client.IOBalance;
 import com.duitang.service.karma.client.IOBalanceFactory;
 import com.duitang.service.karma.client.impl.TraceableBalancerFactory;
 import com.duitang.service.karma.support.ClusterRegistry;
+import com.duitang.service.karma.support.RPCUrls;
 import com.duitang.service.karma.trace.NoopTraceVisitor;
 import com.duitang.service.karma.trace.TraceVisitor;
 
@@ -64,7 +65,7 @@ public class KarmaClientConfig {
 		if (fac == null) {
 			fac = simpleFactory;
 		}
-		IOBalance b = fac.createIOBalance(clusterAware, urls);
+		IOBalance b = fac.createIOBalance(clusterAware, new RPCUrls(urls));
 		Map<String, IOBalance> m = new HashMap<String, IOBalance>(balanceRouter);
 		m.put(group, b);
 		balanceRouter = Collections.unmodifiableMap(m);
@@ -83,7 +84,7 @@ public class KarmaClientConfig {
 			if (fac == null) {
 				fac = simpleFactory;
 			}
-			ret = fac.createIOBalance(clusterAware, urls);
+			ret = fac.createIOBalance(clusterAware, new RPCUrls(urls));
 		}
 		return ret;
 	}

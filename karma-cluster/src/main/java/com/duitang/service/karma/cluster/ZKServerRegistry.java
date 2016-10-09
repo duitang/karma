@@ -29,16 +29,16 @@ public class ZKServerRegistry implements AsyncRegistryWriter {
 
 	@Override
 	public void register(RPCService rpc) {
-		worker.syncWrite(rpc);
 		String conn = RegistryInfo.getConnectionURL(rpc.getServiceURL());
 		service.put(conn, rpc);
+		worker.syncWrite(rpc);
 	}
 
 	@Override
 	public void unregister(RPCService rpc) {
-		worker.syncClear(rpc);
 		String conn = RegistryInfo.getConnectionURL(rpc.getServiceURL());
 		service.remove(conn, rpc);
+		worker.syncClearRPCNode(rpc);
 	}
 
 	@Override

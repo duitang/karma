@@ -9,12 +9,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -23,6 +21,7 @@ import com.duitang.service.karma.client.AsyncRegistryReader;
 import com.duitang.service.karma.client.BalancePolicy;
 import com.duitang.service.karma.client.IOBalance;
 import com.duitang.service.karma.client.RegistryInfo;
+import com.duitang.service.karma.support.RPCUrls;
 import com.duitang.service.karma.trace.TraceBlock;
 import com.duitang.service.karma.trace.TraceCell;
 
@@ -62,8 +61,8 @@ public abstract class TraceableBalancer implements IOBalance {
 	/**
 	 * before commit nodes
 	 */
-	protected volatile LinkedHashMap<String, Double> stagingNodes0;
-	protected volatile List<String> stagingNodes1;
+	protected volatile RegistryInfo stagingNodes0;
+	protected volatile RPCUrls stagingNodes1;
 
 	/**
 	 * use this to keep nodes validation
@@ -71,36 +70,19 @@ public abstract class TraceableBalancer implements IOBalance {
 	 * @param nodes
 	 * @return
 	 */
-	public static List<String> getSafeNodes(List<String> nodes) {
-		Set<String> ns = new HashSet<String>();
-		List<String> ret = new ArrayList<String>();
-		for (String s : nodes) {
-			s = RegistryInfo.getConnectionURL(s);
-			if (!ns.contains(s)) {
-				ret.add(s);
-				ns.add(s);
-			}
-		}
-		return ret;
-	}
-
-	/**
-	 * use this to keep nodes validation
-	 * 
-	 * @param nodes
-	 * @return
-	 */
-	public static List<String> getSafeNodes(LinkedHashMap<String, Double> nodes) {
+	public static RPCUrls getSafeNodes(LinkedHashMap<String, Double> nodes) {
 		List<String> keys = new ArrayList<String>();
 		for (Entry<String, Double> en : nodes.entrySet()) {
 			keys.add(en.getKey());
 		}
-		return getSafeNodes(keys);
+		return new RPCUrls(keys);
 	}
 
 	public TraceableBalancer(List<String> urls) {
-		urls = getSafeNodes(urls);
-		// setNodes(urls);
+		this(new RPCUrls(urls));
+	}
+
+	public TraceableBalancer(RPCUrls urls) {
 		this.stagingNodes1 = urls;
 		syncReload();
 		for (AsyncRegistryReader cfg : configs) {
@@ -115,7 +97,7 @@ public abstract class TraceableBalancer implements IOBalance {
 	@Override
 	public String next(String token) {
 		NodesAndPolicy n = nap;
-		String ret = n.nodes.get(n.policy.sample());
+		String ret = n.nodes.getNodes().get(n.policy.sample());
 		n.updateLoad(ret, 1);
 		count1(ret);
 		return ret;
@@ -145,7 +127,7 @@ public abstract class TraceableBalancer implements IOBalance {
 		// just wrapper method
 		TraceBlock ts = new TraceBlock(myName, KEY);
 		n.policy.updateLoad(n.fetchLoads());
-		ts.tc.props.put("nodes", n.nodes.toString());
+		ts.tc.props.put("nodes", n.nodes.getNodes().toString());
 		ts.tc.props.put("old_samples", Arrays.toString(n.policy.getWeights()));
 		ts.tc.props.put("old_statistics", Arrays.toString(n.policy.getDebugInfo()));
 		// try syncReload first
@@ -163,30 +145,32 @@ public abstract class TraceableBalancer implements IOBalance {
 	}
 
 	synchronized protected boolean syncReload() {
-		List<String> newhosts = null;
+		RPCUrls newhosts = null;
 		BalancePolicy policy = null;
 		Map<String, Integer> idx = new HashMap<String, Integer>();
 		Map<String, AtomicInteger> load = new HashMap<>();
 		if (stagingNodes0 != null) { // 1st freeze mode
-			LinkedHashMap<String, Double> n = stagingNodes0;
-			newhosts = getSafeNodes(n);
-			double[] samples = new double[newhosts.size()];
-			for (int i = 0; i < samples.length; i++) {
-				samples[i] = n.get(newhosts.get(i));
+			RegistryInfo n = stagingNodes0;
+			newhosts = new RPCUrls(n.wNodes);
+			int ii = 0;
+			double[] samples = new double[n.wNodes.size()];
+			String key = null;
+			for (Entry<String, Double> en : n.wNodes.entrySet()) {
+				key = en.getKey();
+				samples[ii] = en.getValue();
+				idx.put(key, ii);
+				load.put(key, new AtomicInteger(0));
+				ii++;
 			}
 			policy = new FixedPolicy(samples);
-			for (int i = 0; i < n.size(); i++) {
-				idx.put(newhosts.get(i), i);
-				load.put(newhosts.get(i), new AtomicInteger(0));
-			}
 		} else if (stagingNodes1 != null) { // 2nd dynamic mode
-			List<String> n = stagingNodes1;
-			newhosts = getSafeNodes(n);
-			policy = new AutoReBalance(n.size());
-			for (int i = 0; i < n.size(); i++) {
-				idx.put(n.get(i), i);
-				load.put(n.get(i), new AtomicInteger(0));
+			RPCUrls n = stagingNodes1;
+			policy = new AutoReBalance(n.getNodes().size());
+			for (int i = 0; i < n.getNodes().size(); i++) {
+				idx.put(n.getNodes().get(i), i);
+				load.put(n.getNodes().get(i), new AtomicInteger(0));
 			}
+			newhosts = n;
 		} else { // nothing happens
 			return false;
 		}
@@ -203,17 +187,20 @@ public abstract class TraceableBalancer implements IOBalance {
 
 	@Override
 	public void setNodes(List<String> nodes) {
-		if (nodes != null && nap.diffNodes(nodes)) {
-			this.stagingNodes1 = nodes;
-			syncReload();
+		if (nodes != null && nap.diffNodes(new RPCUrls(nodes))) {
+			this.stagingNodes1 = new RPCUrls(nodes);
+			// syncReload();
 		}
 	}
 
 	@Override
 	public void setNodesWithWeights(LinkedHashMap<String, Double> nodes) {
 		if (nodes != null) {
-			this.stagingNodes0 = nodes;
-			syncReload();
+			RegistryInfo ret = new RegistryInfo();
+			ret.freezeMode = true;
+			ret.wNodes = RPCUrls.getRawConnURL(nodes);
+			this.stagingNodes0 = ret;
+			// syncReload();
 		}
 	}
 
@@ -222,7 +209,7 @@ public abstract class TraceableBalancer implements IOBalance {
 class NodesAndPolicy {
 
 	BalancePolicy policy;
-	List<String> nodes;
+	RPCUrls nodes;
 	Map<String, Integer> idx;
 	Map<String, AtomicInteger> load;
 	boolean suspend;
@@ -236,24 +223,15 @@ class NodesAndPolicy {
 
 	double[] fetchLoads() {
 		double[] ret = new double[load.size()];
-		for (int i = 0; i < nodes.size(); i++) {
-			ret[i] = load.get(nodes.get(i)).get();
+		for (int i = 0; i < nodes.getNodes().size(); i++) {
+			ret[i] = load.get(nodes.getNodes().get(i)).get();
 			ret[i] = ret[i] > 0 ? ret[i] : Candidates.VERY_TRIVIA;
 		}
 		return ret;
 	}
 
-	boolean diffNodes(List<String> all) {
-		HashSet<String> n0 = new HashSet<String>(all);
-		n0.removeAll(nodes);
-		HashSet<String> n1 = new HashSet<String>(nodes);
-		n1.removeAll(all);
-
-		boolean ret = true;
-		if (n0.size() == n1.size() && n0.size() == 0) {
-			ret = false;
-		}
-		return ret;
+	boolean diffNodes(RPCUrls all) {
+		return nodes.compareTo(all) != 0;
 	}
 
 }

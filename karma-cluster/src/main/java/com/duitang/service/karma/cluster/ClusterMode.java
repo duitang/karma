@@ -30,7 +30,7 @@ public class ClusterMode {
 		try {
 			return mapper.readValue(src, ClusterMode.class);
 		} catch (IOException e) {
-			e.printStackTrace();
+			// ignore
 		}
 		return null;
 	}

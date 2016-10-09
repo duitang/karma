@@ -128,9 +128,9 @@ public class AutoReBalance implements BalancePolicy {
 		for (int i = 0; i < ret.length; i++) {
 			StringBuilder sb = new StringBuilder();
 			sb.append("Current[" + minWin + "]: resp=").append(cdd1.resp[i].getMean()).append("s ; failure=")
-					.append(cdd1.fail[i].getMean()).append(" ; load=").append(cdd1.load[i]).append(" ; forceMode=");
+					.append(cdd1.fail[i].getMean()).append(" ; load=").append(cdd1.load[i]);
 			sb.append(". History[" + moreWin + "]: resp=").append(cdd1.resp[i].getMean()).append("s ; failure=")
-					.append(cdd1.fail[i].getMean()).append(" ; load=").append(cdd1.load[i]).append(" ; forceMode=");
+					.append(cdd1.fail[i].getMean()).append(" ; load=").append(cdd1.load[i]);
 			ret[i] = sb.toString();
 		}
 		return ret;

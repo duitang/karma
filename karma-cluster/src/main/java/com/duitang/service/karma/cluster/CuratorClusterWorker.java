@@ -9,8 +9,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -41,7 +43,7 @@ public class CuratorClusterWorker {
 	protected CuratorFramework cur;
 	protected ZKServerRegistry zkSR;
 	protected ZKClientListener lsnr;
-	protected Map<String, ClusterNode> snapshot = new HashMap<String, ClusterNode>();
+	volatile protected Map<String, ClusterNode> snapshot = new HashMap<String, ClusterNode>();
 
 	static class ClusterMonitor extends Thread implements CuratorListener {
 
@@ -63,7 +65,11 @@ public class CuratorClusterWorker {
 			// send heartbeat sync here
 			Set<RPCService> sv = worker.zkSR.getRegServices();
 			for (RPCService s : sv) {
-				worker.syncWrite(s);
+				if (s.online()) {
+					worker.syncWrite(s);
+				} else {
+					worker.syncClearRPCNode(s);
+				}
 			}
 		}
 
@@ -102,8 +108,8 @@ public class CuratorClusterWorker {
 		if (ret == null) {
 			ZKServerRegistry zkSR = new ZKServerRegistry();
 			ZKClientListener lsnr = new ZKClientListener();
-			lsnr.setWorker(ret);
 			ret = new CuratorClusterWorker(zkSR, lsnr, conn);
+			lsnr.setWorker(ret);
 			owner.put(conn, ret);
 		}
 		return ret;
@@ -212,7 +218,22 @@ public class CuratorClusterWorker {
 		return ret;
 	}
 
-	public boolean syncClear(RPCService rpc) {
+	public boolean syncClearMode() {
+		boolean ret = false;
+		try {
+			boolean r = cur.checkExists().forPath(ClusterNode.zkNodeBase) == null;
+			if (!r) {
+				cur.setData().forPath(ClusterNode.zkNodeBase, "".getBytes());
+			}
+			ret = true;
+		} catch (Exception e) {
+			ret = false;
+			e.printStackTrace();
+		}
+		return ret;
+	}
+
+	public boolean syncClearRPCNode(RPCService rpc) {
 		String nodepath = ClusterNode.zkNodeBase + "/" + safePath(rpc.getServiceURL());
 		boolean ret = false;
 		try {
@@ -223,6 +244,53 @@ public class CuratorClusterWorker {
 			ret = false;
 		}
 		return ret;
+	}
+
+	protected List<ClusterNode> refreshRPCNodes() {
+		LinkedHashMap<String, ClusterNode> newSnap = new LinkedHashMap<String, ClusterNode>();
+		ArrayList<ClusterNode> ret = new ArrayList<ClusterNode>();
+
+		boolean freezing = false;
+		// 1. refresh Cluster Mode
+		ClusterMode mode = syncGetMode();
+		if (mode != null && mode.freeze != null && mode.freeze && mode.nodes != null) {
+			// do nothing
+			freezing = true;
+		}
+		
+		// 2. refresh Nodes
+		if (freezing){ // cluster freezing
+			newSnap.clear();
+		}else{ // freeze
+			List<ClusterNode> nodes = syncRead();
+			double total = 0;
+			double nload = 0d;
+			for (ClusterNode n : nodes) {
+				if (n.isAlive()) {
+					nload = n.load == null ? 1 : n.load;
+					total += nload;
+					newSnap.put(n.url, n);
+					ret.add(n);
+				}
+			}			
+		}
+		
+		snapshot = newSnap;
+
+
+		List<ClusterNode> nodes = syncRead();
+		boolean dirty = false;
+		for (ClusterNode n : nodes) {
+			ClusterNode n2 = snapshot.get(n.url);
+			if (n.diff(n2)) {
+				dirty = true;
+				break;
+			}
+		}
+		if (dirty) {
+			RegistryInfo cfg = ClusterNode.toTinyMap(nodes);
+			lsnr.updateAllNodes(cfg.wNodes);
+		}
 	}
 
 	protected String safePath(String url) {

@@ -8,6 +8,8 @@ package com.duitang.service.karma.client.impl;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.duitang.service.karma.support.RPCUrls;
+
 /**
  * @author laurence
  * @since 2016年9月30日
@@ -15,10 +17,14 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class PeriodCountCPBalancer extends TraceableBalancer {
 
+	final static long PERIOD = 60 * 1000; // in milliseconds, 60s
+	final static int COUNT = 0; // in count
+	final static boolean AND = false; // use and logic
+
 	// default in 60s and no count limit
-	protected long period = 60 * 1000; // in milliseconds, 60s
-	protected int count = 0; // in count
-	protected boolean and = false; // use and logic
+	protected long period; // in milliseconds, 60s
+	protected int count; // in count
+	protected boolean and; // use and logic
 
 	// hit if reach count
 	protected AtomicInteger watermark = new AtomicInteger(0);
@@ -27,12 +33,19 @@ public class PeriodCountCPBalancer extends TraceableBalancer {
 	protected long nextPoint;
 
 	public PeriodCountCPBalancer(List<String> urls) {
-		super(urls);
-		nextPoint = System.currentTimeMillis() + period;
+		this(new RPCUrls(urls), PERIOD, COUNT, AND);
+	}
+
+	public PeriodCountCPBalancer(RPCUrls urls) {
+		this(urls, PERIOD, COUNT, AND);
 	}
 
 	public PeriodCountCPBalancer(List<String> urls, long period, int count, boolean and) {
-		this(urls);
+		this(new RPCUrls(urls), period, count, and);
+	}
+
+	public PeriodCountCPBalancer(RPCUrls urls, long period, int count, boolean and) {
+		super(urls);
 		this.period = period;
 		this.count = count;
 		this.and = and;

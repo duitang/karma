@@ -62,7 +62,7 @@ public class CuratorClusterWorkerTest {
 		// }
 
 		// then clear it
-		r = worker.syncClear(rpc);
+		r = worker.syncClearRPCNode(rpc);
 		Assert.assertTrue(r);
 	}
 
@@ -115,7 +115,7 @@ public class CuratorClusterWorkerTest {
 		r = worker.syncWrite(rpc);
 		Assert.assertTrue(r);
 
-		r = worker.syncClear(rpc);
+		r = worker.syncClearRPCNode(rpc);
 		Assert.assertTrue(r);
 	}
 
