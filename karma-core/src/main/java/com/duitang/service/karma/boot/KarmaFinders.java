@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.duitang.service.karma.server.CoreEnhanced;
-import com.duitang.service.karma.support.ClusterRegistry;
+import com.duitang.service.karma.support.RPCRegistry;
 import com.duitang.service.karma.trace.TraceVisitor;
 
 /**
@@ -51,8 +51,8 @@ public class KarmaFinders {
 		return findKarmaImpl(CoreEnhanced.class, KARMA_HTTP);
 	}
 
-	public static ClusterRegistry findClusterRegistry() {
-		return findKarmaImpl(ClusterRegistry.class, KARMA_CLUSTER);
+	public static RPCRegistry findClusterRegistry() {
+		return findKarmaImpl(RPCRegistry.class, KARMA_CLUSTER);
 	}
 
 }

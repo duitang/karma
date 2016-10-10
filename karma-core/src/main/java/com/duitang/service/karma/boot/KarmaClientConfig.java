@@ -12,8 +12,8 @@ import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.client.IOBalance;
 import com.duitang.service.karma.client.IOBalanceFactory;
 import com.duitang.service.karma.client.impl.TraceableBalancerFactory;
-import com.duitang.service.karma.support.ClusterRegistry;
-import com.duitang.service.karma.support.RPCUrls;
+import com.duitang.service.karma.support.RPCNodeHashing;
+import com.duitang.service.karma.support.RPCRegistry;
 import com.duitang.service.karma.trace.NoopTraceVisitor;
 import com.duitang.service.karma.trace.TraceVisitor;
 
@@ -28,7 +28,7 @@ public class KarmaClientConfig {
 
 	final static public long KARMA_CLIENT_TIMEOUT = 10 * 1000; // 10s
 
-	protected static ClusterRegistry clusterAware = new ClusterRegistry();
+	protected static RPCRegistry clusterAware = new RPCRegistry();
 	protected static IOBalanceFactory simpleFactory = new TraceableBalancerFactory(60 * 1000, 0, false);
 	protected static TraceVisitor simpleVisitor = new NoopTraceVisitor();
 
@@ -45,7 +45,7 @@ public class KarmaClientConfig {
 		}
 		logger.info("using TraceVisitor: " + simpleVisitor.getClass().getName());
 
-		ClusterRegistry aware = KarmaFinders.findClusterRegistry();
+		RPCRegistry aware = KarmaFinders.findClusterRegistry();
 		if (aware != null) {
 			clusterAware = aware;
 			simpleFactory = aware.getFactory();
@@ -65,7 +65,7 @@ public class KarmaClientConfig {
 		if (fac == null) {
 			fac = simpleFactory;
 		}
-		IOBalance b = fac.createIOBalance(clusterAware, new RPCUrls(urls));
+		IOBalance b = fac.createIOBalance(clusterAware, RPCNodeHashing.createFromString(urls));
 		Map<String, IOBalance> m = new HashMap<String, IOBalance>(balanceRouter);
 		m.put(group, b);
 		balanceRouter = Collections.unmodifiableMap(m);
@@ -84,7 +84,7 @@ public class KarmaClientConfig {
 			if (fac == null) {
 				fac = simpleFactory;
 			}
-			ret = fac.createIOBalance(clusterAware, new RPCUrls(urls));
+			ret = fac.createIOBalance(clusterAware, RPCNodeHashing.createFromString(urls));
 		}
 		return ret;
 	}

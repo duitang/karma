@@ -1,16 +1,13 @@
 /**
  * @author laurence
- * @since 2016年10月4日
+ * @since 2016年10月10日
  *
  */
-package com.duitang.service.karma.cluster;
+package com.duitang.service.karma.support;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.LinkedHashMap;
-import java.util.List;
 
-import com.duitang.service.karma.client.RegistryInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -18,17 +15,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @author laurence
- * @since 2016年10月4日
+ * @since 2016年10月10日
  *
  */
-public class ClusterNode {
+public class RPCNode implements Comparable<RPCNode> {
 
 	static final ObjectMapper mapper = new ObjectMapper();
 	static {
 		mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 	}
-	static final String zkBase = "/karma_rpc";
-	static final String zkNodeBase = zkBase + "/nodes";
 
 	static final long HEART_BEAT_PERIOD = 30 * 1000; // 30s
 	static final long MAX_LOSE_CONTACT = 5; // 5 period
@@ -41,7 +36,7 @@ public class ClusterNode {
 	public String upcaption; // just for production human traceable information
 	public Long heartbeat;
 	public String hbcaption; // just for production human traceable information
-	public Integer load; // currently not used
+	public Double load; // currently not used
 
 	public String toDataString() {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -59,13 +54,17 @@ public class ClusterNode {
 		}
 	}
 
-	public static ClusterNode fromBytes(byte[] src) {
+	public static RPCNode fromBytes(byte[] src) {
 		try {
-			return mapper.readValue(src, ClusterNode.class);
+			return mapper.readValue(src, RPCNode.class);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	public double getSafeLoad(double def) {
+		return load == null ? def : load;
 	}
 
 	@JsonIgnore
@@ -74,7 +73,7 @@ public class ClusterNode {
 		return url != null && alive;
 	}
 
-	public boolean diff(ClusterNode node) {
+	public boolean diff(RPCNode node) {
 		if (node == null) {
 			return true;
 		}
@@ -85,15 +84,13 @@ public class ClusterNode {
 		return p || g || o || u;
 	}
 
-	public static RegistryInfo toTinyMap(List<ClusterNode> nodes) {
-		LinkedHashMap<String, Double> r = new LinkedHashMap<>();
-		for (ClusterNode cn : nodes) {
-			// current always using 1.0
-			r.put(RegistryInfo.getConnectionURL(cn.url), 1.0d);
-		}
-		RegistryInfo ret = new RegistryInfo();
-		ret.wNodes = r;
-		return ret;
+	public String toString() {
+		return protocol + "://" + url;
+	}
+
+	@Override
+	public int compareTo(RPCNode o) {
+		return this.toString().compareTo(o.toString());
 	}
 
 }

@@ -8,7 +8,7 @@ package com.duitang.service.karma.client.impl;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.duitang.service.karma.support.RPCUrls;
+import com.duitang.service.karma.support.RPCNodeHashing;
 
 /**
  * @author laurence
@@ -33,18 +33,18 @@ public class PeriodCountCPBalancer extends TraceableBalancer {
 	protected long nextPoint;
 
 	public PeriodCountCPBalancer(List<String> urls) {
-		this(new RPCUrls(urls), PERIOD, COUNT, AND);
+		this(RPCNodeHashing.createFromString(urls), PERIOD, COUNT, AND);
 	}
 
-	public PeriodCountCPBalancer(RPCUrls urls) {
+	public PeriodCountCPBalancer(RPCNodeHashing urls) {
 		this(urls, PERIOD, COUNT, AND);
 	}
 
 	public PeriodCountCPBalancer(List<String> urls, long period, int count, boolean and) {
-		this(new RPCUrls(urls), period, count, and);
+		this(RPCNodeHashing.createFromString(urls), period, count, and);
 	}
 
-	public PeriodCountCPBalancer(RPCUrls urls, long period, int count, boolean and) {
+	public PeriodCountCPBalancer(RPCNodeHashing urls, long period, int count, boolean and) {
 		super(urls);
 		this.period = period;
 		this.count = count;

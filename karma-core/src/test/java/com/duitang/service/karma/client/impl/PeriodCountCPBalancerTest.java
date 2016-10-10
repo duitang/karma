@@ -12,7 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
-import com.duitang.service.karma.support.RPCUrls;
+import com.duitang.service.karma.support.RPCNodeHashing;
 import com.duitang.service.karma.trace.TraceCell;
 
 import ch.qos.logback.classic.Level;
@@ -159,25 +159,25 @@ public class PeriodCountCPBalancerTest {
 		r.put("a:9999", 1.0d);
 		r.put("b:9999", 3.0d);
 		r.put("c:9999", 2.0d);
-		RPCUrls cfg = new RPCUrls(r);
+		RPCNodeHashing cfg = RPCNodeHashing.createFromHashMap(r);
 		balancer = new PeriodCountCPBalancer(nodes);
-		balancer.setNodes(cfg.getNodes());
-		Assert.assertNotEquals(balancer.nap.nodes, cfg);
+		balancer.setNodes(cfg.getURLs());
+		Assert.assertNotEquals(balancer.nap.hashing, cfg);
 
 		balancer.syncReload();
-		Assert.assertEquals(balancer.nap.nodes, cfg);
+		Assert.assertEquals(balancer.nap.hashing, cfg);
 		Assert.assertTrue(balancer.nap.policy.size() == cfg.getNodes().size());
 	}
 
 	@Test
 	public void testSetNodes() {
-		RPCUrls cfg = new RPCUrls(Arrays.asList("a:9999", "b:9999", "c:9999"));
+		RPCNodeHashing cfg = RPCNodeHashing.createFromString(Arrays.asList("a:9999", "b:9999", "c:9999"));
 		balancer = new PeriodCountCPBalancer(nodes);
-		balancer.setNodes(cfg.getNodes());
-		Assert.assertNotEquals(balancer.nap.nodes, cfg);
+		balancer.setNodes(cfg.getURLs());
+		Assert.assertNotEquals(balancer.nap.hashing, cfg);
 
 		balancer.syncReload();
-		Assert.assertEquals(balancer.nap.nodes, cfg);
+		Assert.assertEquals(balancer.nap.hashing, cfg);
 		Assert.assertTrue(balancer.nap.policy.size() == cfg.getNodes().size());
 	}
 
@@ -188,11 +188,11 @@ public class PeriodCountCPBalancerTest {
 		for (String ss : s) {
 			m.put(ss, 1.0d);
 		}
-		RPCUrls u = PeriodCountCPBalancer.getSafeNodes(m);
+		RPCNodeHashing u = RPCNodeHashing.createFromHashMap(m);
 		System.out.println(u.getNodes());
 		Assert.assertTrue(s.size() == u.getNodes().size());
 		for (String ss : s) {
-			Assert.assertTrue(u.getNodes().contains(RPCUrls.getRawConnURL(ss)));
+			Assert.assertTrue(u.getNodes().contains(RPCNodeHashing.getRawConnURL(ss)));
 		}
 	}
 

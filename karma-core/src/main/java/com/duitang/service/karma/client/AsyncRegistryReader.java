@@ -6,6 +6,7 @@
 package com.duitang.service.karma.client;
 
 import com.duitang.service.karma.KarmaException;
+import com.duitang.service.karma.support.RegistryInfo;
 
 /**
  * @author laurence

@@ -14,18 +14,18 @@ import org.junit.Test;
 import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.client.IOBalance;
 import com.duitang.service.karma.client.IOBalanceFactory;
-import com.duitang.service.karma.client.RegistryInfo;
 import com.duitang.service.karma.client.impl.RRRFactory;
 import com.duitang.service.karma.router.Router;
 import com.duitang.service.karma.server.RPCService;
-import com.duitang.service.karma.support.ClusterRegistry;
+import com.duitang.service.karma.support.RPCRegistry;
+import com.duitang.service.karma.support.RegistryInfo;
 import com.duitang.service.karma.trace.TraceCell;
 
 public class ZKClientListenerTest {
 
 	ZKClientListener lsnr;
 	IOBalanceFactory fac = new RRRFactory();
-	ClusterRegistry aware = new ClusterRegistry();
+	RPCRegistry aware = new RPCRegistry();
 	IOBalance b;
 
 	@Before

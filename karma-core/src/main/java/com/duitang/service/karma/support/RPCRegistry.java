@@ -25,7 +25,7 @@ import com.duitang.service.karma.server.RPCService;
  * @since 2016年10月8日
  *
  */
-public class ClusterRegistry {
+public class RPCRegistry {
 
 	final ConcurrentLinkedQueue<AsyncRegistryReader> readers = new ConcurrentLinkedQueue<>();
 	final ConcurrentLinkedQueue<AsyncRegistryWriter> writers = new ConcurrentLinkedQueue<>();

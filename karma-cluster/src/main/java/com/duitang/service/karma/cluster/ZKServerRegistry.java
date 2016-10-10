@@ -9,9 +9,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.duitang.service.karma.client.RegistryInfo;
 import com.duitang.service.karma.server.AsyncRegistryWriter;
 import com.duitang.service.karma.server.RPCService;
+import com.duitang.service.karma.support.RPCNodeHashing;
 
 /**
  * @author laurence
@@ -29,21 +29,21 @@ public class ZKServerRegistry implements AsyncRegistryWriter {
 
 	@Override
 	public void register(RPCService rpc) {
-		String conn = RegistryInfo.getConnectionURL(rpc.getServiceURL());
+		String conn = RPCNodeHashing.getRawConnURL(rpc.getServiceURL());
 		service.put(conn, rpc);
 		worker.syncWrite(rpc);
 	}
 
 	@Override
 	public void unregister(RPCService rpc) {
-		String conn = RegistryInfo.getConnectionURL(rpc.getServiceURL());
+		String conn = RPCNodeHashing.getRawConnURL(rpc.getServiceURL());
 		service.remove(conn, rpc);
 		worker.syncClearRPCNode(rpc);
 	}
 
 	@Override
 	public void syncPush(RPCService rpc) {
-		String conn = RegistryInfo.getConnectionURL(rpc.getServiceURL());
+		String conn = RPCNodeHashing.getRawConnURL(rpc.getServiceURL());
 		if (service.containsKey(conn)) {
 			worker.syncWrite(rpc);
 		}

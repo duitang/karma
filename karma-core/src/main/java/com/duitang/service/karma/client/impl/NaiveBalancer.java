@@ -1,7 +1,6 @@
 package com.duitang.service.karma.client.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -10,6 +9,7 @@ import java.util.Random;
 import java.util.Set;
 
 import com.duitang.service.karma.client.IOBalance;
+import com.duitang.service.karma.support.RPCNodeHashing;
 import com.duitang.service.karma.trace.TraceCell;
 
 /**
@@ -25,27 +25,25 @@ import com.duitang.service.karma.trace.TraceCell;
 public class NaiveBalancer implements IOBalance {
 
 	static protected Random iid = new Random();
-	protected List<String> urls;
-	protected int sz;
-
-	public NaiveBalancer() {
-		this.urls = Collections.EMPTY_LIST;
-		this.sz = urls.size();
-	}
+	protected RPCNodeHashing urls;
 
 	public NaiveBalancer(List<String> urls) {
-		this.urls = new ArrayList<String>(urls);
-		this.sz = this.urls.size();
+		this.urls = RPCNodeHashing.createFromString(urls);
+	}
+
+	public NaiveBalancer(RPCNodeHashing urls) {
+		this.urls = urls;
 	}
 
 	@Override
 	public String next(String token) {
+		int sz = urls.getNodes().size();
 		if (sz == 0) {
 			throw new RuntimeException("Not initialized properly!");
 		}
 		// ignore this token, just next
 		int idx = Math.abs(iid.nextInt()) % sz;
-		return urls.get(idx);
+		return urls.getURLs().get(idx);
 	}
 
 	@Override
@@ -55,12 +53,12 @@ public class NaiveBalancer implements IOBalance {
 
 	@Override
 	public void setNodes(List<String> nodes) {
-		this.urls = getSafeNodes(nodes);
+		this.urls = RPCNodeHashing.createFromString(nodes);
 	}
 
 	@Override
 	public void setNodesWithWeights(LinkedHashMap<String, Double> nodes) {
-		this.urls = getSafeNodes(nodes);
+		this.urls = RPCNodeHashing.createFromHashMap(nodes);
 	}
 
 	public static List<String> getSafeNodes(LinkedHashMap<String, Double> nodes) {

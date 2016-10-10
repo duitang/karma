@@ -1,11 +1,10 @@
 package com.duitang.service.karma.client.impl;
 
-import java.util.List;
-
 import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.client.IOBalance;
 import com.duitang.service.karma.client.IOBalanceFactory;
-import com.duitang.service.karma.support.ClusterRegistry;
+import com.duitang.service.karma.support.RPCRegistry;
+import com.duitang.service.karma.support.RPCNodeHashing;
 
 /**
  * @author laurence
@@ -15,7 +14,7 @@ import com.duitang.service.karma.support.ClusterRegistry;
 public class RRRFactory implements IOBalanceFactory {
 
 	@Override
-	public IOBalance createIOBalance(ClusterRegistry clusterAware, List<String> urls) throws KarmaException {
+	public IOBalance createIOBalance(RPCRegistry clusterAware, RPCNodeHashing urls) throws KarmaException {
 		NaiveBalancer ret = new NaiveBalancer(urls);
 		clusterAware.registerRead(ret);
 		return ret;

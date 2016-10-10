@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Test;
 
 import com.duitang.service.karma.client.impl.NaiveBalancer;
+import com.duitang.service.karma.support.RPCNodeHashing;
 
 public class KarmaIORouterTest {
 
@@ -17,7 +18,7 @@ public class KarmaIORouterTest {
 		List<String> lst = Arrays.asList(new String[] { "a", "b", "c", "d", "e", "f" });
 
 		StringBuilder sb = new StringBuilder();
-		NaiveBalancer router = new NaiveBalancer(lst);
+		NaiveBalancer router = new NaiveBalancer(RPCNodeHashing.createFromString(lst));
 		String s = null;
 		for (int i = 0; i < lst.size() * 1000 + 1; i++) {
 			s = router.next(null);
