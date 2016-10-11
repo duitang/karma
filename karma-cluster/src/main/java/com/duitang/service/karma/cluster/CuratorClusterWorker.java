@@ -19,6 +19,7 @@ import org.apache.curator.framework.api.CuratorListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 
 import com.duitang.service.karma.server.RPCService;
+import com.duitang.service.karma.support.DeamonJobs;
 import com.duitang.service.karma.support.RPCNode;
 import com.duitang.service.karma.support.RPCNodeHashing;
 import com.duitang.service.karma.support.RegistryInfo;
@@ -40,23 +41,37 @@ public class CuratorClusterWorker {
 	final static ConcurrentHashMap<String, CuratorClusterWorker> owner = new ConcurrentHashMap<>();
 
 	protected String conn;
-	protected boolean readOnly;
 	protected CuratorFramework cur;
 	protected ZKServerRegistry zkSR;
 	protected ZKClientListener lsnr;
 
-	static class ClusterMonitor extends Thread implements CuratorListener {
+	/**
+	 * <pre>
+	 *  notice:
+	 *  it's just like NIO Selector
+	 * </pre>
+	 * 
+	 * @author laurence
+	 * @since 2016年10月11日
+	 *
+	 */
+	static class ClusterMonitor implements Runnable, CuratorListener {
+
+		Object lock = new Object();
 
 		@Override
 		public void run() {
 			while (true) {
-				for (CuratorClusterWorker o : owner.values()) {
-					heartbeat(o);
+				synchronized (lock) {
+					for (CuratorClusterWorker o : owner.values()) {
+						heartbeat(o);
+					}
 				}
+
 				try {
 					Thread.sleep(WORK_PERIOD);
 				} catch (InterruptedException e) {
-					e.printStackTrace();
+
 				}
 			}
 		}
@@ -76,18 +91,27 @@ public class CuratorClusterWorker {
 		@Override
 		public void eventReceived(CuratorFramework client, CuratorEvent event) throws Exception {
 			String conn = client.getZookeeperClient().getCurrentConnectionString();
-			CuratorClusterWorker w = owner.get(conn);
-			if (w != null) {
-				// no problem using latest version
-				RegistryInfo ret = w.lsnr.syncPull();
-				if (ret == null) {
-					return;
-				}
+			// conns.add(conn);
+			// rLock.release();
+			synchronized (lock) {
+				CuratorClusterWorker w = owner.get(conn);
+				if (w != null) {
+					RegistryInfo ret = w.lsnr.syncPull();
+					if (ret == null) {
+						return;
+					}
 
-				if (ret.isFreezeMode()) {
-					w.lsnr.updateAllNodes(ret.getHashing().reverseToMap());
-				} else {
-					w.lsnr.updateAllNodes(ret.getURLs());
+					if (ret.isFreezeMode()) {
+						w.lsnr.updateAllNodes(ret.getHashing().reverseToMap());
+					} else {
+						w.lsnr.updateAllNodes(ret.getURLs());
+					}
+					try {
+						// watch it again
+						w.cur.getChildren().watched().forPath(zkNodeBase);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 			}
 		}
@@ -97,17 +121,23 @@ public class CuratorClusterWorker {
 	static ClusterMonitor monitor;
 	static {
 		monitor = new ClusterMonitor();
-		monitor.setDaemon(true);
-		monitor.start();
+		DeamonJobs.runJob(monitor);
 	}
 
-	synchronized public static CuratorClusterWorker createInstance(String conn) {
+	public static CuratorClusterWorker createInstance(String conn) {
 		CuratorClusterWorker ret = owner.get(conn);
 		if (ret == null) {
 			ZKServerRegistry zkSR = new ZKServerRegistry();
 			ZKClientListener lsnr = new ZKClientListener();
 			ret = new CuratorClusterWorker(zkSR, lsnr, conn);
+			zkSR.setWorker(ret);
 			lsnr.setWorker(ret);
+			ret.cur.getCuratorListenable().addListener(monitor);
+			try {
+				ret.cur.getChildren().watched().forPath(zkNodeBase);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			owner.put(conn, ret);
 		}
 		return ret;
@@ -127,9 +157,6 @@ public class CuratorClusterWorker {
 	}
 
 	public boolean syncWrite(RPCService rpc) {
-		if (readOnly) {
-			return false;
-		}
 		RPCNode info = new RPCNode();
 		info.url = rpc.getServiceURL();
 		info.protocol = rpc.getServiceProtocol();
@@ -139,13 +166,13 @@ public class CuratorClusterWorker {
 		info.heartbeat = new Date().getTime();
 		String ret0 = info.toDataString();
 
-		String nodepath = zkNodeBase + "/" + RPCNodeHashing.getRawConnURL(info.url);
+		String nodepath = zkNodeBase + "/" + RPCNodeHashing.getSafeConnURL(info.url);
 		boolean ret = false;
 		try {
-			if (cur.checkExists().forPath(nodepath) != null) {
-				cur.delete().forPath(nodepath);
+			if (cur.checkExists().forPath(nodepath) == null) {
+				cur.create().creatingParentsIfNeeded().forPath(nodepath);
 			}
-			cur.create().creatingParentsIfNeeded().forPath(nodepath, ret0.getBytes());
+			cur.setData().forPath(nodepath, ret0.getBytes());
 			ret = true;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -232,13 +259,13 @@ public class CuratorClusterWorker {
 	}
 
 	public boolean syncClearRPCNode(RPCService rpc) {
-		String nodepath = zkNodeBase + "/" + RPCNodeHashing.getRawConnURL(rpc.getServiceURL());
+		String nodepath = zkNodeBase + "/" + RPCNodeHashing.getSafeConnURL(rpc.getServiceURL());
 		boolean ret = false;
 		try {
 			cur.delete().forPath(nodepath);
 			ret = true;
 		} catch (Exception e) {
-			e.printStackTrace();
+			// maybe already deleted, no problem
 			ret = false;
 		}
 		return ret;

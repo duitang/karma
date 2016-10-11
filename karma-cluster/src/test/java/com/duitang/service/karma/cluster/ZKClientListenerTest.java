@@ -17,6 +17,7 @@ import com.duitang.service.karma.client.IOBalanceFactory;
 import com.duitang.service.karma.client.impl.RRRFactory;
 import com.duitang.service.karma.router.Router;
 import com.duitang.service.karma.server.RPCService;
+import com.duitang.service.karma.support.RPCNodeHashing;
 import com.duitang.service.karma.support.RPCRegistry;
 import com.duitang.service.karma.support.RegistryInfo;
 import com.duitang.service.karma.trace.TraceCell;
@@ -30,7 +31,7 @@ public class ZKClientListenerTest {
 
 	@Before
 	public void setUp() throws Exception {
-		b = fac.createIOBalance(aware, Arrays.asList("aa:11221", "bb:11122"));
+		b = fac.createIOBalance(aware, RPCNodeHashing.createFromString(Arrays.asList("aa:11221", "bb:11122")));
 	}
 
 	@After
@@ -103,16 +104,16 @@ public class ZKClientListenerTest {
 		worker.syncSetMode(mode);
 
 		RegistryInfo info = lsnr.syncPull();
-		System.out.println(info.freezeMode);
-		System.out.println(info.wNodes);
-		Assert.assertTrue(info.freezeMode);
-		Assert.assertEquals(mode.nodes.toString(), info.wNodes.toString());
+		System.out.println(info.isFreezeMode());
+		System.out.println(info.getNodes());
+		Assert.assertTrue(info.isFreezeMode());
+		Assert.assertEquals(mode.nodes.toString(), info.getHashing().reverseToMap().toString());
 
 		Assert.assertTrue(worker.syncClearMode());
 		info = lsnr.syncPull();
-		System.out.println(info.freezeMode);
-		System.out.println(info.wNodes);
-		Assert.assertFalse(info.freezeMode);
+		System.out.println(info.isFreezeMode());
+		System.out.println(info.getURLs());
+		Assert.assertFalse(info.isFreezeMode());
 		// wNodes is defined by all server , not sure here
 
 		mode = new ClusterMode();
@@ -134,12 +135,12 @@ public class ZKClientListenerTest {
 		r1.grp = "dev1";
 		worker.syncWrite(r1);
 		info = lsnr.syncPull();
-		System.out.println(info.freezeMode);
-		System.out.println(info.wNodes);
-		Assert.assertFalse(info.freezeMode);
-		Assert.assertTrue(info.wNodes.size() == 2);
-		Assert.assertTrue(info.wNodes.containsKey("aa:444"));
-		Assert.assertTrue(info.wNodes.containsKey("bb:555"));
+		System.out.println(info.isFreezeMode());
+		System.out.println(info.getURLs());
+		Assert.assertFalse(info.isFreezeMode());
+		Assert.assertTrue(info.getURLs().size() == 2);
+		Assert.assertTrue(info.getURLs().contains("aa:444"));
+		Assert.assertTrue(info.getURLs().contains("bb:555"));
 
 	}
 

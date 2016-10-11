@@ -24,7 +24,11 @@ public class CuratorListenerExample {
 		ExponentialBackoffRetry retryPolicy = new ExponentialBackoffRetry(1000, Integer.MAX_VALUE);
 		CuratorFramework curator = CuratorFrameworkFactory.newClient("192.168.1.180:2181", retryPolicy);
 		curator.start();
-		curator.getZookeeperClient().blockUntilConnectedOrTimedOut();
+//		curator.getZookeeperClient().blockUntilConnectedOrTimedOut();
+		Thread.sleep(2000);
+		if (null == curator.checkExists().forPath("/test/abc")){			
+			curator.create().creatingParentsIfNeeded().forPath("/test/abc");
+		}
 
 		curator.getCuratorListenable().addListener(new CuratorListener() {
 			@Override
@@ -32,12 +36,15 @@ public class CuratorListenerExample {
 				System.out.println(event.getType());
 				System.err.println(event.getWatchedEvent() + " watched.");
 				event.getChildren();
+				System.out.println(client.checkExists().forPath("/test/abc"));
+				System.out.println("----------+++++++++++");
 			}
 		});
 
-		String path = ClusterNode.zkNodeBase.substring(0, ClusterNode.zkNodeBase.length() - 1);
-		// one-time watch
+		String path = "/test";
 		curator.getChildren().watched().forPath(path);
+		curator.create().creatingParentsIfNeeded().forPath(path + "/" + Math.random());
+		// one-time watch
 
 		Thread.sleep(Integer.MAX_VALUE);
 	}

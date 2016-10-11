@@ -5,12 +5,10 @@
  */
 package com.duitang.service.karma.cluster;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.Arrays;
 
 import com.duitang.service.karma.boot.KarmaFinder;
-import com.duitang.service.karma.server.AsyncRegistryWriter;
+import com.duitang.service.karma.support.RPCRegistry;
 
 /**
  * @author laurence
@@ -19,11 +17,10 @@ import com.duitang.service.karma.server.AsyncRegistryWriter;
  */
 public class Finder implements KarmaFinder {
 
-	static ConcurrentLinkedQueue<AsyncRegistryWriter> registries = new ConcurrentLinkedQueue<>();
+	static RPCRegistry registry = new RPCRegistry();
 
 	public <T> T find(Class<T> clazz) {
-		ArrayList<AsyncRegistryWriter> lst = new ArrayList<>(registries);
-		return (T) lst.toArray(new AsyncRegistryWriter[lst.size()]);
+		return (T) registry;
 	}
 
 	/**
@@ -34,14 +31,13 @@ public class Finder implements KarmaFinder {
 	 */
 	public static void enableZKRegistry(String conn) {
 		CuratorClusterWorker ret = CuratorClusterWorker.createInstance(conn);
-		Finder.registries.add(ret.zkSR);
+		Finder.registry.addWriters(Arrays.asList(ret.zkSR));
+		Finder.registry.addReaders(Arrays.asList(ret.lsnr));
 		// no disable support because of already alive service
 	}
 
-	public static List<AsyncRegistryWriter> getRegistryWriters() {
-		ArrayList<AsyncRegistryWriter> ret = new ArrayList<AsyncRegistryWriter>();
-		ret.addAll(registries);
-		return ret;
+	public static RPCRegistry getRegistry() {
+		return Finder.registry;
 	}
 
 }

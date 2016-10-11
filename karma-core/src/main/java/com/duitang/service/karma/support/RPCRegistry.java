@@ -5,6 +5,7 @@
  */
 package com.duitang.service.karma.support;
 
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -64,6 +65,14 @@ public class RPCRegistry {
 		for (AsyncRegistryReader r : readers) {
 			r.unregister(balancer);
 		}
+	}
+
+	public void addWriters(List<AsyncRegistryWriter> w) {
+		writers.addAll(w);
+	}
+
+	public void addReaders(List<AsyncRegistryReader> r) {
+		readers.addAll(r);
 	}
 
 	public String getInfo() {

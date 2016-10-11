@@ -26,6 +26,9 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 	protected ArrayList<String> urls;
 	protected String schema;
 
+	private RPCNodeHashing() {
+	}
+
 	public static String getRawConnURL(String url) throws IllegalArgumentException {
 		if (url == null) {
 			return null;
@@ -52,6 +55,23 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 			return DEFAULT_SCHEMA;
 		}
 		return url.substring(0, pos);
+	}
+	
+	public static String getSafeConnURL(String url) throws IllegalArgumentException {
+		if (url == null) {
+			return null;
+		}
+		int pos = url.indexOf("://");
+		String ret = url;
+		if (pos > 0) {
+			pos += 3;
+			ret = url.substring(pos);
+		}
+		int first = ret.indexOf(':');
+		if (first < 0 || first != ret.lastIndexOf(':')) {
+			throw new IllegalArgumentException("not valid rpc connection string: " + url);
+		}
+		return ret.replace(':', '_');
 	}
 
 	@Override
@@ -138,7 +158,7 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 		Set<String> sch = new HashSet<String>();
 		for (RPCNode node : nodes) {
 			ret.nodes.add(node);
-			sch.add(node.url);
+			sch.add(node.protocol);
 		}
 		if (sch.size() > 1) {
 			throw new IllegalArgumentException("difference schema in rpc urls: " + nodes);
@@ -167,7 +187,7 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 			node.heartbeat = new Date().getTime();
 			node.load = en.getValue();
 			ret.nodes.add(node);
-			sch.add(node.url);
+			sch.add(node.protocol);
 		}
 		if (sch.size() > 1) {
 			throw new IllegalArgumentException("difference schema in rpc urls: " + nodes);

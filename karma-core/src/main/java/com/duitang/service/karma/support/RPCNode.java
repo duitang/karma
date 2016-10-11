@@ -8,6 +8,8 @@ package com.duitang.service.karma.support;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -77,8 +79,9 @@ public class RPCNode implements Comparable<RPCNode> {
 		if (node == null) {
 			return true;
 		}
-		boolean p = !node.protocol.equals(this.protocol);
-		boolean g = !node.group.equals(this.group);
+
+		boolean p = !StringUtils.equals(node.protocol, this.protocol);
+		boolean g = !StringUtils.equals(node.group, this.group);
 		boolean o = node.online != this.online;
 		boolean u = node.up != this.up;
 		return p || g || o || u;
@@ -91,6 +94,14 @@ public class RPCNode implements Comparable<RPCNode> {
 	@Override
 	public int compareTo(RPCNode o) {
 		return this.toString().compareTo(o.toString());
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof RPCNode) {
+			return diff((RPCNode) obj);
+		}
+		return false;
 	}
 
 }

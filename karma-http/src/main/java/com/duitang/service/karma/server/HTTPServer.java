@@ -3,6 +3,7 @@ package com.duitang.service.karma.server;
 import java.util.Date;
 
 import com.duitang.service.karma.KarmaException;
+import com.duitang.service.karma.boot.KarmaServerConfig;
 import com.duitang.service.karma.router.JsonRouter;
 import com.duitang.service.karma.router.Router;
 import com.duitang.service.karma.support.IPUtils;
@@ -45,6 +46,7 @@ public class HTTPServer implements RPCService {
 			this.server = new org.eclipse.jetty.server.Server(this.port);
 			this.server.setHandler(servlet);
 			this.server.start();
+			KarmaServerConfig.clusterAware.registerWrite(this);
 			this.created = new Date();
 		} catch (Exception e) {
 			throw new KarmaException(e);

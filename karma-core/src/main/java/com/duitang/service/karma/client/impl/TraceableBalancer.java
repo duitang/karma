@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.client.AsyncRegistryReader;
@@ -39,6 +40,8 @@ public abstract class TraceableBalancer implements IOBalance {
 	static final String myName = TraceableBalancer.class.getName();
 
 	volatile protected NodesAndPolicy nap;
+	protected AtomicLong checkpointVer = new AtomicLong(0);
+	protected AtomicLong reloadVer = new AtomicLong(0);
 
 	final public static ConcurrentLinkedQueue<AsyncRegistryReader> configs = new ConcurrentLinkedQueue<>();
 
@@ -61,21 +64,6 @@ public abstract class TraceableBalancer implements IOBalance {
 	 * before commit nodes
 	 */
 	protected volatile RegistryInfo staging;
-
-	/**
-	 * use this to keep nodes validation
-	 * 
-	 * @param nodes
-	 * @return
-	 */
-	// public static RPCNodeHashing getSafeNodes(LinkedHashMap<String, Double>
-	// nodes) {
-	// List<String> keys = new ArrayList<String>();
-	// for (Entry<String, Double> en : nodes.entrySet()) {
-	// keys.add(en.getKey());
-	// }
-	// return new RPCNodeHashing(keys);
-	// }
 
 	public TraceableBalancer(List<String> urls) {
 		this(RPCNodeHashing.createFromString(urls));
@@ -109,7 +97,9 @@ public abstract class TraceableBalancer implements IOBalance {
 		Integer idx = n.hashing.getURLs().indexOf(token);
 		if (idx != null) {
 			n.updateLoad(token, -1);
-			n.policy.updateResponse(idx, tc.duration * 0.000001, tc.successful);
+			if (tc != null) {
+				n.policy.updateResponse(idx, tc.duration * 0.000001, tc.successful);
+			}
 		}
 		// maybe checkpoint
 		if (hitPoint()) {
@@ -133,6 +123,7 @@ public abstract class TraceableBalancer implements IOBalance {
 		// try syncReload first
 		if (!syncReload()) {
 			n.policy.checkpoint();
+			checkpointVer.incrementAndGet();
 		}
 		n = nap;
 		ts.tc.props.put("new_samples", Arrays.toString(n.policy.getWeights()));
@@ -173,6 +164,7 @@ public abstract class TraceableBalancer implements IOBalance {
 		ret.policy = policy;
 		ret.load = load;
 		nap = ret; // only point for overwrite nap
+		reloadVer.incrementAndGet();
 		this.staging = null;
 		return true;
 	}
@@ -195,15 +187,18 @@ public abstract class TraceableBalancer implements IOBalance {
 		}
 	}
 
+	public String getDebugInfo() {
+		return "Current NodesAndPolicy checkpoint version: " + checkpointVer.get() + ", reload version: "
+				+ reloadVer.get() + "; Hashing=" + nap.hashing.getURLs() + Arrays.toString(nap.policy.getDebugInfo());
+	}
+
 }
 
 class NodesAndPolicy {
 
 	BalancePolicy policy;
 	RPCNodeHashing hashing;
-	// Map<String, Integer> idx;
 	Map<String, AtomicInteger> load;
-	boolean suspend;
 
 	void updateLoad(String token, int val) {
 		AtomicInteger lock = load.get(token);
@@ -214,8 +209,8 @@ class NodesAndPolicy {
 
 	double[] fetchLoads() {
 		double[] ret = new double[load.size()];
-		for (int i = 0; i < hashing.getNodes().size(); i++) {
-			ret[i] = load.get(hashing.getNodes().get(i)).get();
+		for (int i = 0; i < hashing.getURLs().size(); i++) {
+			ret[i] = load.get(hashing.getURLs().get(i)).get();
 			ret[i] = ret[i] > 0 ? ret[i] : Candidates.VERY_TRIVIA;
 		}
 		return ret;

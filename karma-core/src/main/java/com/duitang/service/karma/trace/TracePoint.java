@@ -63,4 +63,8 @@ public class TracePoint implements AutoCloseable {
 		tc.group = group;
 	}
 
+	public TraceCell getCell() {
+		return tc;
+	}
+
 }

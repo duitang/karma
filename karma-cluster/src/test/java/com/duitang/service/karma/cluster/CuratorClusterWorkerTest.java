@@ -1,7 +1,5 @@
 package com.duitang.service.karma.cluster;
 
-import static org.junit.Assert.fail;
-
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,6 +13,7 @@ import org.junit.Test;
 import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.router.Router;
 import com.duitang.service.karma.server.RPCService;
+import com.duitang.service.karma.support.RPCNode;
 
 public class CuratorClusterWorkerTest {
 
@@ -33,6 +32,7 @@ public class CuratorClusterWorkerTest {
 	public void tearDown() throws Exception {
 	}
 
+	@SuppressWarnings("deprecation")
 	@Test
 	public void testCreateSimple() {
 		worker = new CuratorClusterWorker(rs, lsr, conn);
@@ -80,11 +80,11 @@ public class CuratorClusterWorkerTest {
 		r = worker.syncWrite(rpc);
 		Assert.assertTrue(r);
 
-		List<ClusterNode> lst = worker.syncRead();
+		List<RPCNode> lst = worker.syncRead();
 		Assert.assertFalse(lst.isEmpty());
 		Assert.assertTrue(lst.size() == 2);
-		Assert.assertTrue(ClusterNode.class.getName().equals(lst.get(0).getClass().getName()));
-		Assert.assertTrue(ClusterNode.class.getName().equals(lst.get(1).getClass().getName()));
+		Assert.assertTrue(RPCNode.class.getName().equals(lst.get(0).getClass().getName()));
+		Assert.assertTrue(RPCNode.class.getName().equals(lst.get(1).getClass().getName()));
 	}
 
 	@Test
@@ -101,7 +101,7 @@ public class CuratorClusterWorkerTest {
 		Assert.assertTrue(r);
 
 		worker = new CuratorClusterWorker(rs, lsr, conn);
-		ClusterNode node = worker.syncRead("tcp://192.168.1.118:8899");
+		RPCNode node = worker.syncRead("tcp://192.168.1.118:8899");
 
 		Assert.assertEquals(node.url, rpc.url);
 	}
@@ -137,16 +137,6 @@ public class CuratorClusterWorkerTest {
 		mode.nodes.put("a", 1.0d);
 		mode.nodes.put("b", 2.0d);
 		worker.syncSetMode(mode);
-	}
-
-	@Test
-	public void testSafePath() {
-		String s ;
-		worker = new CuratorClusterWorker(rs, lsr, conn);
-		s = worker.safePath("tcp://192.168.0.1:23123");
-		System.out.println(s);
-		s = worker.safePath("192.168.0.1:23123");
-		System.out.println(s);
 	}
 
 }
