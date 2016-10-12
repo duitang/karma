@@ -9,7 +9,8 @@ public class TraceContextHolder {
 
 	static class TraceStack {
 
-		boolean sampled = false;
+		TracerSampler sampler = new AlwaysNotSampled();
+		boolean sampled = sampler.sample();
 		LinkedList<TraceCell> stack = new LinkedList<TraceCell>();
 
 	}
@@ -26,7 +27,13 @@ public class TraceContextHolder {
 	public static void reset() {
 		TraceStack it = CURRENT.get();
 		it.stack.clear();
-		it.sampled = false;
+		it.sampled = it.sampler.sample();
+	}
+
+	public static void reset(String clazzName, String method, Object[] params) {
+		TraceStack it = CURRENT.get();
+		it.stack.clear();
+		it.sampled = it.sampler.sample(clazzName, method, params);
 	}
 
 	public static Long[] snap() {
@@ -65,6 +72,10 @@ public class TraceContextHolder {
 			return newOne(true, null, null, ctx.sampled);
 		}
 		return ctx.stack.pop();
+	}
+
+	static public void setSampler(TracerSampler sampler) {
+		CURRENT.get().sampler = sampler;
 	}
 
 	private static TraceCell newOne(boolean isClient, Long traceId, Long parentId, boolean sampled) {

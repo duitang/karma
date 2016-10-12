@@ -7,6 +7,21 @@ package com.duitang.service.karma.trace;
  */
 public interface TracerSampler {
 
+	/**
+	 * no parameters sampling
+	 * 
+	 * @return
+	 */
+	boolean sample();
+
+	/**
+	 * sampling with parameters
+	 * 
+	 * @param clazzName
+	 * @param method
+	 * @param params
+	 * @return
+	 */
 	boolean sample(String clazzName, String method, Object[] params);
 
 }
