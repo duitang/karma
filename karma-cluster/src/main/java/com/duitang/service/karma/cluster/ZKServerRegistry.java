@@ -31,14 +31,14 @@ public class ZKServerRegistry implements AsyncRegistryWriter {
 	public void register(RPCService rpc) {
 		String conn = RPCNodeHashing.getRawConnURL(rpc.getServiceURL());
 		service.put(conn, rpc);
-		worker.syncWrite(rpc);
+		worker.syncWrite(rpc); // later using async mode
 	}
 
 	@Override
 	public void unregister(RPCService rpc) {
 		String conn = RPCNodeHashing.getRawConnURL(rpc.getServiceURL());
 		service.remove(conn, rpc);
-		worker.syncClearRPCNode(rpc);
+		worker.syncClearRPCNode(rpc); // later using async mode
 	}
 
 	@Override

@@ -84,9 +84,9 @@ public class TCPServer implements RPCService, GenericFutureListener {
 			ChannelFuture cf = boot.bind(new InetSocketAddress(port)).sync();
 			cf.channel().closeFuture().addListener(this);
 			router.setHostInfo(NameUtil.getHostname(), port);
-			KarmaServerConfig.updateHostInfo(NameUtil.getInstanceTag().ipv4, port);
 			created = new Date();
 			online = true;
+			KarmaServerConfig.updateHostInfo(NameUtil.getInstanceTag().ipv4, port);
 		} catch (Exception e) {
 			online = false;
 			throw new KarmaException(e);
