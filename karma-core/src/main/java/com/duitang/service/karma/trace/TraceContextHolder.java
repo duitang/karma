@@ -10,7 +10,7 @@ public class TraceContextHolder {
 	static class TraceStack {
 
 		TracerSampler sampler = new AlwaysNotSampled();
-		boolean sampled = sampler.sample();
+		boolean sampled = false;
 		LinkedList<TraceCell> stack = new LinkedList<TraceCell>();
 
 	}
@@ -30,9 +30,8 @@ public class TraceContextHolder {
 		it.sampled = it.sampler.sample();
 	}
 
-	public static void reset(String clazzName, String method, Object[] params) {
+	public static void touch(String clazzName, String method, Object[] params) {
 		TraceStack it = CURRENT.get();
-		it.stack.clear();
 		it.sampled = it.sampler.sample(clazzName, method, params);
 	}
 

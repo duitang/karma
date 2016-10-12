@@ -20,11 +20,15 @@ public class TraceBlock implements AutoCloseable {
 
 	public TraceBlock() {
 		String[] names = getNames();
-		init(names[0], names[1]);
+		init(names[0], names[1], null);
 	}
 
 	public TraceBlock(String claz, String name) {
-		init(claz, name);
+		init(claz, name, null);
+	}
+
+	public TraceBlock(String claz, String name, Object[] args) {
+		init(claz, name, args);
 	}
 
 	protected String[] getNames() {
@@ -34,7 +38,7 @@ public class TraceBlock implements AutoCloseable {
 		return new String[] { e.getClassName(), methodName };
 	}
 
-	protected void init(String claz, String name) {
+	protected void init(String claz, String name, Object[] args) {
 		Long[] ids = TraceContextHolder.snap();
 		tc = new TraceStone(true, null, null);
 		TraceContextHolder.push(tc);
@@ -42,6 +46,9 @@ public class TraceBlock implements AutoCloseable {
 		tc.clazzName = claz;
 		tc.name = name;
 		tc.isLocal = true;
+		if (tc.parentId == null) {
+			TraceContextHolder.touch(claz, name, args);
+		}
 		tc.active();
 	}
 

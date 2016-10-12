@@ -142,6 +142,9 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 		}
 		TraceCell tc = TraceContextHolder.accquire(true);
 		tc.host = NameUtil.getHostname();
+		if (tc.parentId == null){
+			TraceContextHolder.touch(obj.getClass().getName(), name, args);
+		}
 		RPCConfig rpcConfig = new RPCConfig();
 		rpcConfig.addConf(TraceCell.TRACE_ID, tc.traceId);
 		rpcConfig.addConf(TraceCell.SPAN_ID, tc.spanId);
