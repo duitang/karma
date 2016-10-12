@@ -5,12 +5,11 @@ import java.util.LinkedList;
 public class TraceContextHolder {
 
 	final static int MAX_STACK_SIZE = 100;
-	final static Long[] EMPTY = { null, null };
+	final static Long[] EMPTY = { null, null, null };
+	static TracerSampler sampler = new AlwaysNotSampled();
 
 	static class TraceStack {
 
-		TracerSampler sampler = new AlwaysNotSampled();
-		boolean sampled = false;
 		LinkedList<TraceCell> stack = new LinkedList<TraceCell>();
 
 	}
@@ -27,12 +26,6 @@ public class TraceContextHolder {
 	public static void reset() {
 		TraceStack it = CURRENT.get();
 		it.stack.clear();
-		it.sampled = it.sampler.sample();
-	}
-
-	public static void touch(String clazzName, String method, Object[] params) {
-		TraceStack it = CURRENT.get();
-		it.sampled = it.sampler.sample(clazzName, method, params);
 	}
 
 	public static Long[] snap() {
@@ -41,11 +34,7 @@ public class TraceContextHolder {
 			return EMPTY;
 		}
 		TraceCell tc = ctx.stack.getFirst();
-		return new Long[] { tc.traceId, tc.spanId };
-	}
-
-	public static boolean sampled() {
-		return CURRENT.get().sampled;
+		return new Long[] { tc.traceId, tc.spanId, tc.sampled ? 1L : 0L };
 	}
 
 	public static void push(TraceCell tc) {
@@ -59,7 +48,8 @@ public class TraceContextHolder {
 
 	public static TraceCell accquire(boolean isClient) {
 		Long[] id = snap();
-		TraceCell last = newOne(isClient, id[0], id[1], CURRENT.get().sampled);
+		TraceCell last = newOne(isClient, id[0], id[1],
+				id[2] == null ? TraceContextHolder.getSampler().sample() : (id[2] == 1L ? true : false));
 		push(last);
 		return last;
 	}
@@ -68,13 +58,17 @@ public class TraceContextHolder {
 		TraceStack ctx = CURRENT.get();
 		if (ctx.stack.isEmpty()) {
 			// should not be happen
-			return newOne(true, null, null, ctx.sampled);
+			return newOne(true, null, null, false);
 		}
 		return ctx.stack.pop();
 	}
 
-	static public void setSampler(TracerSampler sampler) {
-		CURRENT.get().sampler = sampler;
+	synchronized static public void setSampler(TracerSampler sampler) {
+		TraceContextHolder.sampler = sampler;
+	}
+
+	static public TracerSampler getSampler() {
+		return TraceContextHolder.sampler;
 	}
 
 	private static TraceCell newOne(boolean isClient, Long traceId, Long parentId, boolean sampled) {

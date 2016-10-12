@@ -32,6 +32,9 @@ public class NoopTraceVisitor implements TraceVisitor {
 		// NOOP
 		if (logger.isDebugEnabled()) {
 			for (TraceCell tc : tcs) {
+				if (!tc.sampled) {
+					continue;
+				}
 				try {
 					logger.debug(mapper.writeValueAsString(tc));
 				} catch (JsonProcessingException e) {
@@ -41,6 +44,9 @@ public class NoopTraceVisitor implements TraceVisitor {
 		}
 		if (useConsole) {
 			for (TraceCell tc : tcs) {
+				if (!tc.sampled) {
+					continue;
+				}
 				try {
 					logger.debug(mapper.writeValueAsString(tc));
 				} catch (JsonProcessingException e) {

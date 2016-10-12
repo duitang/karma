@@ -9,6 +9,8 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import com.duitang.service.karma.meta.RPCConfig;
 
 /**
@@ -113,7 +115,7 @@ public class TraceCell {
 	public void passivate(Throwable t) {
 		String err = null;
 		if (t != null) {
-			err = t.getMessage();
+			err = ExceptionUtils.getMessage(t);
 		}
 		passivate(err);
 	}
@@ -131,25 +133,10 @@ public class TraceCell {
 
 	@Override
 	public String toString() {
-		return "TraceCell{" +
-				"timestamp=" + timestamp +
-				", sampled=" + sampled +
-				", traceId=" + traceId +
-				", spanId=" + spanId +
-				", parentId=" + parentId +
-				", clazzName='" + clazzName + '\'' +
-				", name='" + name + '\'' +
-				", type=" + Arrays.toString(type) +
-				", ts1=" + ts1 +
-				", ts2=" + ts2 +
-				", host='" + host + '\'' +
-				", port=" + port +
-				", pid=" + pid +
-				", isLocal=" + isLocal +
-				", group='" + group + '\'' +
-				", duration=" + duration +
-				", successful=" + successful +
-				", err='" + err + '\'' +
-				'}';
+		return "TraceCell{" + "timestamp=" + timestamp + ", sampled=" + sampled + ", traceId=" + traceId + ", spanId="
+				+ spanId + ", parentId=" + parentId + ", clazzName='" + clazzName + '\'' + ", name='" + name + '\''
+				+ ", type=" + Arrays.toString(type) + ", ts1=" + ts1 + ", ts2=" + ts2 + ", host='" + host + '\''
+				+ ", port=" + port + ", pid=" + pid + ", isLocal=" + isLocal + ", group='" + group + '\''
+				+ ", duration=" + duration + ", successful=" + successful + ", err='" + err + '\'' + '}';
 	}
 }

@@ -7,9 +7,9 @@ import java.util.Map.Entry;
 
 import com.duitang.service.karma.boot.KarmaServerConfig;
 import com.duitang.service.karma.support.NameUtil;
-import com.duitang.service.karma.trace.TraceStone;
 import com.duitang.service.karma.trace.TraceCell;
 import com.duitang.service.karma.trace.TraceCellVisitor;
+import com.duitang.service.karma.trace.TraceStone;
 
 import zipkin.Annotation;
 import zipkin.BinaryAnnotation;
@@ -47,6 +47,9 @@ public class TraceCell2Span implements TraceCellVisitor<Span> {
 		List<Span> ret = new ArrayList<Span>();
 		Builder r = null;
 		for (TraceCell tc : src) {
+			if (!tc.sampled) {
+				continue;
+			}
 			r = Span.builder().traceId(tc.traceId).name(tc.name).id(tc.spanId).timestamp(tc.timestamp)
 					.duration((tc.ts2 - tc.timestamp));
 

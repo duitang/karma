@@ -10,7 +10,9 @@ import java.io.IOException;
 import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.client.KarmaClientTest;
 import com.duitang.service.karma.server.TCPServerTest;
+import com.duitang.service.karma.trace.AlwaysSampled;
 import com.duitang.service.karma.trace.Finder;
+import com.duitang.service.karma.trace.TraceContextHolder;
 
 /**
  * @author laurence
@@ -19,11 +21,15 @@ import com.duitang.service.karma.trace.Finder;
  */
 public class WithZipkinEnabled {
 
+	static String zipkin_server1 = "http://192.168.10.216:9411";
+	static String zipkin_server2 = "http://192.168.1.180:9411";
+
 	public static void main(String[] args) throws Exception {
-//		Finder.enableZipkin(null, "console");
-//		Finder.enableZipkin(null, "thrift://localhost:9410");
+		// Finder.enableZipkin(null, "console");
+		// Finder.enableZipkin(null, "thrift://localhost:9410");
 		Finder.enableConsole(true);
-		Finder.enableZipkin(null, "http://192.168.10.216:9411");
+		Finder.enableZipkin(null, zipkin_server2);
+		TraceContextHolder.setSampler(new AlwaysSampled());
 
 		System.out.println("starting server .....");
 		new Thread() {

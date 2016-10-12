@@ -47,7 +47,7 @@ public class TraceBlock implements AutoCloseable {
 		tc.name = name;
 		tc.isLocal = true;
 		if (tc.parentId == null) {
-			TraceContextHolder.touch(claz, name, args);
+			tc.sampled = TraceContextHolder.getSampler().sample(claz, name, args);
 		}
 		tc.active();
 	}

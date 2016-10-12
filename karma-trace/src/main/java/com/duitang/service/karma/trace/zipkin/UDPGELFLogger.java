@@ -126,6 +126,9 @@ class TraceCell2Map implements TraceCellVisitor<Map> {
 	public List<Map> transform(List<TraceCell> src) {
 		List<Map> ret = new ArrayList<Map>();
 		for (TraceCell c : src) {
+			if (!c.sampled) {
+				continue;
+			}
 			ret.add(UDPGELFLogger.mapper.convertValue(c, Map.class));
 		}
 		return ret;

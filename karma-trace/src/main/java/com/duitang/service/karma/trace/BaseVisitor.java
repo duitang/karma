@@ -24,6 +24,9 @@ public class BaseVisitor implements TraceVisitor {
 		Map<String, Set<TracerReporter>> reporters = this.reporters;
 		Map<String, List<TraceCell>> grp = new HashMap<String, List<TraceCell>>();
 		for (TraceCell tc : tcs) {
+			if (!tc.sampled) {
+				continue;
+			}
 			if (!grp.containsKey(tc.group)) {
 				grp.put(tc.group, new LinkedList<TraceCell>());
 			}

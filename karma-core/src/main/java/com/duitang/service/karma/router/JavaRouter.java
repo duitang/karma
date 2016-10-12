@@ -127,6 +127,7 @@ public class JavaRouter implements Router<BinaryPacketRaw>, Closeable {
 						ctx.tc = new TraceCell(false, host, port); // no leak
 						ctx.tc.setIds(tc.traceId, tc.spanId);
 						ctx.tc.isLocal = true;
+						ctx.tc.sampled = tc.sampled;
 						ctx.tc.name = data.method;
 						ctx.tc.clazzName = data.domain;
 						handler.lookUp(ctx);

@@ -142,13 +142,13 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 		}
 		TraceCell tc = TraceContextHolder.accquire(true);
 		tc.host = NameUtil.getHostname();
-		if (tc.parentId == null){
-			TraceContextHolder.touch(obj.getClass().getName(), name, args);
+		if (tc.parentId == null) {
+			tc.sampled = TraceContextHolder.getSampler().sample(obj.getClass().getName(), name, args);
 		}
 		RPCConfig rpcConfig = new RPCConfig();
 		rpcConfig.addConf(TraceCell.TRACE_ID, tc.traceId);
 		rpcConfig.addConf(TraceCell.SPAN_ID, tc.spanId);
-		rpcConfig.addConf(TraceCell.SAMPLED, TraceContextHolder.sampled());
+		rpcConfig.addConf(TraceCell.SAMPLED, tc.sampled);
 		tc.clazzName = domainName;
 		tc.name = name;
 		tc.group = group;
