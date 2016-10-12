@@ -84,7 +84,7 @@ public class KarmaClientConfig {
 			if (fac == null) {
 				fac = simpleFactory;
 			}
-			ret = fac.createIOBalance(clusterAware, RPCNodeHashing.createFromString(urls));
+			ret = fac.createIOBalance(clusterAware, RPCNodeHashing.createNullableFromString(urls));
 		}
 		return ret;
 	}

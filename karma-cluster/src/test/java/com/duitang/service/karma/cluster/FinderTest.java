@@ -5,8 +5,6 @@
  */
 package com.duitang.service.karma.cluster;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Date;
@@ -46,7 +44,7 @@ public class FinderTest {
 
 	@Test
 	public void test1() throws KarmaException, Exception {
-		Finder.enableZKRegistry("192.168.1.180:2181");
+		Finder.enableZKRegistry("192.168.1.180:2181", Arrays.asList("localhost:8899"));
 		// Finder.enableZKRegistry("192.168.10.216:2181");
 		RPCRegistry rg = Finder.getRegistry();
 
@@ -60,7 +58,7 @@ public class FinderTest {
 
 		System.out.println(rg.getInfo());
 
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+//		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		while (true) {
 			System.out.println("now Service online: " + rpc.online);
 			System.out.println(bl.getDebugInfo());
@@ -76,11 +74,11 @@ public class FinderTest {
 
 			// printDebugInfo(bl);
 			System.out.println("press enter key to change online mode ......");
-//			String line = br.readLine();
-//			if (line != null) {
-//				boolean online = line.toLowerCase().startsWith("y");
-				rpc.online = !rpc.online;
-//			}
+			// String line = br.readLine();
+			// if (line != null) {
+			// boolean online = line.toLowerCase().startsWith("y");
+			rpc.online = !rpc.online;
+			// }
 
 			Thread.sleep(1000);
 		}

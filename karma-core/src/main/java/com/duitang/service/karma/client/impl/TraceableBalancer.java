@@ -70,6 +70,13 @@ public abstract class TraceableBalancer implements IOBalance {
 	}
 
 	public TraceableBalancer(RPCNodeHashing urls) {
+		init(urls);
+	}
+
+	protected boolean init(RPCNodeHashing urls) {
+		if (urls == null) {
+			return false;
+		}
 		this.staging = new RegistryInfo(false, urls);
 		syncReload();
 		for (AsyncRegistryReader cfg : configs) {
@@ -79,6 +86,7 @@ public abstract class TraceableBalancer implements IOBalance {
 				e.printStackTrace();
 			}
 		}
+		return true;
 	}
 
 	@Override

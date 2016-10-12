@@ -26,6 +26,9 @@ public class TraceableBalancerFactory implements IOBalanceFactory {
 	@Override
 	public IOBalance createIOBalance(RPCRegistry clusterAware, RPCNodeHashing urls) throws KarmaException {
 		// hit = 60s , no count need, using or
+		if (urls == null) {
+			throw new KarmaException("create IOBalance : URLs is null");
+		}
 		PeriodCountCPBalancer ret = new PeriodCountCPBalancer(urls, period, count, and);
 		clusterAware.registerRead(ret);
 		return ret;

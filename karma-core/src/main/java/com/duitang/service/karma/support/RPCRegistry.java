@@ -14,6 +14,8 @@ import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.client.AsyncRegistryReader;
 import com.duitang.service.karma.client.IOBalance;
 import com.duitang.service.karma.client.IOBalanceFactory;
+import com.duitang.service.karma.client.impl.PeriodCountCPBalancer;
+import com.duitang.service.karma.client.impl.TraceableBalancerFactory;
 import com.duitang.service.karma.server.AsyncRegistryWriter;
 import com.duitang.service.karma.server.RPCService;
 
@@ -33,7 +35,8 @@ public class RPCRegistry {
 	final ConcurrentHashMap<String, String> bootstrapURLs = new ConcurrentHashMap<>();
 
 	// change to map if upgrade to connection->IOBalanceFactory
-	protected IOBalanceFactory fac;
+	protected IOBalanceFactory fac = new TraceableBalancerFactory(PeriodCountCPBalancer.PERIOD,
+			PeriodCountCPBalancer.COUNT, false);
 
 	public IOBalanceFactory getFactory() {
 		return fac;

@@ -46,7 +46,11 @@ public class HTTPServer implements RPCService {
 			this.server = new org.eclipse.jetty.server.Server(this.port);
 			this.server.setHandler(servlet);
 			this.server.start();
-			KarmaServerConfig.clusterAware.registerWrite(this);
+			try {
+				KarmaServerConfig.clusterAware.registerWrite(this);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			this.created = new Date();
 		} catch (Exception e) {
 			throw new KarmaException(e);

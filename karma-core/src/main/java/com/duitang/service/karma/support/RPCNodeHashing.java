@@ -56,7 +56,7 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 		}
 		return url.substring(0, pos);
 	}
-	
+
 	public static String getSafeConnURL(String url) throws IllegalArgumentException {
 		if (url == null) {
 			return null;
@@ -119,6 +119,13 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 			idx.add(n.url);
 		}
 		h.urls = idx;
+	}
+
+	static public RPCNodeHashing createNullableFromString(List<String> urls) throws IllegalArgumentException {
+		if (urls == null || urls.isEmpty()) {
+			return null;
+		}
+		return createFromString(urls);
 	}
 
 	static public RPCNodeHashing createFromString(List<String> urls) throws IllegalArgumentException {

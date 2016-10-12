@@ -13,16 +13,38 @@ public class IPUtils {
 
 	public static String localhost = "127.0";
 
+	protected static String[] divide(String url) {
+		String[] ret = new String[3];
+		if (url == null) {
+			return ret;
+		}
+		if (url.contains("://")) {
+			int p = url.indexOf("://");
+			ret[0] = url.substring(0, p);
+			url = url.substring(p + 3);
+		}
+		String[] r = StringUtils.split(url, ':');
+		ret[1] = r[0];
+		if (r.length > 1) {
+			ret[2] = r[1];
+		}
+		return ret;
+	}
+
+	public static String getSchema(String url) {
+		return divide(url)[0];
+	}
+
 	public static String getHost(String url) {
-		return StringUtils.split(url, ':')[0];
+		return divide(url)[1];
 	}
 
 	public static Integer getPort(String url) {
-		String[] ret = StringUtils.split(url, ':');
-		if (ret.length > 1) {
-			return Integer.valueOf(ret[1]);
+		try {
+			return Integer.valueOf(divide(url)[2]);
+		} catch (Throwable t) {
+			return null;
 		}
-		return null;
 	}
 
 	public static int getIPAsInt() {
@@ -81,6 +103,9 @@ public class IPUtils {
 			Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
 			for (InetAddress inetAddress : Collections.list(inetAddresses)) {
 				if (!inetAddress.getHostAddress().startsWith(prefix)) {
+					if (!(inetAddress instanceof Inet4Address)) {
+						continue;
+					}
 					return InetAddress.getByName(inetAddress.getHostName());
 				}
 			}
@@ -94,6 +119,9 @@ public class IPUtils {
 			Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
 			for (InetAddress inetAddress : Collections.list(inetAddresses)) {
 				if (!inetAddress.getHostAddress().startsWith(prefix)) {
+					if (!(inetAddress instanceof Inet4Address)) {
+						continue;
+					}
 					return inetAddress.getHostAddress();
 				}
 			}
