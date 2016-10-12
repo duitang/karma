@@ -67,12 +67,12 @@ public class ServerBootstrap {
 		tcp = new TCPServer();
 		tcp.setRouter(javaRouter);
 		tcp.setPort(port);
+		tcp.start();
 		try {
 			KarmaServerConfig.clusterAware.registerWrite(tcp);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		tcp.start();
 		System.err.println("TCP SERVER LISTENING AT PORT: " + (port));
 
 		System.err.println(info);

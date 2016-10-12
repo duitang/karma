@@ -33,7 +33,7 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 		if (url == null) {
 			return null;
 		}
-		int pos = url.indexOf("://");
+		int pos = url.lastIndexOf("://");
 		String ret = url;
 		if (pos > 0) {
 			pos += 3;
@@ -58,20 +58,11 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 	}
 
 	public static String getSafeConnURL(String url) throws IllegalArgumentException {
-		if (url == null) {
-			return null;
+		String ret = getRawConnURL(url);
+		if (ret != null) {
+			ret = ret.replace(':', '_');
 		}
-		int pos = url.indexOf("://");
-		String ret = url;
-		if (pos > 0) {
-			pos += 3;
-			ret = url.substring(pos);
-		}
-		int first = ret.indexOf(':');
-		if (first < 0 || first != ret.lastIndexOf(':')) {
-			throw new IllegalArgumentException("not valid rpc connection string: " + url);
-		}
-		return ret.replace(':', '_');
+		return ret;
 	}
 
 	@Override

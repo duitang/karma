@@ -158,7 +158,7 @@ public class CuratorClusterWorker {
 
 	public boolean syncWrite(RPCService rpc) {
 		RPCNode info = new RPCNode();
-		info.url = rpc.getServiceURL();
+		info.url = RPCNodeHashing.getRawConnURL(rpc.getServiceURL());
 		info.protocol = rpc.getServiceProtocol();
 		info.group = rpc.getGroup();
 		info.online = rpc.online();
