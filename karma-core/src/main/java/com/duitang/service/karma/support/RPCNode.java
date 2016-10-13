@@ -99,7 +99,7 @@ public class RPCNode implements Comparable<RPCNode> {
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof RPCNode) {
-			return diff((RPCNode) obj);
+			return !diff((RPCNode) obj);
 		}
 		return false;
 	}
