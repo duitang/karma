@@ -124,7 +124,7 @@ public class CuratorClusterWorker {
 		DeamonJobs.runJob(monitor);
 	}
 
-	public static CuratorClusterWorker createInstance(String conn) {
+	synchronized public static CuratorClusterWorker createInstance(String conn) {
 		CuratorClusterWorker ret = owner.get(conn);
 		if (ret == null) {
 			ZKServerRegistry zkSR = new ZKServerRegistry();

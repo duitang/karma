@@ -8,7 +8,7 @@ sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '3.0'
+    gradleVersion = '3.1'
 }
 
 buildscript {
@@ -27,8 +27,8 @@ subprojects {
     apply plugin: 'eclipse'
     apply plugin: 'idea'
     apply plugin: 'maven'
-//    apply plugin: 'findbugs'
-//    apply plugin: 'jacoco'
+    apply plugin: 'findbugs'
+    apply plugin: 'jacoco'
 
 
 configurations {
@@ -79,6 +79,7 @@ eclipse {
 test {
     exclude 'java/**'
     exclude 'com/**'
+    ignoreFailures = true
 }
 
 task runTests(type: Test) {
@@ -92,6 +93,17 @@ jacocoTestReport {
         csv.enabled false
         html.destination "${buildDir}/jacocoHtml"
     }
+}
+
+findbugsMain {
+  reports {
+    xml.enabled = false
+    html.enabled = true
+  }
+}
+
+tasks.withType(FindBugs){
+    ignoreFailures = true
 }
 
 }
