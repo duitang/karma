@@ -81,7 +81,6 @@ public class UDPGELFLogger implements TracerLogger {
 		}
 	}
 
-	@Override
 	public void log(String msg, TraceCell tc) {
 		log(msg, visitor, tc);
 	}
@@ -99,7 +98,7 @@ public class UDPGELFLogger implements TracerLogger {
 
 		GelfMessageBuilder builder = new GelfMessageBuilder("", source).level(level);
 
-		builder.additionalFields(content);
+		builder.additionalFielUDPGELFLoggerds(content);
 		if (tc instanceof TraceStone) {
 			Map p = new HashMap<String, Object>(((TraceStone) tc).props);
 			content.putAll(p);
