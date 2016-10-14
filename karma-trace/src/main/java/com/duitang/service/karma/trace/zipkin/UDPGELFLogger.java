@@ -21,9 +21,9 @@ import org.graylog2.gelfclient.transport.GelfTransport;
 import org.slf4j.MDC;
 import org.slf4j.event.Level;
 
-import com.duitang.service.karma.trace.TraceStone;
 import com.duitang.service.karma.trace.TraceCell;
 import com.duitang.service.karma.trace.TraceCellVisitor;
+import com.duitang.service.karma.trace.TraceStone;
 import com.duitang.service.karma.trace.TracerLogger;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -98,7 +98,7 @@ public class UDPGELFLogger implements TracerLogger {
 
 		GelfMessageBuilder builder = new GelfMessageBuilder("", source).level(level);
 
-		builder.additionalFielUDPGELFLoggerds(content);
+		builder.additionalFields(content);
 		if (tc instanceof TraceStone) {
 			Map p = new HashMap<String, Object>(((TraceStone) tc).props);
 			content.putAll(p);
