@@ -17,8 +17,8 @@ import java.util.concurrent.ThreadFactory;
  */
 public class DeamonJobs {
 
-	static protected ExecutorService jobs;
-	static protected ConcurrentHashMap<String, Runnable> cached;
+	final static protected ExecutorService jobs;
+	final static protected ConcurrentHashMap<String, Runnable> cached;
 
 	static class DaemonFactory implements ThreadFactory {
 

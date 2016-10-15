@@ -13,12 +13,12 @@ import com.duitang.service.karma.trace.TraceVisitor;
  *
  */
 public class KarmaServerConfig {
-	
-	final public static long KARMA_SERVER_SHUTDOWN_TIMEOUT = 10 * 1000L;
-	static Logger logger = LoggerFactory.getLogger(KarmaServerConfig.class);
 
-	protected static TraceVisitor simpleVisitor = new NoopTraceVisitor();
-	public static RPCRegistry clusterAware = new RPCRegistry();
+	final public static long KARMA_SERVER_SHUTDOWN_TIMEOUT = 10 * 1000L;
+	final static Logger logger = LoggerFactory.getLogger(KarmaServerConfig.class);
+
+	static TraceVisitor simpleVisitor = new NoopTraceVisitor();
+	final public static RPCRegistry clusterAware;
 	public static volatile TraceVisitor tracer = simpleVisitor;
 
 	public static volatile int host;
@@ -34,9 +34,7 @@ public class KarmaServerConfig {
 		logger.info("using TraceVisitor: " + simpleVisitor.getClass().getName());
 
 		RPCRegistry aware = KarmaFinders.findClusterRegistry();
-		if (aware != null) {
-			clusterAware = aware;
-		}
+		clusterAware = aware == null ? new RPCRegistry() : aware;
 		logger.info("using ClusterAware: " + clusterAware.getInfo());
 	}
 

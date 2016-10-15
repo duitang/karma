@@ -19,6 +19,15 @@ buildscript {
   }
 }
 
+allprojects {
+    
+    task findbugs(
+        group: "Verification", 
+        description: "Marker task to enabled findbugs."
+    )
+
+}
+
 subprojects {
     sourceCompatibility = 1.7
     targetCompatibility = 1.7
@@ -31,79 +40,106 @@ subprojects {
     apply plugin: 'jacoco'
 
 
-configurations {
-
-    providedCompile
-    all*.exclude group: 'javax.jms', module: 'jms'
-    all*.exclude group: 'com.sun.jdmk', module: 'jmxtools'
-    all*.exclude group: 'com.sun.jmx', module: 'jmxri'
-    published
-
-}
-
-configurations.all {
-    exclude group: 'org.slf4j', module: 'slf4j-log4j12'
-}
-
-version =  '1.0'
-group = 'com.duitang.service'
-
+    configurations {
+    
+        providedCompile
+        all*.exclude group: 'javax.jms', module: 'jms'
+        all*.exclude group: 'com.sun.jdmk', module: 'jmxtools'
+        all*.exclude group: 'com.sun.jmx', module: 'jmxri'
+        published
+    
+    }
+    
+    configurations.all {
+        exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+    }
+    
+    version =  '1.0'
+    group = 'com.duitang.service'
+    
+    eclipse.classpath {
+        defaultOutputDir = file('build/classes/main')
+        file.withXml { n ->
+            n.asNode().classpathentry.findAll { it.@path.startsWith('src/test') }
+                    .each { it.@output = 'build/classes/test' }
+        }
+    }
+    
+    sourceSets {
+       main {
+         //if you truly want to override the defaults:
+         output.resourcesDir = 'build/classes/main'
+       }
+       test {
+         //if you truly want to override the defaults:
+         output.resourcesDir = 'build/classes/test'
+       }
+    }
+    
     repositories {
         mavenCentral()
     }
-
-test {
-	testLogging {
-		showStandardStreams = true
-	}
-}
-
-version =  '1.0'
-group = 'com.duitang.service'
-
-task pom << {
-    pom {
-        project {
-            inceptionYear '2016'
+    
+    version =  '1.0'
+    group = 'com.duitang.service'
+    
+    task pom << {
+        pom {
+            project {
+                inceptionYear '2016'
+            }
+        }.writeTo("pom.xml")
+    }
+    
+    eclipse {
+        classpath {
+           downloadSources=true
+           downloadJavadoc=true
+           defaultOutputDir = file('build/classes/main/')
         }
-    }.writeTo("pom.xml")
-}
-
-eclipse {
-    classpath {
-       downloadSources=true
-       defaultOutputDir = file('build/classes/main/')
     }
-}
-
-test {
-    exclude 'java/**'
-    exclude 'com/**'
-    ignoreFailures = true
-}
-
-task runTests(type: Test) {
-    exclude 'com/**'
-    exclude 'java/**'
-}
-
-jacocoTestReport {
-    reports {
-        xml.enabled false
-        csv.enabled false
-        html.destination "${buildDir}/jacocoHtml"
+    
+    test {
+        exclude 'java/**'
+        exclude 'com/**'
+        ignoreFailures = true
+        testLogging {
+            showStandardStreams = true
+        }    
     }
-}
+    
+    task runTests(type: Test) {
+        exclude 'com/**'
+        exclude 'java/**'
+    }
+    
+    jacocoTestReport {
+        reports {
+            xml.enabled false
+            csv.enabled false
+            html.destination "${buildDir}/jacocoHtml"
+        }
+    }
+    
+    findbugsMain {
+      reports {
+        xml.enabled = false
+        html.enabled = true
+      }
+    }
+    
+    findbugs { 
+        // your findbugs configuration.
+        ignoreFailures = true 
+    }
 
-findbugsMain {
-  reports {
-    xml.enabled = false
-    html.enabled = true
-  }
-}
-
-tasks.withType(FindBugs){
-    ignoreFailures = true
-}
+    gradle.taskGraph.whenReady { taskGraph ->
+        tasks.findbugsMain.onlyIf { 
+            taskGraph.hasTask((tasks.findbugs))
+        }
+        tasks.findbugsTest.onlyIf {  
+               taskGraph.hasTask((tasks.findbugs)) 
+        }
+    }
 
 }

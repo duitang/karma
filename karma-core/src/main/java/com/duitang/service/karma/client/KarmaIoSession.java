@@ -168,7 +168,7 @@ public class KarmaIoSession implements LifeCycle {
 	public void close() throws IOException {
 		if (session != null) {
 			try {
-				session.close().sync();
+				session.close().await(KarmaClientConfig.KARMA_CLIENT_TIMEOUT);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -188,7 +188,7 @@ public class KarmaIoSession implements LifeCycle {
 		return url + ", timeout=" + timeout + ", errorCount=" + errorCount;
 	}
 
-	public static void shutdown() {
+	synchronized public static void shutdown() {
 		if (worker != null) {
 			try {
 				worker.shutdownGracefully().await(KarmaClientConfig.KARMA_CLIENT_TIMEOUT);

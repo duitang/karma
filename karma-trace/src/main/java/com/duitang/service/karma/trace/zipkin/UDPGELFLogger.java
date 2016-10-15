@@ -9,6 +9,7 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -96,6 +97,10 @@ public class UDPGELFLogger implements TracerLogger {
 			content = visitor.transform(tc);
 		}
 
+		if (content == null) {
+			return;
+		}
+
 		GelfMessageBuilder builder = new GelfMessageBuilder("", source).level(level);
 
 		builder.additionalFields(content);
@@ -118,7 +123,8 @@ class TraceCell2Map implements TraceCellVisitor<Map> {
 
 	@Override
 	public Map transform(TraceCell src) {
-		return transform(Arrays.asList(src)).get(0);
+		Iterator<Map> it = transform(Arrays.asList(src)).iterator();
+		return it.hasNext() ? it.next() : null;
 	}
 
 	@Override

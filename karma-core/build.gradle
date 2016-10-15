@@ -1,20 +1,4 @@
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
-
-configurations { 
-
-    providedCompile
-    all*.exclude group: 'javax.jms', module: 'jms'
-    all*.exclude group: 'com.sun.jdmk', module: 'jmxtools'
-    all*.exclude group: 'com.sun.jmx', module: 'jmxri'
-    published
-    
-}
-
-configurations.all { 
-    exclude group: 'org.slf4j', module: 'slf4j-log4j12' 
-}
 
 dependencies {
 
@@ -34,12 +18,18 @@ dependencies {
     testCompile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.7'
 }
 
-test {
-	testLogging {
-		showStandardStreams = true
-	}
+sourceSets {
+   main {
+     //if you truly want to override the defaults:
+     output.resourcesDir = 'build/classes/main'
+   }
+   test {
+     //if you truly want to override the defaults:
+     output.resourcesDir = 'build/classes/test'
+   }
 }
 
-version =  '1.0'
-group = 'com.duitang.service'
+test {
+  ignoreFailures true
+}
 

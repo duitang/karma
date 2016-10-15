@@ -11,7 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 
 public class IPUtils {
 
-	public static String localhost = "127.0";
+	final public static String localhost = "127.0";
 
 	protected static String[] divide(String url) {
 		String[] ret = new String[3];

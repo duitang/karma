@@ -25,7 +25,7 @@ public class TraceCell {
 	public final static String SAMPLED = "sampled";
 
 	final static String[][] types = new String[][] { { "cs", "cr" }, { "sr", "ss" } };
-	static protected Random rnd = new Random();
+	final static protected Random rnd = new Random();
 
 	// initialization
 	public long timestamp; // happen at

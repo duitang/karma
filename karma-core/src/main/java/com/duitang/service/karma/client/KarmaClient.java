@@ -37,8 +37,8 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 		System.err.println("loading ...... " + clz.getName());
 	}
 
-	final static protected Map<String, Method> mgrCallbacks;
-	static protected KarmaIOPool pool = new KarmaIOPool();
+	final static Map<String, Method> mgrCallbacks;
+	static KarmaIOPool pool = new KarmaIOPool();
 	final static protected Logger error = LoggerFactory.getLogger(KarmaClient.class);
 	final static protected AtomicBoolean lock = new AtomicBoolean(false);
 	final static private Long DEFAULT_TIMEOUT = 1000L;
@@ -75,7 +75,7 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 		}
 	}
 
-	public static void shutdownIOPool() {
+	synchronized public static void shutdownIOPool() {
 		if (pool != null) {
 			pool.close();
 			pool = null;

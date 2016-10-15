@@ -24,7 +24,7 @@ import com.duitang.service.karma.trace.TraceCell;
  */
 public class NaiveBalancer implements IOBalance {
 
-	static protected Random iid = new Random();
+	static Random iid = new Random();
 	protected RPCNodeHashing urls;
 
 	public NaiveBalancer(List<String> urls) {
@@ -42,7 +42,7 @@ public class NaiveBalancer implements IOBalance {
 			throw new RuntimeException("Not initialized properly!");
 		}
 		// ignore this token, just next
-		int idx = Math.abs(iid.nextInt()) % sz;
+		int idx = iid.nextInt(sz);
 		return urls.getURLs().get(idx);
 	}
 

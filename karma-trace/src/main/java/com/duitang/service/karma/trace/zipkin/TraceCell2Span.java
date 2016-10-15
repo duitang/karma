@@ -2,6 +2,7 @@ package com.duitang.service.karma.trace.zipkin;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -39,7 +40,8 @@ public class TraceCell2Span implements TraceCellVisitor<Span> {
 
 	@Override
 	public Span transform(TraceCell tc) {
-		return transform(Arrays.asList(tc)).get(0);
+		Iterator<Span> it = transform(Arrays.asList(tc)).iterator();
+		return it.hasNext() ? it.next() : null;
 	}
 
 	@Override

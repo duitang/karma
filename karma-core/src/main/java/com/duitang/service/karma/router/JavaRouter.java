@@ -2,13 +2,13 @@ package com.duitang.service.karma.router;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,8 +51,7 @@ public class JavaRouter implements Router<BinaryPacketRaw>, Closeable {
 	@Override
 	public void route(RPCContext ctx, BinaryPacketRaw raw) throws KarmaException {
 		KarmaJobRunner k = new KarmaJobRunner(ctx, raw);
-		Future<?> future = execPool.submit(k);
-		k.future = future;
+		k.future = execPool.submit(k);
 		int sz = execPool.getActiveCount();
 		if (sz >= CORE_SIZE) {
 			out.warn("JavaRouter_threads_exceed:" + sz);
@@ -73,7 +72,6 @@ public class JavaRouter implements Router<BinaryPacketRaw>, Closeable {
 		BinaryPacketRaw raw;
 		long submitTime;
 		long schdTime;
-		SimpleDateFormat sdf;
 		Future<?> future;
 		TraceCell tc;
 
@@ -84,7 +82,6 @@ public class JavaRouter implements Router<BinaryPacketRaw>, Closeable {
 			this.raw = rawPack;
 			this.submitTime = System.nanoTime();
 			this.schdTime = 0;
-			this.sdf = new SimpleDateFormat("HH:mm:ss.S");
 		}
 
 		@Override
@@ -137,11 +134,7 @@ public class JavaRouter implements Router<BinaryPacketRaw>, Closeable {
 						if (data == null) {
 							data = new BinaryPacketData();
 						}
-						int tries = 0;
-						Throwable root = e;
-						while (root.getCause() != null && tries++ < 5)
-							root = root.getCause();
-						data.ex = root;
+						data.ex = ExceptionUtils.getRootCause(e);
 					}
 				} while (false);
 

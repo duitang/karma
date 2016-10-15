@@ -10,6 +10,7 @@ dependencies {
     compile "org.graylog2:gelfclient:1.4.0"    
     testCompile("junit:junit:4.11")
     testCompile("log4j:log4j:1.2.17")
-    testCompile project(":karma-core").sourceSets.test.output
+    testCompile files(project(":karma-core").sourceSets.test.output.classesDir)
+    
 }
 
