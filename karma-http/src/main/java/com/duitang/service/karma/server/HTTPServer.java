@@ -2,6 +2,8 @@ package com.duitang.service.karma.server;
 
 import java.util.Date;
 
+import org.eclipse.jetty.server.Server;
+
 import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.boot.KarmaServerConfig;
 import com.duitang.service.karma.router.JsonRouter;
@@ -14,7 +16,7 @@ public class HTTPServer implements RPCService {
 	final static int DEFAULT_PORT = 7777;
 
 	protected int port;
-	protected org.eclipse.jetty.server.Server server;
+	protected Server server;
 	protected JsonServlet servlet = new JsonServlet();
 	protected Date created;
 	protected String grp;
@@ -84,7 +86,7 @@ public class HTTPServer implements RPCService {
 
 	@Override
 	public Date getUptime() {
-		return created;
+		return new Date(created.getTime());
 	}
 
 	@Override

@@ -10,12 +10,15 @@ import com.duitang.service.karma.server.HTTPServer;
 
 public class Finder implements KarmaFinder {
 
-	static ServerBootstrap core;
-	static CoreEnhanced enhancer = new CoreEnhanced() {
+	static CoreEnhancedImpl enhancer = new CoreEnhancedImpl();
+
+	static class CoreEnhancedImpl implements CoreEnhanced {
+
+		protected ServerBootstrap core;
 
 		@Override
 		public void enhanced(ServerBootstrap server) {
-			Finder.core = server;
+			core = server;
 		}
 
 	};
@@ -35,7 +38,7 @@ public class Finder implements KarmaFinder {
 	 */
 	public static void enableHTTPService(int port) throws Exception {
 		http = new HTTPServer(port);
-		JsonRPCHandler rpc1 = new JsonRPCHandler(core.getCoreHandler());
+		JsonRPCHandler rpc1 = new JsonRPCHandler(enhancer.core.getCoreHandler());
 		JsonRouter jsonRouter = new JsonRouter();
 		jsonRouter.setHandler(rpc1);
 		http.setRouter(jsonRouter);

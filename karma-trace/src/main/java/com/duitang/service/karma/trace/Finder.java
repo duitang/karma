@@ -17,8 +17,8 @@ import com.duitang.service.karma.boot.KarmaFinder;
  */
 public class Finder implements KarmaFinder {
 
-	static public BaseVisitor visitor = null;
-	static public TracerLogger logger = null;
+	static BaseVisitor visitor = null;
+	static TracerLogger logger = null;
 
 	static {
 		initVisitor();

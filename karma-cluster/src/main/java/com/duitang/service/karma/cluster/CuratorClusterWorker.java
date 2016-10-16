@@ -5,6 +5,7 @@
  */
 package com.duitang.service.karma.cluster;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -37,6 +38,8 @@ public class CuratorClusterWorker {
 	final static long WORK_PERIOD = 10 * 1000; // 10s
 	final static int timeout = 1000;
 	final static int retries = 3;
+
+	final static Charset enc = Charset.forName("utf8");
 
 	final static ConcurrentHashMap<String, CuratorClusterWorker> owner = new ConcurrentHashMap<>();
 
@@ -124,21 +127,26 @@ public class CuratorClusterWorker {
 		DeamonJobs.runJob(monitor);
 	}
 
-	synchronized public static CuratorClusterWorker createInstance(String conn) {
+	public static CuratorClusterWorker createInstance(String conn) {
 		CuratorClusterWorker ret = owner.get(conn);
 		if (ret == null) {
-			ZKServerRegistry zkSR = new ZKServerRegistry();
-			ZKClientListener lsnr = new ZKClientListener();
-			ret = new CuratorClusterWorker(zkSR, lsnr, conn);
-			zkSR.setWorker(ret);
-			lsnr.setWorker(ret);
+			synchronized (CuratorClusterWorker.class) {
+				ret = owner.get(conn);
+				if (ret == null) {
+					ZKServerRegistry zkSR = new ZKServerRegistry();
+					ZKClientListener lsnr = new ZKClientListener();
+					ret = new CuratorClusterWorker(zkSR, lsnr, conn);
+					zkSR.setWorker(ret);
+					lsnr.setWorker(ret);
+					owner.put(conn, ret);
+				}
+			}
 			ret.cur.getCuratorListenable().addListener(monitor);
 			try {
 				ret.cur.getChildren().watched().forPath(zkNodeBase);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			owner.put(conn, ret);
 		}
 		return ret;
 	}
@@ -172,7 +180,7 @@ public class CuratorClusterWorker {
 			if (cur.checkExists().forPath(nodepath) == null) {
 				cur.create().creatingParentsIfNeeded().forPath(nodepath);
 			}
-			cur.setData().forPath(nodepath, ret0.getBytes());
+			cur.setData().forPath(nodepath, ret0.getBytes(enc));
 			ret = true;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -231,9 +239,9 @@ public class CuratorClusterWorker {
 			String data = mode.toDataString();
 			boolean r = cur.checkExists().forPath(zkNodeBase) == null;
 			if (r) {
-				cur.create().creatingParentsIfNeeded().forPath(zkNodeBase, data.getBytes());
+				cur.create().creatingParentsIfNeeded().forPath(zkNodeBase, data.getBytes(enc));
 			} else {
-				cur.setData().forPath(zkNodeBase, data.getBytes());
+				cur.setData().forPath(zkNodeBase, data.getBytes(enc));
 			}
 			ret = true;
 		} catch (Exception e) {
@@ -248,7 +256,7 @@ public class CuratorClusterWorker {
 		try {
 			boolean r = cur.checkExists().forPath(zkNodeBase) == null;
 			if (!r) {
-				cur.setData().forPath(zkNodeBase, "".getBytes());
+				cur.setData().forPath(zkNodeBase, "".getBytes(enc));
 			}
 			ret = true;
 		} catch (Exception e) {

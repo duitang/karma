@@ -20,7 +20,7 @@ public class ZipkinReporterImpl extends BaseReporter {
 	/**
 	 * notice: currently no safe insurance
 	 */
-	static protected Callback noop = new Callback() {
+	final static protected Callback noop = new Callback() {
 
 		@Override
 		public void onError(Throwable t) {

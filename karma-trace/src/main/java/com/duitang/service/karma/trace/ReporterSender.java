@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import com.duitang.service.karma.support.DeamonJobs;
 import com.duitang.service.karma.support.IPUtils;
 import com.duitang.service.karma.trace.zipkin.ZipkinReporterImpl;
 
@@ -29,7 +30,7 @@ import zipkin.reporter.okhttp3.OkHttpSender;
 public class ReporterSender {
 
 	final static public BlockingQueue<List<TraceCell>> items = new LinkedBlockingQueue<>();
-	static protected Thread reporterDaemon = new Thread() {
+	final static protected Runnable reporterDaemon = new Runnable() {
 
 		@Override
 		public void run() {
@@ -52,16 +53,12 @@ public class ReporterSender {
 
 	};
 
-	static public boolean useConsole = false;
-	static public ConsoleReporter console = new ConsoleReporter();
-	static protected Set<TracerReporter> senders = null;
+	static boolean useConsole = false;
+	final static ConsoleReporter console = new ConsoleReporter();
+	final static Set<TracerReporter> senders = new HashSet<TracerReporter>();
 
 	static {
-
-		senders = new HashSet<TracerReporter>();
-		reporterDaemon.setDaemon(true);
-		reporterDaemon.start();
-
+		DeamonJobs.runJob(reporterDaemon);
 	}
 
 	static public TracerReporter addZipkinSender(String url) throws URISyntaxException {

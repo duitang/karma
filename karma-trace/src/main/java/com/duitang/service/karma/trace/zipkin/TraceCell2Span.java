@@ -26,7 +26,7 @@ import zipkin.Span.Builder;
 public class TraceCell2Span implements TraceCellVisitor<Span> {
 
 	@SuppressWarnings("deprecation")
-	public static Endpoint addr = Endpoint.create(NameUtil.getInstanceTag().app, KarmaServerConfig.host,
+	final public static Endpoint addr = Endpoint.create(NameUtil.getInstanceTag().app, KarmaServerConfig.host,
 			KarmaServerConfig.port);
 
 	protected void extra(TraceCell src, Builder dest) {
