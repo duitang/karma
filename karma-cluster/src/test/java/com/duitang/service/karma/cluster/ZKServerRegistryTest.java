@@ -1,7 +1,5 @@
 package com.duitang.service.karma.cluster;
 
-import static org.junit.Assert.fail;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
