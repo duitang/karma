@@ -2,11 +2,10 @@ package com.duitang.service.lb;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.slf4j.LoggerFactory;
@@ -16,7 +15,6 @@ import com.duitang.service.karma.trace.NoopTraceVisitor;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-
 
 public class TestDynamicLB {
 
@@ -62,14 +60,27 @@ public class TestDynamicLB {
 				int pos = lb.sample();
 				samples.add(pos);
 			}
-			Map<Integer, Long> ret = samples.stream()
-					.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+			Map<Integer, Long> ret = checkIt(samples);
+			// Map<Integer, Long> ret = samples.stream()
+			// .collect(Collectors.groupingBy(Function.identity(),
+			// Collectors.counting()));
 			String[] title = new String[profiles.length];
 			for (int j = 0; j < profiles.length; j++) {
 				title[j] = caption[profiles[j]];
 			}
 			System.out.println(Arrays.toString(title) + " ==> " + ret);
 		}
+	}
+
+	static Map<Integer, Long> checkIt(List<Integer> samples) {
+		Map<Integer, Long> ret = new HashMap<>();
+		for (Integer i : samples) {
+			if (!ret.containsKey(i)) {
+				ret.put(i, 0L);
+			}
+			ret.put(i, ret.get(i) + 1);
+		}
+		return ret;
 	}
 
 	static void simulation(int[] profile, int count, DynamicLB lb) {

@@ -9,6 +9,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.duitang.service.karma.boot.KarmaFinder;
+import com.duitang.service.karma.client.AsyncRegistryReader;
+import com.duitang.service.karma.server.AsyncRegistryWriter;
 import com.duitang.service.karma.support.RPCRegistry;
 
 /**
@@ -32,8 +34,8 @@ public class Finder implements KarmaFinder {
 	 */
 	public static void enableZKRegistry(String conn, List<String> urls) {
 		CuratorClusterWorker ret = CuratorClusterWorker.createInstance(conn);
-		Finder.registry.addWriters(Arrays.asList(ret.zkSR));
-		Finder.registry.addReaders(Arrays.asList(ret.lsnr));
+		Finder.registry.addWriters(Arrays.asList((AsyncRegistryWriter) ret.zkSR));
+		Finder.registry.addReaders(Arrays.asList((AsyncRegistryReader) ret.lsnr));
 		ClusterAwareBalancerFactory fac = new ClusterAwareBalancerFactory();
 		fac.setBootstrapURLs(urls);
 		Finder.registry.setFactory(fac);
