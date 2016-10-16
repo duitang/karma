@@ -24,6 +24,8 @@ public class KarmaIoSessionTest {
 		ret = session.isAlive();
 		System.out.println(ret);
 		Assert.assertFalse(ret);
+		
+		KarmaIoSession.shutdown();
 	}
 
 }

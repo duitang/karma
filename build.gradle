@@ -4,12 +4,15 @@ task wrapper(type: Wrapper) {
 }
 
 buildscript {
-  repositories {
-    maven {
-      url "https://plugins.gradle.org/m2/"
+    repositories {
+      maven {
+        url "https://plugins.gradle.org/m2/"
+      }
     }
-  }
-}
+    dependencies {
+        classpath "org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.6.3"
+    }
+}  
 
 allprojects {
     apply plugin: 'java'
@@ -17,6 +20,7 @@ allprojects {
     apply plugin: 'maven'
     apply plugin: 'findbugs'
     apply plugin: 'jacoco'
+    apply plugin: 'com.github.kt3k.coveralls'
 
     sourceCompatibility = 1.7
     targetCompatibility = 1.7
@@ -45,6 +49,7 @@ subprojects {
     apply plugin: 'maven'
     apply plugin: 'findbugs'
     apply plugin: 'jacoco'
+    apply plugin: 'com.github.kt3k.coveralls'
 
     configurations {
     
@@ -162,4 +167,10 @@ task jacocoRootReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
             it.exists()
         })
     }
+}
+
+task jacocoMerge(type: JacocoMerge) {
+   subprojects.each { subproject ->
+      executionData subproject.tasks.withType(Test)
+   } 
 }

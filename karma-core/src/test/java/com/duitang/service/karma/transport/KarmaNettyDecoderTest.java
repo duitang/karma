@@ -101,7 +101,7 @@ public class KarmaNettyDecoderTest {
 		demodata.version = 2.0f;
 		demodata.conf = new RPCConfig();
 		demodata.param = new Object[] { "aaa" };
-		testNTcpPacket(demodata, 10000);
+		testNTcpPacket(demodata, 100);
 	}
 
 	/**
@@ -118,7 +118,7 @@ public class KarmaNettyDecoderTest {
 			demodata.version = rnd.nextFloat();
 			demodata.flag = rnd.nextInt();
 			demodata.param = new Object[] { genStr(rnd.nextInt(1000)) };
-			testNTcpPacket(demodata, 1000);
+			testNTcpPacket(demodata, 100);
 		}
 	}
 
