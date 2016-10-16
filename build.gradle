@@ -63,14 +63,6 @@ subprojects {
     version =  '1.0'
     group = 'com.duitang.service'
     
-    eclipse.classpath {
-        defaultOutputDir = file('build/classes/main')
-        file.withXml { n ->
-            n.asNode().classpathentry.findAll { it.@path.startsWith('src/test') }
-                    .each { it.@output = 'build/classes/test' }
-        }
-    }
-    
     sourceSets {
        main {
          //if you truly want to override the defaults:
@@ -102,21 +94,18 @@ subprojects {
            downloadSources=true
            downloadJavadoc=true
            defaultOutputDir = file('build/classes/main/')
+           file.withXml { n ->
+                n.asNode().classpathentry.findAll { it.@path.startsWith('src/test') }
+                        .each { it.@output = 'build/classes/test' }
+           }           
         }
     }
     
     test {
-        exclude 'java/**'
-        exclude 'com/**'
         ignoreFailures = true
         testLogging {
             showStandardStreams = true
         }
-    }
-    
-    task runTests(type: Test) {
-        exclude 'com/**'
-        exclude 'java/**'
     }
     
     jacocoTestReport {

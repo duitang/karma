@@ -11,11 +11,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.duitang.service.karma.KarmaException;
+import com.duitang.service.karma.TestingHosts;
 import com.duitang.service.karma.router.Router;
 import com.duitang.service.karma.server.RPCService;
 
 public class ZKServerRegistryTest {
 
+	final static String zk = TestingHosts.zk;
+	
 	ZKServerRegistry zkRS;
 	WorkerMocker worker;
 

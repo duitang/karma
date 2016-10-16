@@ -14,6 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.duitang.service.karma.KarmaException;
+import com.duitang.service.karma.TestingHosts;
 import com.duitang.service.karma.client.impl.PeriodCountCPBalancer;
 import com.duitang.service.karma.client.impl.TraceableBalancer;
 import com.duitang.service.karma.client.impl.TraceableBalancerFactory;
@@ -32,6 +33,8 @@ import com.fasterxml.jackson.databind.SerializationFeature;
  */
 public class FinderTest {
 
+	final static String zk = TestingHosts.zk;
+
 	@Before
 	public void setUp() {
 
@@ -44,7 +47,7 @@ public class FinderTest {
 
 	@Test
 	public void test1() throws KarmaException, Exception {
-		Finder.enableZKRegistry("192.168.1.180:2181", Arrays.asList("localhost:8899"));
+		Finder.enableZKRegistry(zk, Arrays.asList("localhost:8899"));
 		// Finder.enableZKRegistry("192.168.10.216:2181");
 		RPCRegistry rg = Finder.getRegistry();
 
@@ -58,7 +61,22 @@ public class FinderTest {
 
 		System.out.println(rg.getInfo());
 
-//		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		new Thread() {
+
+			@Override
+			public void run() {
+				try {
+					Thread.sleep(30 * 1000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				System.exit(0);
+			}
+
+		}.start();
+
+		// BufferedReader br = new BufferedReader(new
+		// InputStreamReader(System.in));
 		while (true) {
 			System.out.println("now Service online: " + rpc.online);
 			System.out.println(bl.getDebugInfo());

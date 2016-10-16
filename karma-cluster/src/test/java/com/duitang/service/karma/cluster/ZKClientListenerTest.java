@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.duitang.service.karma.KarmaException;
+import com.duitang.service.karma.TestingHosts;
 import com.duitang.service.karma.client.IOBalance;
 import com.duitang.service.karma.client.IOBalanceFactory;
 import com.duitang.service.karma.client.impl.RRRFactory;
@@ -24,6 +25,8 @@ import com.duitang.service.karma.trace.TraceCell;
 
 public class ZKClientListenerTest {
 
+	final static String zk = TestingHosts.zk;
+	
 	ZKClientListener lsnr;
 	IOBalanceFactory fac = new RRRFactory();
 	RPCRegistry aware = new RPCRegistry();
@@ -91,8 +94,8 @@ public class ZKClientListenerTest {
 	}
 
 	@Test
-	public void testSyncPull() {
-		CuratorClusterWorker worker = CuratorClusterWorker.createInstance("192.168.10.216:2181");
+	public void testSyncPull() throws Exception {
+		CuratorClusterWorker worker = CuratorClusterWorker.createInstance(zk);
 		lsnr = worker.lsnr;
 
 		ClusterMode mode = new ClusterMode();
@@ -142,6 +145,8 @@ public class ZKClientListenerTest {
 		Assert.assertTrue(info.getURLs().contains("aa:444"));
 		Assert.assertTrue(info.getURLs().contains("bb:555"));
 
+		Thread.sleep(10 * 1000);
+		System.exit(0);
 	}
 
 }

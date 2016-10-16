@@ -20,6 +20,7 @@ import com.duitang.service.karma.cluster.Finder;
  */
 public class TestOnceServerAndClient {
 
+	final static String zk = TestingHosts.zk;
 	static String KEY = "aaaa";
 
 	/**
@@ -27,8 +28,9 @@ public class TestOnceServerAndClient {
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
-		Finder.enableZKRegistry("192.168.1.180", Arrays.asList("localhost:9999"));
-//		Finder.enableZKRegistry("192.168.10.216", Arrays.asList("localhost:9999"));
+		Finder.enableZKRegistry(zk, Arrays.asList("localhost:9999"));
+		// Finder.enableZKRegistry("192.168.10.216",
+		// Arrays.asList("localhost:9999"));
 
 		ServerBootstrap boot = new ServerBootstrap();
 		MemoryCacheService s1 = new MemoryCacheService();

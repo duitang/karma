@@ -46,7 +46,7 @@ public class CuratorListenerExample {
 		curator.create().creatingParentsIfNeeded().forPath(path + "/" + Math.random());
 		// one-time watch
 
-		Thread.sleep(Integer.MAX_VALUE);
+		Thread.sleep(10 * 1000);
 	}
 
 }

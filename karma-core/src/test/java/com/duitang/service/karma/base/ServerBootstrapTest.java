@@ -17,7 +17,7 @@ public class ServerBootstrapTest {
 		System.out.println("aaaa ---> " + s1.memory_getString("aaaa"));
 
 		boot.startUp(9999);
-		Thread.sleep(10000000);
+		Thread.sleep(10 * 1000);
 	}
 
 }

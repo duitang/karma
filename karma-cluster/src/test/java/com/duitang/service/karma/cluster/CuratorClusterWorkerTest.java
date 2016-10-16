@@ -11,13 +11,15 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.duitang.service.karma.KarmaException;
+import com.duitang.service.karma.TestingHosts;
 import com.duitang.service.karma.router.Router;
 import com.duitang.service.karma.server.RPCService;
 import com.duitang.service.karma.support.RPCNode;
 
 public class CuratorClusterWorkerTest {
 
-	final static String conn = "192.168.10.216:2181";
+	final static String conn = TestingHosts.zk;
+//	final static String conn = "192.168.10.216:2181";
 	CuratorClusterWorker worker;
 	ZKServerRegistry rs;
 	ZKClientListener lsr;

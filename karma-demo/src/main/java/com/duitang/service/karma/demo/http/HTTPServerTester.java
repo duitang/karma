@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import com.duitang.service.demo.IDemoService;
 import com.duitang.service.demo.MemoryCacheService;
 import com.duitang.service.karma.boot.ServerBootstrap;
-import com.duitang.service.karma.http.Finder;
 import com.duitang.service.karma.trace.NoopTraceVisitor;
 
 import ch.qos.logback.classic.Level;
@@ -40,7 +39,7 @@ public class HTTPServerTester {
 
 		server.startUp(9999);
 
-		Finder.enableHTTPService(8888);
+		com.duitang.service.karma.http.Finder.enableHTTPService(8888);
 		com.duitang.service.karma.trace.Finder.enableConsole(true);
 		com.duitang.service.karma.trace.Finder.enableZipkin(null, "http://192.168.10.216:9411");
 		new CountDownLatch(0).await();
