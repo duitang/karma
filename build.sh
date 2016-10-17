@@ -3,5 +3,6 @@ find . -name ".classpath" -exec rm {} \;
 find . -name ".project" -exec rm {} \;
 gradle clean
 gradle eclipse
+gradle idea
 gradle :karma-core:compileTestJava
 gradle build -x test
