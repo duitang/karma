@@ -84,7 +84,7 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 	public boolean equals(Object obj) {
 		if (obj instanceof RPCNodeHashing) {
 			RPCNodeHashing u = (RPCNodeHashing) obj;
-			boolean bnodes = this.nodes.equals(u.nodes);
+			boolean bnodes = this.nodes.toString().equals(u.nodes.toString());
 			boolean bschema = this.schema.equals(u.schema);
 			return bnodes && bschema;
 		}
@@ -156,6 +156,9 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 		Set<String> sch = new HashSet<String>();
 		for (RPCNode node : nodes) {
 			ret.nodes.add(node);
+			if (node.protocol == null){
+				node.protocol = getRawConnSchema(node.url);
+			}
 			sch.add(node.protocol);
 		}
 		if (sch.size() > 1) {
@@ -203,6 +206,10 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 			ret.put(n.url, n.getSafeLoad(1.0d));
 		}
 		return ret;
+	}
+
+	public String toStirng() {
+		return "schema: " + schema + "; " + nodes;
 	}
 
 }

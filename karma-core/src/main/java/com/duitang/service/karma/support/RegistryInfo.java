@@ -37,7 +37,7 @@ public class RegistryInfo {
 		String u = RPCNodeHashing.getRawConnURL(url);
 		int idx = hashing.urls.indexOf(u);
 		RPCNode ret = null;
-		if (idx > 0) {
+		if (idx >= 0) {
 			ret = hashing.nodes.get(idx);
 		}
 		return ret;
@@ -57,6 +57,22 @@ public class RegistryInfo {
 
 	public boolean isFreezeMode() {
 		return freezeMode;
+	}
+
+	public String toString() {
+		String s = "[]";
+		if (hashing != null && hashing.getNodes() != null) {
+			s = hashing.getNodes().toString();
+		}
+		return "freezing:" + freezeMode + "; " + s;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof RegistryInfo){
+			return this.toString().equals(obj.toString());
+		}
+		return super.equals(obj);
 	}
 
 }

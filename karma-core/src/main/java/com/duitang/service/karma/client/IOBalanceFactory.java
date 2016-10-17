@@ -1,8 +1,8 @@
 package com.duitang.service.karma.client;
 
 import com.duitang.service.karma.KarmaException;
-import com.duitang.service.karma.support.RPCRegistry;
 import com.duitang.service.karma.support.RPCNodeHashing;
+import com.duitang.service.karma.support.RPCRegistry;
 
 /**
  * @author laurence

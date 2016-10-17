@@ -61,4 +61,8 @@ public class NameUtil {
 		return ret;
 	}
 
+	private NameUtil() {
+		// disable
+	}
+
 }

@@ -5,7 +5,7 @@
  */
 package com.duitang.service.karma.support;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -15,10 +15,10 @@ import java.util.concurrent.ThreadFactory;
  * @since 2016年10月11日
  *
  */
-public class DeamonJobs {
+public class DaemonJobs {
 
-	final static protected ExecutorService jobs;
-	final static protected ConcurrentHashMap<String, Runnable> cached;
+	static protected ExecutorService jobs;
+	final static protected ConcurrentLinkedQueue<Runnable> cached;
 
 	static class DaemonFactory implements ThreadFactory {
 
@@ -34,7 +34,7 @@ public class DeamonJobs {
 
 	static {
 		jobs = Executors.newCachedThreadPool(new DaemonFactory());
-		cached = new ConcurrentHashMap<String, Runnable>();
+		cached = new ConcurrentLinkedQueue<Runnable>();
 	}
 
 	static String pickName(Runnable r) {
@@ -45,19 +45,25 @@ public class DeamonJobs {
 		if (r == null) {
 			return;
 		}
-		String name = pickName(r);
-		cached.put(name, r);
+		cached.add(r);
 		jobs.submit(r);
 	}
 
 	static public void shutdown() {
-		jobs.shutdown();
+		if (!jobs.isShutdown()) {
+			jobs.shutdown();
+		}
 	}
 
 	static public void reset() {
-		for (Runnable r : cached.values()) {
+		jobs = Executors.newCachedThreadPool(new DaemonFactory());
+		for (Runnable r : cached) {
 			jobs.submit(r);
 		}
+	}
+
+	private DaemonJobs() {
+		// disable
 	}
 
 }

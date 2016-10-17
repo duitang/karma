@@ -3,8 +3,8 @@ package com.duitang.service.karma.client.impl;
 import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.client.IOBalance;
 import com.duitang.service.karma.client.IOBalanceFactory;
-import com.duitang.service.karma.support.RPCRegistry;
 import com.duitang.service.karma.support.RPCNodeHashing;
+import com.duitang.service.karma.support.RPCRegistry;
 
 /**
  * @author laurence

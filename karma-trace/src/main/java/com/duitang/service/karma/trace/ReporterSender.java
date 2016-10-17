@@ -12,7 +12,7 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import com.duitang.service.karma.support.DeamonJobs;
+import com.duitang.service.karma.support.DaemonJobs;
 import com.duitang.service.karma.support.IPUtils;
 import com.duitang.service.karma.trace.zipkin.ZipkinReporterImpl;
 
@@ -58,7 +58,7 @@ public class ReporterSender {
 	final static Set<TracerReporter> senders = new HashSet<TracerReporter>();
 
 	static {
-		DeamonJobs.runJob(reporterDaemon);
+		DaemonJobs.runJob(reporterDaemon);
 	}
 
 	static public TracerReporter addZipkinSender(String url) throws URISyntaxException {

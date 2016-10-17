@@ -49,7 +49,7 @@ public class InstanceTagHolder {
 		} catch (Exception e) {
 			logger.error("get APP_NAME error", e);
 		}
-		if (_appName == null){
+		if (_appName == null) {
 			_appName = "UNKNOWN";
 		}
 		return _appName;
@@ -76,4 +76,9 @@ public class InstanceTagHolder {
 	static {
 		resetFinalTag();
 	}
+
+	private InstanceTagHolder() {
+		// disable
+	}
+
 }

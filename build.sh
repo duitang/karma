@@ -4,4 +4,4 @@ find . -name ".project" -exec rm {} \;
 gradle clean
 gradle eclipse
 gradle :karma-core:compileTestJava
-gradle build
+gradle build -x test

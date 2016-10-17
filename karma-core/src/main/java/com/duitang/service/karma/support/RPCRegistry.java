@@ -6,8 +6,6 @@
 package com.duitang.service.karma.support;
 
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.duitang.service.karma.KarmaException;
@@ -32,7 +30,6 @@ public class RPCRegistry {
 
 	final ConcurrentLinkedQueue<AsyncRegistryReader> readers = new ConcurrentLinkedQueue<>();
 	final ConcurrentLinkedQueue<AsyncRegistryWriter> writers = new ConcurrentLinkedQueue<>();
-	final ConcurrentHashMap<String, String> bootstrapURLs = new ConcurrentHashMap<>();
 
 	// change to map if upgrade to connection->IOBalanceFactory
 	protected IOBalanceFactory fac = new TraceableBalancerFactory(PeriodCountCPBalancer.PERIOD,
@@ -84,17 +81,12 @@ public class RPCRegistry {
 		for (AsyncRegistryReader r : readers) {
 			sb.append(r.getClass().getName()).append(", ");
 		}
-		sb.append("]");
+		sb.append("] ");
 		sb.append("Writers: [");
 		for (AsyncRegistryWriter w : writers) {
 			sb.append(w.getClass().getName()).append(", ");
 		}
-		sb.append("]");
-		sb.append("Bootstrap URLs: [");
-		for (Entry<String, String> en : bootstrapURLs.entrySet()) {
-			sb.append(en.getKey()).append(" --> ").append(en.getValue());
-		}
-		sb.append("]");
+		sb.append("] ");
 		return sb.toString();
 	}
 

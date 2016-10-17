@@ -1,5 +1,8 @@
 package com.duitang.service.karma.support;
 
+import java.io.IOException;
+import java.net.InetAddress;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -49,39 +52,20 @@ public class IPUtilsTest {
 	}
 
 	@Test
-	public void testGetIPAsInt() {
-		Assert.fail("Not yet implemented");
-	}
-
-	@Test
-	public void testGetIPAsString() {
-		Assert.fail("Not yet implemented");
-	}
-
-	@Test
 	public void testGetIp() {
 		String ip = IPUtils.getIPAsString();
 		System.out.println(ip);
 	}
 
 	@Test
-	public void testPickUpIp() {
-		Assert.fail("Not yet implemented");
-	}
+	public void test1() throws IOException {
+		Assert.assertNull(IPUtils.getSchema(null));
+		String s = IPUtils.pickUpIp("127.");
+		Assert.assertTrue(s.equals("127.0.0.1"));
 
-	@Test
-	public void testPickUpInetAddress() {
-		Assert.fail("Not yet implemented");
-	}
-
-	@Test
-	public void testPickUpInetAddressNot() {
-		Assert.fail("Not yet implemented");
-	}
-
-	@Test
-	public void testPickUpIpNot() {
-		Assert.fail("Not yet implemented");
+		System.out.println(s);
+		InetAddress s1 = IPUtils.pickUpInetAddress("127.0");
+		Assert.assertTrue("127.0.0.1".equals(s1.getHostAddress()));
 	}
 
 }

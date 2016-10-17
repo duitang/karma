@@ -129,4 +129,8 @@ public class IPUtils {
 		return Inet4Address.getLocalHost().getHostAddress();
 	}
 
+	private IPUtils() {
+		// disable
+	}
+
 }

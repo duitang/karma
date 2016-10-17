@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.apache.zookeeper.ZKUtil;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -26,7 +27,7 @@ import com.duitang.service.karma.trace.TraceCell;
 public class ZKClientListenerTest {
 
 	final static String zk = TestingHosts.zk;
-	
+
 	ZKClientListener lsnr;
 	IOBalanceFactory fac = new RRRFactory();
 	RPCRegistry aware = new RPCRegistry();
@@ -93,10 +94,40 @@ public class ZKClientListenerTest {
 		Assert.assertEquals(nodes.toString(), m.toString());
 	}
 
+	static void reg2RPC(CuratorClusterWorker worker, boolean[] create) {
+		Mock r1 = new Mock();
+		r1.url = "aa:444";
+		r1.online = true;
+		r1.grp = "dev1";
+		Mock r2 = new Mock();
+		r2.url = "bb:555";
+		r2.online = true;
+		r2.grp = "dev1";
+		if (create[0]) {
+			worker.syncWrite(r1);
+		} else {
+			worker.syncClearRPCNode(r1);
+		}
+		if (create[1]) {
+			worker.syncWrite(r2);
+		} else {
+			worker.syncClearRPCNode(r2);
+		}
+	}
+
 	@Test
 	public void testSyncPull() throws Exception {
 		CuratorClusterWorker worker = CuratorClusterWorker.createInstance(zk);
 		lsnr = worker.lsnr;
+
+		Thread.sleep(1000);
+
+		// force clear avoid for exceptions
+		if (worker.zkCli.exists("/karma_rpc/nodes", null) != null) {
+			ZKUtil.deleteRecursive(worker.zkCli, "/karma_rpc/nodes");
+		}
+
+		reg2RPC(worker, new boolean[] { true, true });
 
 		ClusterMode mode = new ClusterMode();
 		mode.nodes = new LinkedHashMap<String, Double>();
@@ -112,7 +143,9 @@ public class ZKClientListenerTest {
 		Assert.assertTrue(info.isFreezeMode());
 		Assert.assertEquals(mode.nodes.toString(), info.getHashing().reverseToMap().toString());
 
+		// clear freezing mode
 		Assert.assertTrue(worker.syncClearMode());
+
 		info = lsnr.syncPull();
 		System.out.println(info.isFreezeMode());
 		System.out.println(info.getURLs());
@@ -127,26 +160,24 @@ public class ZKClientListenerTest {
 		mode.freeze = false;
 		worker.syncSetMode(mode);
 
-		Mock r1 = new Mock();
-		r1.url = "aa:444";
-		r1.online = true;
-		r1.grp = "dev1";
-		worker.syncWrite(r1);
-		r1 = new Mock();
-		r1.url = "bb:555";
-		r1.online = true;
-		r1.grp = "dev1";
-		worker.syncWrite(r1);
 		info = lsnr.syncPull();
+		Assert.assertNull(info);
+
+		reg2RPC(worker, new boolean[] { false, true });
+		info = lsnr.syncPull();
+		Assert.assertNotNull(info);
+
 		System.out.println(info.isFreezeMode());
 		System.out.println(info.getURLs());
 		Assert.assertFalse(info.isFreezeMode());
-		Assert.assertTrue(info.getURLs().size() == 2);
-		Assert.assertTrue(info.getURLs().contains("aa:444"));
+		Assert.assertTrue(info.getURLs().size() == 1);
+		Assert.assertFalse(info.getURLs().contains("aa:444"));
 		Assert.assertTrue(info.getURLs().contains("bb:555"));
 
-		Thread.sleep(10 * 1000);
-		System.exit(0);
+		// if nodes not change will return null
+		info = lsnr.syncPull();
+		Assert.assertNull(info);
+
 	}
 
 }
