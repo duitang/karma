@@ -208,7 +208,7 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 		return ret;
 	}
 
-	public String toStirng() {
+	public String toString() {
 		return "schema: " + schema + "; " + nodes;
 	}
 

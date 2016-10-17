@@ -134,6 +134,9 @@ public class RPCNodeHashingTest {
 		s2.removeAll(s1);
 		Assert.assertTrue(s2.isEmpty());
 
+		Assert.assertFalse(r4.equals("s1"));
+
+		r4.toString();
 	}
 
 	@Test
@@ -146,6 +149,35 @@ public class RPCNodeHashingTest {
 		}
 		Assert.assertNull(RPCNodeHashing.createNullableFromString(null));
 		Assert.assertNull(RPCNodeHashing.getRawConnSchema(null));
+
+		Assert.assertNull(RPCNodeHashing.getRawConnURL(null));
+
+		try {
+			RPCNodeHashing.createFromString(Arrays.asList("tcp://aa:11", "udp://bb:22"));
+			Assert.fail();
+		} catch (Exception e) {
+
+		}
+		try {
+			LinkedHashMap<String, Double> m = new LinkedHashMap<>();
+			m.put("tcp://aa:11", 1d);
+			m.put("udp://bb:22", 1d);
+			RPCNodeHashing.createFromHashMap(m);
+			Assert.fail();
+		} catch (Exception e) {
+
+		}
+		try {
+			RPCNode a = new RPCNode();
+			a.url = "tcp://aa:11";
+			RPCNode b = new RPCNode();
+			b.url = "udp://bb:22";
+			RPCNodeHashing.createFromNodes(Arrays.asList(a, b));
+			Assert.fail();
+		} catch (Exception e) {
+
+		}
+
 	}
 
 }

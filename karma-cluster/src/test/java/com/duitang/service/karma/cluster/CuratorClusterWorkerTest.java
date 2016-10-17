@@ -18,7 +18,7 @@ import com.duitang.service.karma.support.RPCNode;
 public class CuratorClusterWorkerTest {
 
 	final static String conn = TestingHosts.zk;
-//	final static String conn = "192.168.10.216:2181";
+	// final static String conn = "192.168.10.216:2181";
 	CuratorClusterWorker worker;
 	ZKServerRegistry rs;
 	ZKClientListener lsr;
@@ -31,20 +31,6 @@ public class CuratorClusterWorkerTest {
 
 	@After
 	public void tearDown() throws Exception {
-	}
-
-	@SuppressWarnings("deprecation")
-	@Test
-	public void testCreateSimple() {
-//		worker = new CuratorClusterWorker(rs, lsr, conn);
-//		worker.init();
-//		String name1 = worker.cur.getState().name();
-//		Assert.assertFalse(worker.cur.isStarted());
-//		worker.cur.start();
-//		String name2 = worker.cur.getState().name();
-//		Assert.assertTrue(worker.cur.isStarted());
-//
-//		Assert.assertNotSame(name1, name2);
 	}
 
 	@Test
