@@ -2,10 +2,7 @@ package com.duitang.service.karma.demo;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 import com.duitang.service.demo.IDemoService;
 import com.duitang.service.demo.MemoryCacheService;
@@ -17,7 +14,7 @@ public class CacheNettyServiceTest {
 	ServerBootstrap boot = null;
 	ClientFactory<IDemoService> fac = null;
 
-	@Before
+	// @Before
 	public void setUp() throws Exception {
 		LogManager.getLogger("com.duitang.service").setLevel(Level.ALL);
 		MemoryCacheService impl = new MemoryCacheService(true);
@@ -30,7 +27,7 @@ public class CacheNettyServiceTest {
 
 	}
 
-	@After
+	// @After
 	public void destroy() {
 		boot.shutdown();
 	}
@@ -45,7 +42,7 @@ public class CacheNettyServiceTest {
 		}
 	}
 
-	@Test
+	// @Test
 	public void testBoot() {
 		IDemoService cli = fac.create();
 		try {

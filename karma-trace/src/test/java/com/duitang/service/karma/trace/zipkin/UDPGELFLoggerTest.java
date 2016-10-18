@@ -46,7 +46,7 @@ public class UDPGELFLoggerTest {
 		ts.close();
 		logger.log(new Date() + " finished in cwj_home3", ts.tc);
 
-		Thread.sleep(10000);
+		Thread.sleep(2000);
 	}
 
 }

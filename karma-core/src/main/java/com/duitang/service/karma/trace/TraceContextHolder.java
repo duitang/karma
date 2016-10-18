@@ -67,6 +67,14 @@ public class TraceContextHolder {
 		TraceContextHolder.sampler = sampler;
 	}
 
+	synchronized static public void alwaysSampling() {
+		TraceContextHolder.sampler = new AlwaysSampled();
+	}
+
+	synchronized static public void neverSampling() {
+		TraceContextHolder.sampler = new AlwaysNotSampled();
+	}
+
 	static public TracerSampler getSampler() {
 		return TraceContextHolder.sampler;
 	}

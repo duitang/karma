@@ -109,7 +109,10 @@ public class UDPGELFLogger implements TracerLogger {
 			content.putAll(p);
 		}
 		content.remove("props");
-		content.putAll(MDC.getMDCAdapter().getCopyOfContextMap());
+		Map<String, String> mm = MDC.getMDCAdapter().getCopyOfContextMap();
+		if (mm != null){
+			content.putAll(mm);			
+		}
 
 		GelfMessage msg = builder.message(text).timestamp(System.currentTimeMillis()).additionalFields(content).build();
 		// async mode

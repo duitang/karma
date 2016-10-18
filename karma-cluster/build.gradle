@@ -6,9 +6,6 @@ dependencies {
         exclude group: "log4j", module: "log4j"
         exclude group: "io.netty", module: "netty"
     }
-    compile ("org.apache.curator:curator-recipes:2.8.0") {
-        exclude group: "org.apache.zookeeper", module: "zookeeper"
-    }
     compile group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'
     
     testCompile("junit:junit:4.11")

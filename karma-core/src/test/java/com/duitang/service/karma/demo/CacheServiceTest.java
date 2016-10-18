@@ -2,8 +2,6 @@ package com.duitang.service.karma.demo;
 
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 import com.duitang.service.demo.IDemoService;
 import com.duitang.service.demo.MemoryCacheService;
@@ -16,7 +14,7 @@ public class CacheServiceTest {
 	ClientFactory<IDemoService> fac = null;
 
 	@SuppressWarnings("deprecation")
-	@Before
+	// @Before
 	public void setUp() {
 		MemoryCacheService impl = new MemoryCacheService(true);
 		boot = new ServerBootstrap();
@@ -35,7 +33,7 @@ public class CacheServiceTest {
 		boot.shutdown();
 	}
 
-	@Test
+	// @Test
 	public void testBoot() {
 		IDemoService cli = fac.create();
 		try {
