@@ -7,11 +7,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.duitang.service.karma.KarmaException;
-import com.duitang.service.karma.base.ClientId;
 
 public class ReflectInvoker implements Invoker {
 
-	protected ClientId clientId;
 	protected Class iface;
 	protected Object impl;
 
@@ -35,8 +33,7 @@ public class ReflectInvoker implements Invoker {
 	 */
 	protected Map<String, Class[][]> paramTypes;
 
-	public ReflectInvoker(ClientId clientId, Class iface, Object impl) throws KarmaException {
-		this.clientId = clientId;
+	public ReflectInvoker(Class iface, Object impl) throws KarmaException {
 		this.iface = iface;
 		this.impl = impl;
 		init();

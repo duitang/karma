@@ -51,4 +51,9 @@ public class TraceStone extends TraceCell {
 		super(client, host, port);
 	}
 
+	@Override
+	protected String extraInfo() {
+		return props.toString();
+	}
+
 }

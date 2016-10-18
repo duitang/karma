@@ -13,7 +13,6 @@ import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.KarmaOverloadException;
 import com.duitang.service.karma.KarmaRuntimeException;
 import com.duitang.service.karma.KarmaTimeoutException;
-import com.duitang.service.karma.base.ClientId;
 import com.duitang.service.karma.base.KarmaClientInfo;
 import com.duitang.service.karma.base.LifeCycle;
 import com.duitang.service.karma.boot.KarmaClientConfig;
@@ -43,7 +42,6 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 	final static protected AtomicBoolean lock = new AtomicBoolean(false);
 	final static private Long DEFAULT_TIMEOUT = 1000L;
 
-	protected ClientId clientid;
 	protected String domainName;
 	protected Map<String, Boolean> cutoffNames;
 	protected long timeout = DEFAULT_TIMEOUT;
@@ -98,7 +96,6 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 		KarmaClient client = new KarmaClient(iface, iob);
 		client.group = group;
 		client.timeout = timeout;
-		client.clientid = new ClientId(iface.getCanonicalName(), true);
 		client.dummy = Enhancer.create(null, new Class[] { iface, KarmaClientInfo.class }, client);
 		return client;
 	}
