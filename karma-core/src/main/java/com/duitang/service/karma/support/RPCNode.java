@@ -80,11 +80,12 @@ public class RPCNode implements Comparable<RPCNode> {
 			return true;
 		}
 
+		boolean ur = !StringUtils.equals(node.url, this.url);
 		boolean p = !StringUtils.equals(node.protocol, this.protocol);
 		boolean g = !StringUtils.equals(node.group, this.group);
 		boolean o = node.online != this.online;
 		boolean u = node.up != this.up;
-		return p || g || o || u;
+		return ur || p || g || o || u;
 	}
 
 	public String toString() {
