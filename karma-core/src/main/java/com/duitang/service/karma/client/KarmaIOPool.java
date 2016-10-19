@@ -160,6 +160,7 @@ public class KarmaIOPool implements LifeCycle {
 		}
 		for (Entry<String, GenericObjectPool<KarmaIoSession>> en : ioPool.entrySet()) {
 			err.info("closing ioPool ... " + en.getKey());
+			en.getValue().clear();
 			en.getValue().close();
 		}
 	}
