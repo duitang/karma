@@ -12,16 +12,14 @@ import com.duitang.service.demo.DemoServer;
 
 public class KarmaIOPoolTest {
 
-	DemoServer server;
-
 	@Before
 	public void setUp() throws Exception {
-		server = new DemoServer(9999);
+		DemoServer.startUp();
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		server.shutdown();
+		DemoServer.shutdown();
 	}
 
 	@Test

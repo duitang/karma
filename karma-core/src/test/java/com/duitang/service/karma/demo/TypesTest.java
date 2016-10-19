@@ -10,10 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 import com.duitang.service.demo.DemoObject;
 import com.duitang.service.karma.base.ClientFactory;
@@ -27,11 +24,11 @@ import com.duitang.service.karma.demo.domain.Demo3Impl;
 
 public class TypesTest {
 
-	@Before
+//	@Before
 	public void setUp() {
 	}
 
-	@After
+//	@After
 	public void destroy() {
 
 	}
@@ -48,7 +45,7 @@ public class TypesTest {
 	 * primary types
 	 */
 	@SuppressWarnings("deprecation")
-	@Test
+//	@Test
 	public void test0() throws Exception {
 		ServerBootstrap server = new ServerBootstrap();
 		Demo1 service = new Demo1Impl();
@@ -108,7 +105,7 @@ public class TypesTest {
 	/**
 	 * list, array, set, map
 	 */
-	@Test
+//	@Test
 	public void test1() throws Exception {
 		ServerBootstrap server = new ServerBootstrap();
 		Demo2 service = new Demo2Impl();
@@ -150,7 +147,7 @@ public class TypesTest {
 	 * complex types
 	 */
 	@SuppressWarnings("deprecation")
-	@Test
+//	@Test
 	public void test2() throws Exception {
 		ServerBootstrap server = new ServerBootstrap();
 		Demo3 service = new Demo3Impl();

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
-import org.junit.Test;
 
 import com.duitang.service.demo.IDemoService;
 import com.duitang.service.karma.base.ClientFactory;
@@ -136,7 +135,7 @@ public class MemoryTest {
 		}
 	}
 
-	@Test
+//	@Test
 	public void testSomeError() {
 		ClientFactory<IDemoService> fac = ClientFactory.createFactory(IDemoService.class);
 		fac.setUrl("localhost:9999");

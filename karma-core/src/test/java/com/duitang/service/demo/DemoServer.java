@@ -16,25 +16,29 @@ public class DemoServer {
 
 	final static String KEY = "aaaa";
 	final static String VAL = "bbbb";
-	ServerBootstrap boot = new ServerBootstrap();
-	MemoryCacheService s1 = new MemoryCacheService();
-	int port = 9999;
+	final static ServerBootstrap boot = new ServerBootstrap();
+	final static MemoryCacheService s1 = new MemoryCacheService();
+	static int port = 9999;
 
-	public DemoServer(int port) throws Exception {
-		boot.addService(IDemoService.class, s1);
-		s1.memory_setString(KEY, VAL, 5000);
-		System.out.println("aaaa ---> " + s1.memory_getString(KEY));
-
-		this.port = port;
-		boot.startUp(port);
+	static public void startUp() throws Exception {
+		if (!boot.isOnline()) {
+			boot.addService(IDemoService.class, new MemoryCacheService());
+			boot.startUp(port);
+		}
 	}
 
-	public void shutdown() {
-		boot.shutdown();
+	static public void shutdown() {
+		try {
+			if (boot.isOnline()) {
+				boot.shutdown();
+			}
+		} catch (Exception e) {
+			//
+		}
 	}
 
 	public int getPort() {
-		return this.port;
+		return port;
 	}
 
 }

@@ -25,8 +25,6 @@ import ch.qos.logback.classic.Logger;
 
 public class KarmaClientTest {
 
-	DemoServer demo;
-
 	@Before
 	public void setUp() throws Exception {
 		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
@@ -35,12 +33,12 @@ public class KarmaClientTest {
 		logger.setLevel(Level.DEBUG);
 		logger = (Logger) LoggerFactory.getLogger(KarmaClient.class);
 		logger.setLevel(Level.DEBUG);
-		demo = new DemoServer(9999);
+		DemoServer.startUp();
 	}
 
 	@After
 	public void destroy() {
-		demo.shutdown(); // testing shutdown
+		DemoServer.shutdown(); // testing shutdown
 	}
 
 	@Test
@@ -83,7 +81,7 @@ public class KarmaClientTest {
 				Arrays.asList("localhost:9999"), "dev1");
 		long to = 2000;
 		cli.setTimeout(to);
-		Assert.assertTrue(cli.getTimeout() == to);
+		Assert.assertTrue(cli.getTimeout() == to + 1);
 		try {
 			cli.getService().getExp();
 			Assert.fail();
@@ -93,7 +91,24 @@ public class KarmaClientTest {
 
 		try {
 			cli.getService().getTimeoutError(to);
-			Assert.fail();			
+			Assert.fail();
+		} catch (KarmaRuntimeException e) {
+			e.printStackTrace();
+		}
+
+		KarmaClient.reset("dev1", Arrays.asList("localhost:9999"));
+		cli.resetTrace();
+
+		try {
+			cli.getService().getExp();
+			Assert.fail();
+		} catch (DemoException e) {
+			e.printStackTrace();
+		}
+
+		try {
+			cli.getService().getTimeoutError(to);
+			Assert.fail();
 		} catch (KarmaRuntimeException e) {
 			e.printStackTrace();
 		}

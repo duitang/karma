@@ -1,12 +1,8 @@
 package com.duitang.service.karma.client.impl;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Random;
-import java.util.Set;
 
 import com.duitang.service.karma.client.IOBalance;
 import com.duitang.service.karma.support.RPCNodeHashing;
@@ -37,6 +33,7 @@ public class NaiveBalancer implements IOBalance {
 
 	@Override
 	public String next(String token) {
+		RPCNodeHashing urls = this.urls;
 		int sz = urls.getNodes().size();
 		if (sz == 0) {
 			throw new RuntimeException("Not initialized properly!");
@@ -59,32 +56,6 @@ public class NaiveBalancer implements IOBalance {
 	@Override
 	public void setNodesWithWeights(LinkedHashMap<String, Double> nodes) {
 		this.urls = RPCNodeHashing.createFromHashMap(nodes);
-	}
-
-	public static List<String> getSafeNodes(LinkedHashMap<String, Double> nodes) {
-		List<String> keys = new ArrayList<String>();
-		for (Entry<String, Double> en : nodes.entrySet()) {
-			keys.add(en.getKey());
-		}
-		return getSafeNodes(keys);
-	}
-
-	/**
-	 * use this to keep nodes validation
-	 * 
-	 * @param nodes
-	 * @return
-	 */
-	public static List<String> getSafeNodes(List<String> nodes) {
-		Set<String> ns = new HashSet<String>();
-		List<String> ret = new ArrayList<String>();
-		for (String s : nodes) {
-			if (!ns.contains(s)) {
-				ret.add(s);
-				ns.add(s);
-			}
-		}
-		return ret;
 	}
 
 }

@@ -2,6 +2,7 @@ package com.duitang.service.karma.boot;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Date;
 
 import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.handler.RPCHandler;
@@ -30,6 +31,9 @@ public class ServerBootstrap {
 
 	protected StringBuilder info = new StringBuilder();
 	protected int maxQueuingLatency = 500;// 请求最大等待时间（即从进入队列到真正被worker执行）
+
+	protected boolean online = false;
+	protected Date created = new Date();
 
 	protected void initRPCService(ServiceConfig conf) throws KarmaException {
 		rpc0 = new ReflectRPCHandler();
@@ -82,6 +86,8 @@ public class ServerBootstrap {
 		if (extraService != null) {
 			extraService.enhanced(this);
 		}
+
+		online = true;
 	}
 
 	/**
@@ -133,6 +139,7 @@ public class ServerBootstrap {
 
 	public void shutdown() {
 		// KarmaClient.shutdownIOPool();
+		online = false;
 		if (tcp != null) {
 			try {
 				KarmaServerConfig.clusterAware.unRegisterWrite(tcp);
@@ -204,6 +211,14 @@ public class ServerBootstrap {
 
 	public ReflectRPCHandler getCoreHandler() {
 		return rpc0;
+	}
+
+	public boolean isOnline() {
+		return online;
+	}
+	
+	public Date getCreated(){
+		return created;
 	}
 
 }

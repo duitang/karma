@@ -2,8 +2,6 @@ package com.duitang.service.karma.server;
 
 import java.io.IOException;
 
-import org.junit.Before;
-import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
 import com.duitang.service.demo.IDemoService;
@@ -18,7 +16,7 @@ import ch.qos.logback.classic.Logger;
 
 public class TCPServerTest {
 
-	@Before
+//	@Before
 	public void setUp() {
 		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 		root.setLevel(Level.INFO);
@@ -34,7 +32,7 @@ public class TCPServerTest {
 		// Thread.sleep(10000000);
 	}
 
-	@Test
+//	@Test
 	public void test1() throws KarmaException, InterruptedException {
 		ServiceConfig conf = new ServiceConfig();
 		MemoryCacheService mms = new MemoryCacheService();

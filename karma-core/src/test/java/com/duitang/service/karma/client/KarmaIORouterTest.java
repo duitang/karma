@@ -15,7 +15,7 @@ public class KarmaIORouterTest {
 
 	@Test
 	public void test() {
-		List<String> lst = Arrays.asList(new String[] { "a", "b", "c", "d", "e", "f" });
+		List<String> lst = Arrays.asList(new String[] { "a:11", "b:22", "c:33", "d:44", "e:55", "f:66" });
 
 		StringBuilder sb = new StringBuilder();
 		NaiveBalancer router = new NaiveBalancer(RPCNodeHashing.createFromString(lst));

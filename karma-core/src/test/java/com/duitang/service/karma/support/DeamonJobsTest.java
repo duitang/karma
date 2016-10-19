@@ -23,10 +23,12 @@ public class DeamonJobsTest {
 
 	@Before
 	public void setUp() throws Exception {
+		count.set(0);
 	}
 
 	@After
 	public void tearDown() throws Exception {
+		count.set(0);
 	}
 
 	@Test
@@ -35,9 +37,8 @@ public class DeamonJobsTest {
 		Assert.assertEquals(name, "Karma-Job-com.duitang.service.karma.support.DeamonJobsTest$Foobar");
 	}
 
-	@Test
+	// @Test
 	public void testRunJob() throws Exception {
-
 		for (int i = 0; i < ii; i++) {
 			DaemonJobs.runJob(new Foobar());
 		}
@@ -45,7 +46,7 @@ public class DeamonJobsTest {
 		Assert.assertTrue(count.get() == ii);
 	}
 
-	@Test
+	// @Test
 	public void testShutdown() throws Exception {
 		testRunJob();
 		Thread.sleep(1000);

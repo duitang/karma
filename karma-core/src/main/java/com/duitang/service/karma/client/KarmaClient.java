@@ -66,7 +66,7 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 
 	synchronized public static void reset(String group, List<String> urls) throws KarmaException {
 		if (pool != null) {
-			pool.resetPool();
+			pool.resetPool(urls);
 			KarmaClientConfig.updateBalance(group, urls);
 		}
 	}
@@ -123,7 +123,7 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 	}
 
 	public void setTimeout(long timeout) {
-		this.timeout = timeout;
+		this.timeout = timeout + 1; // a bit more than
 	}
 
 	@Override
@@ -194,8 +194,7 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 					ret = result;
 					error.info("Hooray! recover the result: " + result);
 				} else {
-					error.error(
-							String.format("%s method: %s timeout, network reachable: %s", iosession, name, reachable));
+					error.error(iosession + " method: " + name + " timeout, network reachable: " + reachable);
 					throw e;
 				}
 			} else if (e instanceof KarmaException) {

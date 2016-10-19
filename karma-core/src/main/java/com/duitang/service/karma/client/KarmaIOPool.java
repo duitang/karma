@@ -1,6 +1,8 @@
 package com.duitang.service.karma.client;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -34,7 +36,7 @@ public class KarmaIOPool implements LifeCycle {
 		this.timeout = timeout;
 	}
 
-	public void resetPool() {
+	synchronized public void resetPool() {
 		Set<Entry<String, GenericObjectPool<KarmaIoSession>>> set = Sets.newHashSet(ioPool.entrySet());
 		ioPool.clear();// clear first
 		for (Map.Entry<String, GenericObjectPool<KarmaIoSession>> e : set) {
@@ -42,6 +44,21 @@ public class KarmaIOPool implements LifeCycle {
 			if (pool != null) {
 				pool.clear();
 				pool.close();
+			}
+		}
+	}
+
+	synchronized public void resetPool(List<String> urls) {
+		Set<Entry<String, GenericObjectPool<KarmaIoSession>>> set = Sets.newHashSet(ioPool.entrySet());
+		Set<String> u = new HashSet<String>(urls);
+		for (Map.Entry<String, GenericObjectPool<KarmaIoSession>> e : set) {
+			if (u.contains(e.getKey())) {
+				ioPool.remove(e.getKey());
+				GenericObjectPool<KarmaIoSession> pool = e.getValue();
+				if (pool != null) {
+					pool.clear();
+					pool.close();
+				}
 			}
 		}
 	}
@@ -125,7 +142,7 @@ public class KarmaIOPool implements LifeCycle {
 		@Override
 		public void destroyObject(PooledObject<KarmaIoSession> p) throws Exception {
 			KarmaIoSession obj = p.getObject();
-//			System.out.println("destroy ..... " + obj);
+			// System.out.println("destroy ..... " + obj);
 			obj.close();
 		}
 

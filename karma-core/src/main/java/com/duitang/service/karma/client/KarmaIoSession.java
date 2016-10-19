@@ -59,10 +59,6 @@ public class KarmaIoSession implements LifeCycle {
 		this.timeout = timeout;
 	}
 
-	public int reportError() {
-		return ++this.errorCount;
-	}
-
 	public void clearError() {
 		this.errorCount = 0;
 	}
@@ -142,6 +138,11 @@ public class KarmaIoSession implements LifeCycle {
 		return false;
 	}
 
+	/**
+	 * if host is reachable
+	 * 
+	 * @return
+	 */
 	public boolean reachable() {
 		String[] ss = StringUtils.split(this.url, ":");
 		if (ss == null || ss.length != 2)

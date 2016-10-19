@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
+import com.duitang.service.karma.support.RPCNode;
 import com.duitang.service.karma.support.RPCNodeHashing;
 import com.duitang.service.karma.trace.TraceCell;
 
@@ -192,7 +193,15 @@ public class PeriodCountCPBalancerTest {
 		System.out.println(u.getNodes());
 		Assert.assertTrue(s.size() == u.getNodes().size());
 		for (String ss : s) {
-			Assert.assertTrue(u.getNodes().contains(RPCNodeHashing.getRawConnURL(ss)));
+			ss = ss.substring(ss.length() - 7, ss.length());
+			int pos = u.getURLs().indexOf(ss);
+			RPCNode n = new RPCNode();
+			n.url = RPCNodeHashing.getRawConnURL(ss);
+			n.protocol = "tcp";
+			n.load = u.getNodes().get(pos).load;
+			n.online = u.getNodes().get(pos).online;
+			n.up = u.getNodes().get(pos).up;
+			Assert.assertTrue(u.getNodes().contains(n));
 		}
 	}
 

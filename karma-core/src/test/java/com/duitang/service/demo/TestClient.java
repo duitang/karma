@@ -5,7 +5,6 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.junit.Assert;
-import org.junit.Test;
 
 import com.duitang.service.karma.base.ClientFactory;
 import com.duitang.service.karma.boot.ServerBootstrap;
@@ -37,7 +36,7 @@ public class TestClient {
 		Thread.sleep(100000);
 	}
 
-	@Test
+//	@Test
 	public void test2() throws Exception {
 		ClientFactory<IDemoService> fac = ClientFactory.createFactory(IDemoService.class);
 		fac.setUrl("localhost:9999");

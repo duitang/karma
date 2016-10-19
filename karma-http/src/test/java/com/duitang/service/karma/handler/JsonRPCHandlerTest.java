@@ -31,11 +31,11 @@ public class JsonRPCHandlerTest {
 		A rpc = new A() {
 
 			@Override
-			public String hello(String name) {
+			public String hello(String name, Double val) {
 				if (name == null) {
 					throw new RuntimeException("parameter name is null!");
 				}
-				return "hello, " + name;
+				return "hello, " + name + "; " + val;
 			}
 
 		};
@@ -52,12 +52,12 @@ public class JsonRPCHandlerTest {
 		ctx.name = "com.duitang.service.karma.handler.A";
 		ctx.method = "hello";
 		ctx.invoker = ivk;
-		String param = generateParam(Arrays.asList((Object) "baba"));
+		String param = generateParam(Arrays.asList((Object) "baba", 11.18d));
 		ctx.params = new Object[] { param };
 		handler.invoke(ctx);
 
 		System.out.println(ctx.ret);
-		Assert.assertEquals("hello, " + "baba", decodeReturn(ctx.ret));
+		Assert.assertEquals("hello, " + "baba" + "; " + 11.18d, decodeReturn(ctx.ret));
 
 		ctx = new RPCContext();
 		ctx.name = "com.duitang.service.karma.handler.A";
@@ -65,10 +65,10 @@ public class JsonRPCHandlerTest {
 		ctx.invoker = ivk;
 		param = generateParam(Arrays.asList((Object) null));
 		ctx.params = new Object[] { param };
-		try{			
+		try {
 			handler.invoke(ctx);
 			Assert.fail();
-		}catch(Exception e){
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		Assert.assertNull(ctx.ret);
@@ -85,5 +85,5 @@ public class JsonRPCHandlerTest {
 }
 
 interface A {
-	String hello(String name);
+	String hello(String name, Double val);
 }
