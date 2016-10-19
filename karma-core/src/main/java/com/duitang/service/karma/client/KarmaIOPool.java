@@ -40,6 +40,7 @@ public class KarmaIOPool implements LifeCycle {
 		for (Map.Entry<String, GenericObjectPool<KarmaIoSession>> e : set) {
 			GenericObjectPool<KarmaIoSession> pool = e.getValue();
 			if (pool != null) {
+				pool.clear();
 				pool.close();
 			}
 		}
@@ -124,7 +125,7 @@ public class KarmaIOPool implements LifeCycle {
 		@Override
 		public void destroyObject(PooledObject<KarmaIoSession> p) throws Exception {
 			KarmaIoSession obj = p.getObject();
-			// System.out.println("destroy ..... " + obj);
+//			System.out.println("destroy ..... " + obj);
 			obj.close();
 		}
 

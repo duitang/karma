@@ -5,12 +5,18 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
+import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
+import com.duitang.service.demo.DemoException;
+import com.duitang.service.demo.DemoServer;
 import com.duitang.service.demo.IDemoService;
+import com.duitang.service.demo.MemoryCacheService;
 import com.duitang.service.karma.KarmaException;
+import com.duitang.service.karma.KarmaRuntimeException;
 import com.duitang.service.karma.boot.KarmaClientConfig;
 import com.duitang.service.karma.trace.NoopTraceVisitor;
 
@@ -19,14 +25,22 @@ import ch.qos.logback.classic.Logger;
 
 public class KarmaClientTest {
 
+	DemoServer demo;
+
 	@Before
-	public void setUp() {
+	public void setUp() throws Exception {
 		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 		root.setLevel(Level.INFO);
 		Logger logger = (Logger) LoggerFactory.getLogger(NoopTraceVisitor.class);
 		logger.setLevel(Level.DEBUG);
 		logger = (Logger) LoggerFactory.getLogger(KarmaClient.class);
 		logger.setLevel(Level.DEBUG);
+		demo = new DemoServer(9999);
+	}
+
+	@After
+	public void destroy() {
+		demo.shutdown(); // testing shutdown
 	}
 
 	@Test
@@ -54,6 +68,35 @@ public class KarmaClientTest {
 		System.out.println(new String(client.memory_getBytes("aaa")));
 
 		// Thread.sleep(100000);
+	}
+
+	@Test
+	public void test1() throws Exception {
+		try {
+			KarmaClient.createKarmaClient(MemoryCacheService.class, Arrays.asList("localhost:9999"), "dev1");
+			Assert.fail();
+		} catch (Exception e) {
+			Assert.assertTrue(e instanceof KarmaException);
+		}
+
+		KarmaClient<IDemoService> cli = KarmaClient.createKarmaClient(IDemoService.class,
+				Arrays.asList("localhost:9999"), "dev1");
+		long to = 2000;
+		cli.setTimeout(to);
+		Assert.assertTrue(cli.getTimeout() == to);
+		try {
+			cli.getService().getExp();
+			Assert.fail();
+		} catch (DemoException e) {
+			e.printStackTrace();
+		}
+
+		try {
+			cli.getService().getTimeoutError(to);
+			Assert.fail();			
+		} catch (KarmaRuntimeException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

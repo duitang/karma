@@ -3,7 +3,6 @@ package com.duitang.service.karma.transport;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -170,7 +169,7 @@ public class KarmaNettyDecoderTest {
 			Assert.assertEquals(check_size, total);
 			// seg_size = new int[] { 52, 14, 6, 5, 7, 4, 4, 4, 4, 4, 4, 4, 4,
 			// 4, 4, 4, 4, 4, 4, 4, 4, 4, 4 };
-			System.out.println("[" + i + "] Starting decodeing: " + Arrays.toString(seg_size));
+//			System.out.println("[" + i + "] Starting decodeing: " + Arrays.toString(seg_size));
 			KarmaPacketDecoderNetty dec = new KarmaPacketDecoderNetty();
 			KarmaNettyDecoderTest.finished.set(false);
 			ByteBuf buffer = null;
@@ -228,7 +227,7 @@ public class KarmaNettyDecoderTest {
 		Assert.assertEquals(data.method, data1.method);
 		Assert.assertEquals(data.param.length, data1.param.length);
 		Assert.assertEquals(data.param[0], data1.param[0]);
-		System.out.println("all field assert!");
+//		System.out.println("all field assert!");
 		KarmaNettyDecoderTest.checkLock.incrementAndGet();
 		KarmaNettyDecoderTest.finished.set(true);
 	}

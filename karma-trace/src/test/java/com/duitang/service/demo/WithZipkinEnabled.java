@@ -55,8 +55,8 @@ public class WithZipkinEnabled {
 			public void run() {
 				System.out.println("starting client .....");
 				KarmaClientTest t = new KarmaClientTest();
-				t.setUp();
 				try {
+					t.setUp();
 					t.test();
 				} catch (KarmaException e) {
 					// TODO Auto-generated catch block

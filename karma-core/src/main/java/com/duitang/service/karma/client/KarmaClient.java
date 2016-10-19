@@ -4,7 +4,6 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,9 +36,8 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 	}
 
 	final static Map<String, Method> mgrCallbacks;
-	static KarmaIOPool pool = new KarmaIOPool();
+	static KarmaIOPool pool = null;
 	final static protected Logger error = LoggerFactory.getLogger(KarmaClient.class);
-	final static protected AtomicBoolean lock = new AtomicBoolean(false);
 	final static private Long DEFAULT_TIMEOUT = 1000L;
 
 	protected String domainName;
@@ -66,8 +64,8 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 		});
 	}
 
-	public static void reset(String group, List<String> urls) throws KarmaException {
-		if (lock.compareAndSet(false, true)) {
+	synchronized public static void reset(String group, List<String> urls) throws KarmaException {
+		if (pool != null) {
 			pool.resetPool();
 			KarmaClientConfig.updateBalance(group, urls);
 		}
@@ -75,8 +73,9 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 
 	synchronized public static void shutdownIOPool() {
 		if (pool != null) {
-			pool.close();
+			KarmaIOPool p = pool;
 			pool = null;
+			p.close();
 			KarmaIoSession.shutdown();
 		}
 	}
@@ -161,7 +160,6 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 		Object ret = null;
 		KarmaIoSession iosession = null;
 		String u = null;
-		Throwable err = null;
 		try {
 			u = router.next(null);
 			if (pool == null) {
@@ -180,10 +178,10 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 			tc.active();
 			ret = latch.getResult();
 		} catch (KarmaOverloadException e) {
-			err = e;
+			latch.ex = e;
 			throw e;
 		} catch (Throwable e) {
-			err = e;
+			latch.ex = e;
 			if (e instanceof KarmaTimeoutException) {
 				boolean reachable = true;
 				if (iosession != null) {
@@ -200,11 +198,13 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 							String.format("%s method: %s timeout, network reachable: %s", iosession, name, reachable));
 					throw e;
 				}
-			} else {
+			} else if (e instanceof KarmaException) {
 				throw new KarmaRuntimeException(e);
+			} else {
+				throw e;
 			}
 		} finally {
-			tc.passivate(err);
+			latch.done();
 			if (iosession != null) {
 				pool.releaseIOSession(iosession);
 			}
