@@ -65,7 +65,7 @@ public class ZKServerRegistryTest {
 
 }
 
-class WorkerMocker extends CuratorClusterWorker {
+class WorkerMocker extends ZKClusterWorker {
 
 	List<RPCService> writeQueue = new ArrayList<>();
 	List<RPCService> clearQueue = new ArrayList<>();

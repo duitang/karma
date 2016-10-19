@@ -19,7 +19,7 @@ public class CuratorClusterWorkerTest {
 
 	final static String conn = TestingHosts.zk;
 	// final static String conn = "192.168.10.216:2181";
-	CuratorClusterWorker worker;
+	ZKClusterWorker worker;
 	ZKServerRegistry rs;
 	ZKClientListener lsr;
 
@@ -35,7 +35,7 @@ public class CuratorClusterWorkerTest {
 
 	@Test
 	public void testSyncWrite() {
-		worker = new CuratorClusterWorker(rs, lsr, conn);
+		worker = new ZKClusterWorker(rs, lsr, conn);
 		MockRPCService rpc = new MockRPCService();
 		// first write it
 		boolean r = false;
@@ -55,7 +55,7 @@ public class CuratorClusterWorkerTest {
 
 	@Test
 	public void testSyncRead() {
-		worker = new CuratorClusterWorker(rs, lsr, conn);
+		worker = new ZKClusterWorker(rs, lsr, conn);
 		MockRPCService rpc = new MockRPCService();
 		// first write it
 		boolean r = false;
@@ -76,7 +76,7 @@ public class CuratorClusterWorkerTest {
 
 	@Test
 	public void testSyncReadString() {
-		worker = new CuratorClusterWorker(rs, lsr, conn);
+		worker = new ZKClusterWorker(rs, lsr, conn);
 		MockRPCService rpc = new MockRPCService();
 		// first write it
 		boolean r = false;
@@ -87,7 +87,7 @@ public class CuratorClusterWorkerTest {
 		r = worker.syncWrite(rpc);
 		Assert.assertTrue(r);
 
-		worker = new CuratorClusterWorker(rs, lsr, conn);
+		worker = new ZKClusterWorker(rs, lsr, conn);
 		RPCNode node = worker.syncRead("tcp://192.168.1.118:8899");
 
 		Assert.assertEquals(node.url, rpc.url);
@@ -95,7 +95,7 @@ public class CuratorClusterWorkerTest {
 
 	@Test
 	public void testSyncClear() {
-		worker = new CuratorClusterWorker(rs, lsr, conn);
+		worker = new ZKClusterWorker(rs, lsr, conn);
 		MockRPCService rpc = new MockRPCService();
 		// first write it
 		boolean r = false;
@@ -108,7 +108,7 @@ public class CuratorClusterWorkerTest {
 
 	@Test
 	public void testSyncGetMode() {
-		worker = new CuratorClusterWorker(rs, lsr, conn);
+		worker = new ZKClusterWorker(rs, lsr, conn);
 		ClusterMode mode = worker.syncGetMode();
 		System.out.println(mode);
 		System.out.println(mode.nodes);
@@ -117,7 +117,7 @@ public class CuratorClusterWorkerTest {
 
 	@Test
 	public void testSyncSetMode() {
-		worker = new CuratorClusterWorker(rs, lsr, conn);
+		worker = new ZKClusterWorker(rs, lsr, conn);
 		ClusterMode mode = new ClusterMode();
 		mode.freeze = true;
 		mode.nodes = new LinkedHashMap<>();

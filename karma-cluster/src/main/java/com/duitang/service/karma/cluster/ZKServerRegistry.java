@@ -20,10 +20,10 @@ import com.duitang.service.karma.support.RPCNodeHashing;
  */
 public class ZKServerRegistry implements AsyncRegistryWriter {
 
-	protected CuratorClusterWorker worker;
+	protected ZKClusterWorker worker;
 	protected ConcurrentHashMap<String, RPCService> service = new ConcurrentHashMap<>();
 
-	public void setWorker(CuratorClusterWorker worker) {
+	public void setWorker(ZKClusterWorker worker) {
 		this.worker = worker;
 	}
 

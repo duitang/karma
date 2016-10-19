@@ -33,7 +33,7 @@ public class Finder implements KarmaFinder {
 	 * @param port
 	 */
 	public static void enableZKRegistry(String conn, List<String> urls) {
-		CuratorClusterWorker ret = CuratorClusterWorker.createInstance(conn);
+		ZKClusterWorker ret = ZKClusterWorker.createInstance(conn);
 		Finder.registry.addWriters(Arrays.asList((AsyncRegistryWriter) ret.zkSR));
 		Finder.registry.addReaders(Arrays.asList((AsyncRegistryReader) ret.lsnr));
 		ClusterAwareBalancerFactory fac = new ClusterAwareBalancerFactory();

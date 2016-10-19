@@ -94,7 +94,7 @@ public class ZKClientListenerTest {
 		Assert.assertEquals(nodes.toString(), m.toString());
 	}
 
-	static void reg2RPC(CuratorClusterWorker worker, boolean[] create) {
+	static void reg2RPC(ZKClusterWorker worker, boolean[] create) {
 		Mock r1 = new Mock();
 		r1.url = "aa:444";
 		r1.online = true;
@@ -117,7 +117,7 @@ public class ZKClientListenerTest {
 
 	@Test
 	public void testSyncPull() throws Exception {
-		CuratorClusterWorker worker = CuratorClusterWorker.createInstance(zk);
+		ZKClusterWorker worker = ZKClusterWorker.createInstance(zk);
 		lsnr = worker.lsnr;
 
 		Thread.sleep(1000);

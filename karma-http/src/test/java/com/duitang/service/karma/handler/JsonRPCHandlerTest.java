@@ -1,5 +1,6 @@
 package com.duitang.service.karma.handler;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -31,11 +32,20 @@ public class JsonRPCHandlerTest {
 		A rpc = new A() {
 
 			@Override
-			public String hello(String name, Double val) {
+			public String hello(String name, double val) {
 				if (name == null) {
 					throw new RuntimeException("parameter name is null!");
 				}
 				return "hello, " + name + "; " + val;
+			}
+
+			@Override
+			public List<String> happy(String name, List<Integer> ids) {
+				List<String> ret = new ArrayList<String>();
+				for (Integer id : ids) {
+					ret.add(name + id);
+				}
+				return ret;
 			}
 
 		};
@@ -52,7 +62,7 @@ public class JsonRPCHandlerTest {
 		ctx.name = "com.duitang.service.karma.handler.A";
 		ctx.method = "hello";
 		ctx.invoker = ivk;
-		String param = generateParam(Arrays.asList((Object) "baba", 11.18d));
+		String param = generateParam(Arrays.asList((Object) "baba", 11.18f));
 		ctx.params = new Object[] { param };
 		handler.invoke(ctx);
 
@@ -63,7 +73,7 @@ public class JsonRPCHandlerTest {
 		ctx.name = "com.duitang.service.karma.handler.A";
 		ctx.method = "hello";
 		ctx.invoker = ivk;
-		param = generateParam(Arrays.asList((Object) null));
+		param = generateParam(Arrays.asList((Object) null, 11.18d));
 		ctx.params = new Object[] { param };
 		try {
 			handler.invoke(ctx);
@@ -72,6 +82,23 @@ public class JsonRPCHandlerTest {
 			e.printStackTrace();
 		}
 		Assert.assertNull(ctx.ret);
+
+		test1(ivk, handler);
+	}
+
+	static void test1(IgnCaseInvoker ivk, JsonRPCHandler handler) throws Exception {
+		RPCContext ctx = new RPCContext();
+		ctx.name = "com.duitang.service.karma.handler.A";
+		ctx.method = "happy";
+		ctx.invoker = ivk;
+		List<Integer> ids = Arrays.asList(111, 222);
+		String param = generateParam(Arrays.asList((Object) "baba", ids));
+		ctx.params = new Object[] { param };
+		handler.invoke(ctx);
+		Assert.assertNotNull(ctx.ret);
+		System.out.println(ctx.ret);
+		List lst = decodeReturnValue(ctx.ret, List.class);
+		System.out.println(lst);
 	}
 
 	static String generateParam(List<Object> params) throws Exception {
@@ -82,8 +109,15 @@ public class JsonRPCHandlerTest {
 		return mapper.readValue(r.toString(), String.class);
 	}
 
+	static <T> T decodeReturnValue(Object r, Class<T> clz) throws Exception {
+		return mapper.readValue(r.toString(), clz);
+	}
+
 }
 
 interface A {
-	String hello(String name, Double val);
+	String hello(String name, double val);
+
+	List<String> happy(String name, List<Integer> ids);
+
 }

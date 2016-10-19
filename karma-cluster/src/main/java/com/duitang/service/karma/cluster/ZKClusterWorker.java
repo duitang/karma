@@ -32,7 +32,7 @@ import com.duitang.service.karma.support.RegistryInfo;
  * @since 2016年10月5日
  *
  */
-public class CuratorClusterWorker implements Watcher {
+public class ZKClusterWorker implements Watcher {
 
 	static final String zkBase = "/karma_rpc";
 	static final String zkNodeBase = zkBase + "/nodes";
@@ -43,7 +43,7 @@ public class CuratorClusterWorker implements Watcher {
 
 	final static Charset enc = Charset.forName("utf8");
 
-	final static ConcurrentHashMap<String, CuratorClusterWorker> owner = new ConcurrentHashMap<>();
+	final static ConcurrentHashMap<String, ZKClusterWorker> owner = new ConcurrentHashMap<>();
 
 	protected String conn;
 	// protected CuratorFramework cur;
@@ -68,7 +68,7 @@ public class CuratorClusterWorker implements Watcher {
 		@Override
 		public void run() {
 			while (true) {
-				for (CuratorClusterWorker o : owner.values()) {
+				for (ZKClusterWorker o : owner.values()) {
 					if (!o.zkCli.getState().isConnected()) {
 						continue;
 					}
@@ -92,7 +92,7 @@ public class CuratorClusterWorker implements Watcher {
 			}
 		}
 
-		void heartbeat(CuratorClusterWorker worker) {
+		void heartbeat(ZKClusterWorker worker) {
 			// send heartbeat sync here
 			Set<RPCService> sv = worker.zkSR.getRegServices();
 			for (RPCService s : sv) {
@@ -104,7 +104,7 @@ public class CuratorClusterWorker implements Watcher {
 			}
 		}
 
-		public void eventReceived(CuratorClusterWorker w) throws Exception {
+		public void eventReceived(ZKClusterWorker w) throws Exception {
 			if (w != null) {
 				try {
 					// watch it again
@@ -135,15 +135,15 @@ public class CuratorClusterWorker implements Watcher {
 		DaemonJobs.runJob(monitor);
 	}
 
-	public static CuratorClusterWorker createInstance(String conn) {
-		CuratorClusterWorker ret = owner.get(conn);
+	public static ZKClusterWorker createInstance(String conn) {
+		ZKClusterWorker ret = owner.get(conn);
 		if (ret == null) {
-			synchronized (CuratorClusterWorker.class) {
+			synchronized (ZKClusterWorker.class) {
 				ret = owner.get(conn);
 				if (ret == null) {
 					ZKServerRegistry zkSR = new ZKServerRegistry();
 					ZKClientListener lsnr = new ZKClientListener();
-					ret = new CuratorClusterWorker(zkSR, lsnr, conn);
+					ret = new ZKClusterWorker(zkSR, lsnr, conn);
 					try {
 						// 1.5s reconnect
 						ret.zkCli = new ZooKeeper(conn, 1500, ret);
@@ -160,7 +160,7 @@ public class CuratorClusterWorker implements Watcher {
 		return ret;
 	}
 
-	CuratorClusterWorker(ZKServerRegistry zkSR, ZKClientListener lsnr, String conn) {
+	ZKClusterWorker(ZKServerRegistry zkSR, ZKClientListener lsnr, String conn) {
 		this.zkSR = zkSR;
 		this.lsnr = lsnr;
 		this.conn = conn;

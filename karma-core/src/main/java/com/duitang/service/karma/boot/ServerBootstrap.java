@@ -91,28 +91,6 @@ public class ServerBootstrap {
 	}
 
 	/**
-	 * @deprecated
-	 */
-	public void startUp(Class serviceType, Object service, int port) throws IOException {
-		try {
-			startUp(new Class[] { serviceType }, new Object[] { service }, port);
-		} catch (Exception e) {
-			throw new IOException(e);
-		}
-	}
-
-	/**
-	 * @deprecated
-	 */
-	public void startUp(int port, String protocol) throws IOException {
-		try {
-			startUp(port);
-		} catch (Exception e) {
-			throw new IOException(e);
-		}
-	}
-
-	/**
 	 *
 	 * @param serviceType
 	 * @param service
@@ -128,13 +106,6 @@ public class ServerBootstrap {
 		}
 
 		startUp(port);
-	}
-
-	/**
-	 * @deprecated
-	 */
-	public void startUp(Class[] serviceType, Object[] service, int port, String protocol) throws Exception {
-		startUp(serviceType, service, port);
 	}
 
 	public void shutdown() {
@@ -156,23 +127,6 @@ public class ServerBootstrap {
 			}
 			javaRouter = null;
 		}
-	}
-
-	protected String genServiceName(Object... services) {
-		String ret = "";
-		if (services != null) {
-			StringBuilder sb = new StringBuilder();
-			String[] name = null;
-			for (Object svc : services) {
-				name = svc.toString().split("\\.");
-				sb.append(name[name.length - 1]).append(",");
-			}
-			if (sb.length() > 0) {
-				sb.delete(sb.length() - 1, sb.length());
-			}
-			ret = sb.toString();
-		}
-		return ret;
 	}
 
 	static public void serviceInfo(Class serviceType, StringBuilder sb, String clientid, int port) {
@@ -216,8 +170,8 @@ public class ServerBootstrap {
 	public boolean isOnline() {
 		return online;
 	}
-	
-	public Date getCreated(){
+
+	public Date getCreated() {
 		return created;
 	}
 

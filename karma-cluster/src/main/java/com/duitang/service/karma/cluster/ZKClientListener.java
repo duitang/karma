@@ -24,10 +24,10 @@ public class ZKClientListener implements AsyncRegistryReader {
 
 	final ConcurrentHashMap<IOBalance, Object> members = new ConcurrentHashMap<>();
 
-	protected CuratorClusterWorker worker;
+	protected ZKClusterWorker worker;
 	volatile RegistryInfo snap; // freezing mode when deployment
 
-	public void setWorker(CuratorClusterWorker worker) {
+	public void setWorker(ZKClusterWorker worker) {
 		this.worker = worker;
 	}
 

@@ -13,13 +13,12 @@ public class CacheServiceTest {
 	ServerBootstrap boot = null;
 	ClientFactory<IDemoService> fac = null;
 
-	@SuppressWarnings("deprecation")
 	// @Before
 	public void setUp() {
 		MemoryCacheService impl = new MemoryCacheService(true);
 		boot = new ServerBootstrap();
 		try {
-			boot.startUp(new Class[] { IDemoService.class }, new Object[] { impl }, 9090, "");
+			boot.startUp(new Class[] { IDemoService.class }, new Object[] { impl }, 9090);
 		} catch (Exception e) {
 			e.printStackTrace();
 			Assert.fail(e.getMessage());
