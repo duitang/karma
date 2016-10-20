@@ -133,7 +133,6 @@ public class TypesTest {
 	/**
 	 * complex types
 	 */
-	@SuppressWarnings("deprecation")
 	@Test
 	public void test2() throws Exception {
 		ServerBootstrap server = new ServerBootstrap();
@@ -171,9 +170,9 @@ public class TypesTest {
 			ret2 = l2.get(i);
 			Assert.assertEquals(ret1.b_v, ret2.b_v);
 			Assert.assertEquals(Arrays.toString(ret1.bs_v), Arrays.toString(ret2.bs_v));
-			Assert.assertEquals(ret1.f_v, ret2.f_v);
-			Assert.assertEquals(ret1.i_v, ret2.i_v);
-			Assert.assertEquals(ret1.l_v, ret2.l_v);
+			Assert.assertTrue(ret1.f_v == ret2.f_v);
+			Assert.assertTrue(ret1.i_v == ret2.i_v);
+			Assert.assertTrue(ret1.l_v == ret2.l_v);
 			Assert.assertEquals(ret1.m_v, ret2.m_v);
 		}
 
