@@ -72,7 +72,7 @@ public class ZKClusterWorkerTest {
 		Assert.assertTrue(RPCNode.class.getName().equals(lst.get(1).getClass().getName()));
 	}
 
-//	@Test
+	@Test
 	public void testSyncReadString() {
 		worker = ZKClusterWorker.createInstance(conn);
 		MockRPCService rpc = new MockRPCService();
@@ -81,12 +81,12 @@ public class ZKClusterWorkerTest {
 		r = worker.syncWrite(rpc);
 		Assert.assertTrue(r);
 
-		rpc.url = "tcp://192.168.1.118:8899";
+		rpc.url = "192.168.1.118:8899";
 		r = worker.syncWrite(rpc);
 		Assert.assertTrue(r);
 
 		// worker = new ZKClusterWorker(rs, lsr, conn);
-		RPCNode node = worker.syncRead("tcp://192.168.1.118:8899");
+		RPCNode node = worker.syncRead("192.168.1.118:8899");
 
 		System.out.println(node.url);
 		System.out.println(rpc.url);
