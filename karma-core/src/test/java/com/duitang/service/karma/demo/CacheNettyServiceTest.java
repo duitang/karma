@@ -1,18 +1,20 @@
 package com.duitang.service.karma.demo;
 
+import java.util.Arrays;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.junit.Assert;
 
 import com.duitang.service.demo.IDemoService;
 import com.duitang.service.demo.MemoryCacheService;
-import com.duitang.service.karma.base.ClientFactory;
 import com.duitang.service.karma.boot.ServerBootstrap;
+import com.duitang.service.karma.client.KarmaClient;
 
 public class CacheNettyServiceTest {
 
 	ServerBootstrap boot = null;
-	ClientFactory<IDemoService> fac = null;
+	IDemoService cli = null;
 
 	// @Before
 	public void setUp() throws Exception {
@@ -22,8 +24,9 @@ public class CacheNettyServiceTest {
 		boot.addService(IDemoService.class, impl);
 		boot.startUp(9090);
 
-		fac = ClientFactory.createFactory(IDemoService.class);
-		fac.setUrl("127.0.0.1:9091");
+		KarmaClient<IDemoService> client = KarmaClient.createKarmaClient(IDemoService.class,
+				Arrays.asList("localhost:9999"), "dev1");
+		cli = client.getService();
 
 	}
 
@@ -44,7 +47,6 @@ public class CacheNettyServiceTest {
 
 	// @Test
 	public void testBoot() {
-		IDemoService cli = fac.create();
 		try {
 			String key = "aaaa";
 			String value = "bbbb";
@@ -56,9 +58,9 @@ public class CacheNettyServiceTest {
 			e.printStackTrace();
 			Assert.fail();
 		} finally {
-			fac.release(cli);
+
 		}
-		cli = fac.create();
+
 		try {
 			String key = "aaaa";
 			String value = "bbbb";
@@ -71,7 +73,7 @@ public class CacheNettyServiceTest {
 			e.printStackTrace();
 			Assert.fail();
 		} finally {
-			fac.release(cli);
+
 		}
 
 		long stime = 10L;
@@ -91,7 +93,7 @@ public class CacheNettyServiceTest {
 
 	// @Test
 	public void testMetric() throws Exception {
-		IDemoService cli = fac.create();
+
 		for (int i = 0; i < 10; i++) {
 			System.out.println("----->" + cli.trace_msg("wait_100", 100));
 		}
@@ -103,14 +105,13 @@ public class CacheNettyServiceTest {
 				e.printStackTrace();
 			}
 		}
-		fac.release(cli);
+
 		Thread.sleep(5000);
 	}
 
 	// @Test
 	public void testCloseit() throws Exception {
-		IDemoService cli = fac.create();
-		fac.release(cli);
+
 	}
 
 }

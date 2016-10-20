@@ -1,20 +1,23 @@
 package com.duitang.service.karma.demo;
 
+import java.util.Arrays;
+
 import org.junit.After;
 import org.junit.Assert;
 
 import com.duitang.service.demo.IDemoService;
 import com.duitang.service.demo.MemoryCacheService;
-import com.duitang.service.karma.base.ClientFactory;
+import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.boot.ServerBootstrap;
+import com.duitang.service.karma.client.KarmaClient;
 
 public class CacheServiceTest {
 
 	ServerBootstrap boot = null;
-	ClientFactory<IDemoService> fac = null;
+	IDemoService cli = null;
 
 	// @Before
-	public void setUp() {
+	public void setUp() throws KarmaException {
 		MemoryCacheService impl = new MemoryCacheService(true);
 		boot = new ServerBootstrap();
 		try {
@@ -23,8 +26,9 @@ public class CacheServiceTest {
 			e.printStackTrace();
 			Assert.fail(e.getMessage());
 		}
-		fac = ClientFactory.createFactory(IDemoService.class);
-		fac.setUrl("127.0.0.1:9091");
+		KarmaClient<IDemoService> client = KarmaClient.createKarmaClient(IDemoService.class,
+				Arrays.asList("localhost:9999"), "dev1");
+		cli = client.getService();
 	}
 
 	@After
@@ -34,7 +38,6 @@ public class CacheServiceTest {
 
 	// @Test
 	public void testBoot() {
-		IDemoService cli = fac.create();
 		try {
 			String key = "aaaa";
 			String value = "bbbb";
@@ -46,7 +49,7 @@ public class CacheServiceTest {
 			e.printStackTrace();
 			Assert.fail();
 		} finally {
-			fac.release(cli);
+			//
 		}
 
 		// long stime = 10L;
@@ -66,7 +69,6 @@ public class CacheServiceTest {
 
 	// @Test
 	public void testMetric() throws Exception {
-		IDemoService cli = fac.create();
 		for (int i = 0; i < 10; i++) {
 			System.out.println("----->" + cli.trace_msg("wait_100", 100));
 		}
@@ -77,7 +79,6 @@ public class CacheServiceTest {
 				e.printStackTrace();
 			}
 		}
-		fac.release(cli);
 		Thread.sleep(5000);
 	}
 }

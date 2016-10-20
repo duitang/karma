@@ -39,10 +39,15 @@ public class HTTPServerTester {
 		server.startUp(9999);
 
 		Finder.enableHTTPService(8888);
+
+		System.out.println(Finder.getHTTPServer(8888).getServiceProtocol());
+		System.out.println(Finder.getHTTPServer(8888).getServiceURL());
+		System.out.println(Finder.getHTTPServer(8888).getPort());
+		
 		new CountDownLatch(0).await();
 	}
-	
-	static void log(){
+
+	static void log() {
 		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 		root.setLevel(Level.INFO);
 		Logger logger = (Logger) LoggerFactory.getLogger(NoopTraceVisitor.class);

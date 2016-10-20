@@ -1,13 +1,15 @@
 package com.duitang.service.demo;
 
+import java.util.Arrays;
+
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.junit.Assert;
 
-import com.duitang.service.karma.base.ClientFactory;
 import com.duitang.service.karma.boot.ServerBootstrap;
+import com.duitang.service.karma.client.KarmaClient;
 import com.duitang.service.karma.support.NameUtil;
 
 public class TestClient {
@@ -36,16 +38,15 @@ public class TestClient {
 		Thread.sleep(100000);
 	}
 
-//	@Test
+	// @Test
 	public void test2() throws Exception {
-		ClientFactory<IDemoService> fac = ClientFactory.createFactory(IDemoService.class);
-		fac.setUrl("localhost:9999");
-		IDemoService client = fac.create();
+		KarmaClient<IDemoService> cli = KarmaClient.createKarmaClient(IDemoService.class,
+				Arrays.asList("localhost:9999"), "dev1");
+		IDemoService client = cli.getService();
 		for (int i = 0; i < 1000; i++) {
 			client.memory_setString("aaa", "bbb", 5000);
 			client.memory_getString("aaa");
 		}
-		fac.release(client);
 		Thread.sleep(20000);
 	}
 

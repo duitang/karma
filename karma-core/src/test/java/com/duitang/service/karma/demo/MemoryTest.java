@@ -1,12 +1,13 @@
 package com.duitang.service.karma.demo;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Assert;
 
 import com.duitang.service.demo.IDemoService;
-import com.duitang.service.karma.base.ClientFactory;
+import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.client.KarmaClient;
 
 public class MemoryTest {
@@ -25,13 +26,13 @@ public class MemoryTest {
 	}
 
 	// @Test
-	public void test1() {
+	public void test1() throws KarmaException {
 		IDemoService cli = null;
-		ClientFactory<IDemoService> fac = ClientFactory.createFactory(IDemoService.class);
-		fac.setUrl("netty://" + "gpu0" + ":" + 9999);
+		KarmaClient<IDemoService> client = KarmaClient.createKarmaClient(IDemoService.class,
+				Arrays.asList("localhost:9999"), "dev1");
 
 		System.out.println("-------------------");
-		cli = fac.create();
+		cli = client.getService();
 		System.out.println("...................");
 		boolean r = cli.memory_setString("aaa", "bbb", 50000);
 		System.out.println(r);
@@ -46,45 +47,41 @@ public class MemoryTest {
 		// rr = cli.memory_getString("aaa");
 		// System.out.println(rr);
 
-		fac.release(cli);
 		System.out.println("-------------------");
-		cli = fac.create();
+
 		System.out.println("...................");
 		rr = cli.memory_getString("aaa");
 		System.out.println(rr);
-		fac.release(cli);
 
 		System.out.println("------------------- break it!");
-		cli = fac.create();
+
 		System.out.println("...................");
 		long ts = System.currentTimeMillis();
 		rr = cli.trace_msg("this will timeout ", 1000);
 		System.out.println("time elapsed:" + (System.currentTimeMillis() - ts));
 		System.out.println("should be null! ---> " + rr);
-		fac.release(cli);
 
 		System.out.println("------------------- recover!");
-		cli = fac.create();
+
 		System.out.println("...................");
 		ts = System.currentTimeMillis();
 		rr = cli.trace_msg("this not timeout ", 300);
 		System.out.println("time elapsed:" + (System.currentTimeMillis() - ts));
 		System.out.println("not null! ---> " + rr);
-		fac.release(cli);
 
 	}
 
 	// @Test
-	public void testConnections() {
+	public void testConnections() throws KarmaException {
 		IDemoService cli = null;
-		ClientFactory<IDemoService> fac = ClientFactory.createFactory(IDemoService.class);
-		fac.setUrl("netty://" + "localhost" + ":" + 9999);
+		KarmaClient<IDemoService> client = KarmaClient.createKarmaClient(IDemoService.class,
+				Arrays.asList("localhost:9999"), "dev1");
 
 		// boolean r = false;
 		String s = null;
 		int loop = 10;
 		for (int i = 0; i < loop; i++) {
-			cli = fac.create();
+			cli = client.getService();
 			// r = cli.memory_setString("aaa", "bbb", 5000);
 			// s = cli.memory_getString("aaa");
 			long ts = System.currentTimeMillis();
@@ -92,7 +89,7 @@ public class MemoryTest {
 			System.out.println(System.currentTimeMillis() - ts);
 			// System.out.println("[" + i + "]," + r + "," + s);
 			System.out.println("[" + i + "]," + s);
-			fac.release(cli);
+
 			System.out.println("##########################");
 		}
 
@@ -104,10 +101,10 @@ public class MemoryTest {
 	}
 
 	// @Test
-	public void testHuge() {
+	public void testHuge() throws KarmaException {
 		IDemoService cli = null;
-		ClientFactory<IDemoService> fac = ClientFactory.createFactory(IDemoService.class);
-		fac.setUrl("netty://" + "localhost" + ":" + 9999);
+		KarmaClient<IDemoService> client = KarmaClient.createKarmaClient(IDemoService.class,
+				Arrays.asList("localhost:9999"), "dev1");
 
 		int sz = 50000;
 		StringBuilder sb = new StringBuilder();
@@ -118,7 +115,7 @@ public class MemoryTest {
 		int loop = 1000;
 		for (int ii = 0; ii < loop; ii++) {
 			long ts = System.currentTimeMillis();
-			cli = fac.create();
+			cli = client.getService();
 			ts = System.currentTimeMillis() - ts;
 			System.out.println("created ........................." + ts);
 			ts = System.currentTimeMillis();
@@ -131,18 +128,17 @@ public class MemoryTest {
 			ts = System.currentTimeMillis() - ts;
 			System.out.println("........................." + ts);
 			System.out.println(rr);
-			fac.release(cli);
+
 		}
 	}
 
-//	@Test
-	public void testSomeError() {
-		ClientFactory<IDemoService> fac = ClientFactory.createFactory(IDemoService.class);
-		fac.setUrl("localhost:9999");
-		fac.setTimeout(100000);
-		IDemoService cli = fac.create();
+	// @Test
+	public void testSomeError() throws KarmaException {
+		KarmaClient<IDemoService> client = KarmaClient.createKarmaClient(IDemoService.class,
+				Arrays.asList("localhost:9999"), "dev1");
+		IDemoService cli = client.getService();
 		cli.getError();
-		fac.release(cli);
+
 	}
 
 }

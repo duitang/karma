@@ -10,11 +10,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
+import org.junit.Test;
 
 import com.duitang.service.demo.DemoObject;
-import com.duitang.service.karma.base.ClientFactory;
 import com.duitang.service.karma.boot.ServerBootstrap;
+import com.duitang.service.karma.client.KarmaClient;
 import com.duitang.service.karma.demo.domain.Demo1;
 import com.duitang.service.karma.demo.domain.Demo1Impl;
 import com.duitang.service.karma.demo.domain.Demo2;
@@ -23,15 +25,6 @@ import com.duitang.service.karma.demo.domain.Demo3;
 import com.duitang.service.karma.demo.domain.Demo3Impl;
 
 public class TypesTest {
-
-//	@Before
-	public void setUp() {
-	}
-
-//	@After
-	public void destroy() {
-
-	}
 
 	static <T> List<T> asList(Class<T> clz, Object... objs) {
 		List<T> ret = new ArrayList<T>();
@@ -45,7 +38,7 @@ public class TypesTest {
 	 * primary types
 	 */
 	@SuppressWarnings("deprecation")
-//	@Test
+	@Test
 	public void test0() throws Exception {
 		ServerBootstrap server = new ServerBootstrap();
 		Demo1 service = new Demo1Impl();
@@ -53,10 +46,8 @@ public class TypesTest {
 		server.startUp(9998);
 		Thread.sleep(100);
 
-		ClientFactory<Demo1> fac = ClientFactory.createFactory(Demo1.class);
-		fac.setTimeout(500);
-		fac.setUrl("localhost:9999");
-		Demo1 cli = fac.create();
+		KarmaClient<Demo1> client = KarmaClient.createKarmaClient(Demo1.class, Arrays.asList("localhost:9998"), "dev1");
+		Demo1 cli = client.getService();
 
 		int a1 = 1;
 		List<Integer> a2 = asList(Integer.class, 2, 3);
@@ -91,21 +82,20 @@ public class TypesTest {
 		char g1 = 'a';
 		List<Character> g2 = asList(Character.class, 'b', 'c');
 		Assert.assertTrue(service.m_g1(g1, g2) == cli.m_g1(g1, g2));
-		Assert.assertTrue(Arrays.toString(service.m_g2(g1, g2)) == Arrays.toString(cli.m_g2(g1, g2)));
+		Assert.assertTrue(StringUtils.equals(Arrays.toString(service.m_g2(g1, g2)), Arrays.toString(cli.m_g2(g1, g2))));
 
 		byte h1 = 126;
 		List<Byte> h2 = asList(Byte.class, (byte) 3, (byte) 4);
 		Assert.assertTrue(service.m_h1(h1, h2) == cli.m_h1(h1, h2));
 		Assert.assertEquals(Arrays.toString(service.m_h2(h1, h2)), Arrays.toString(cli.m_h2(h1, h2)));
 
-		fac.release(cli);
 		server.shutdown();
 	}
 
 	/**
 	 * list, array, set, map
 	 */
-//	@Test
+	@Test
 	public void test1() throws Exception {
 		ServerBootstrap server = new ServerBootstrap();
 		Demo2 service = new Demo2Impl();
@@ -114,10 +104,8 @@ public class TypesTest {
 		server.startUp(9998);
 		Thread.sleep(100);
 
-		ClientFactory<Demo2> fac = ClientFactory.createFactory(Demo2.class);
-		fac.setTimeout(500);
-		fac.setUrl("localhost:9999");
-		Demo2 cli = fac.create();
+		KarmaClient<Demo2> client = KarmaClient.createKarmaClient(Demo2.class, Arrays.asList("localhost:9998"), "dev1");
+		Demo2 cli = client.getService();
 
 		HashMap<String, Number> p1 = new HashMap<String, Number>();
 		p1.put("aa", 1.2F);
@@ -139,7 +127,6 @@ public class TypesTest {
 		List<Boolean> p4 = asList(Boolean.class, false, true, false);
 		Assert.assertEquals(Arrays.toString(service.m4(p4)), Arrays.toString(cli.m4(p4)));
 
-		fac.release(cli);
 		server.shutdown();
 	}
 
@@ -147,7 +134,7 @@ public class TypesTest {
 	 * complex types
 	 */
 	@SuppressWarnings("deprecation")
-//	@Test
+	@Test
 	public void test2() throws Exception {
 		ServerBootstrap server = new ServerBootstrap();
 		Demo3 service = new Demo3Impl();
@@ -164,15 +151,13 @@ public class TypesTest {
 		obj.m_v = new HashMap<String, String>();
 		obj.m_v.put("linux", "ddd");
 
-		ClientFactory<Demo3> fac = ClientFactory.createFactory(Demo3.class);
-		fac.setTimeout(500);
-		fac.setUrl("localhost:9999");
-		Demo3 cli = fac.create();
+		KarmaClient<Demo3> client = KarmaClient.createKarmaClient(Demo3.class, Arrays.asList("localhost:9998"), "dev1");
+		Demo3 cli = client.getService();
 		DemoObject ret1 = service.m1(obj);
 		DemoObject ret2 = cli.m1(obj);
 		Assert.assertEquals(ret1.b_v, ret2.b_v);
 		Assert.assertEquals(Arrays.toString(ret1.bs_v), Arrays.toString(ret2.bs_v));
-		Assert.assertEquals(ret1.f_v, ret2.f_v);
+		Assert.assertTrue(ret1.f_v == ret2.f_v);
 		Assert.assertEquals(ret1.i_v, ret2.i_v);
 		Assert.assertEquals(ret1.l_v, ret2.l_v);
 		Assert.assertEquals(ret1.m_v, ret2.m_v);
@@ -214,7 +199,6 @@ public class TypesTest {
 		Map<String, Float> r42 = cli.m4(p4);
 		Assert.assertTrue(comareMap(r41, r42));
 
-		fac.release(cli);
 		server.shutdown();
 	}
 

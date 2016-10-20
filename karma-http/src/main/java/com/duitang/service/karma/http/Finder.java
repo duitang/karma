@@ -1,5 +1,7 @@
 package com.duitang.service.karma.http;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 import com.duitang.service.karma.boot.KarmaFinder;
 import com.duitang.service.karma.boot.KarmaServerConfig;
 import com.duitang.service.karma.boot.ServerBootstrap;
@@ -23,7 +25,7 @@ public class Finder implements KarmaFinder {
 
 	};
 
-	static HTTPServer http;
+	final static ConcurrentHashMap<Integer, HTTPServer> http = new ConcurrentHashMap<>();
 
 	@Override
 	public <T> T find(Class<T> clazz) {
@@ -36,19 +38,33 @@ public class Finder implements KarmaFinder {
 	 * @param port
 	 * @throws Exception
 	 */
-	public static void enableHTTPService(int port) throws Exception {
-		http = new HTTPServer(port);
+	synchronized public static void enableHTTPService(int port) throws Exception {
+		if (http.containsKey(Integer.valueOf(port))) {
+			return;
+		}
+
+		HTTPServer httpServer = new HTTPServer(port);
 		JsonRPCHandler rpc1 = new JsonRPCHandler(enhancer.core.getCoreHandler());
 		JsonRouter jsonRouter = new JsonRouter();
 		jsonRouter.setHandler(rpc1);
-		http.setRouter(jsonRouter);
-		http.start();
-		KarmaServerConfig.clusterAware.registerWrite(http);
+		httpServer.setRouter(jsonRouter);
+		httpServer.start();
+		KarmaServerConfig.clusterAware.registerWrite(httpServer);
+
+		http.putIfAbsent(Integer.valueOf(port), httpServer);
 	}
 
-	public static void disableHTTPService() throws Exception {
-		KarmaServerConfig.clusterAware.unRegisterWrite(http);
-		http.stop();
+	synchronized public static void disableHTTPService(int port) throws Exception {
+		HTTPServer server = http.remove(Integer.valueOf(port));
+		if (server == null) {
+			return;
+		}
+		KarmaServerConfig.clusterAware.unRegisterWrite(server);
+		server.stop();
+	}
+
+	public static HTTPServer getHTTPServer(int port) {
+		return http.get(Integer.valueOf(port));
 	}
 
 }
