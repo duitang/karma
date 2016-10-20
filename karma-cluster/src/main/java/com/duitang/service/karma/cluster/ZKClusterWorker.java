@@ -8,13 +8,17 @@ package com.duitang.service.karma.cluster;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
@@ -42,6 +46,7 @@ public class ZKClusterWorker implements Watcher {
 	final static int retries = 3;
 
 	final static Charset enc = Charset.forName("utf8");
+	final static Set<String> schema = new HashSet<String>(Arrays.asList("tcp", "udp"));
 
 	final static ConcurrentHashMap<String, ZKClusterWorker> owner = new ConcurrentHashMap<>();
 
@@ -50,8 +55,6 @@ public class ZKClusterWorker implements Watcher {
 	protected ZooKeeper zkCli;
 	protected ZKServerRegistry zkSR;
 	protected ZKClientListener lsnr;
-
-	final protected AtomicBoolean changed = new AtomicBoolean(false);
 
 	/**
 	 * <pre>
@@ -65,6 +68,12 @@ public class ZKClusterWorker implements Watcher {
 	 */
 	static class ClusterMonitor implements Runnable {
 
+		final protected Semaphore latch = new Semaphore(0);
+
+		void resume() {
+			latch.release();
+		}
+
 		@Override
 		public void run() {
 			while (true) {
@@ -73,33 +82,17 @@ public class ZKClusterWorker implements Watcher {
 						continue;
 					}
 
-					if (o.changed.getAndSet(false)) {
-						try {
-							eventReceived(o);
-						} catch (Exception e) {
-							e.printStackTrace();
-							System.err.println("error pull events when connecting to Zookeeper: " + o.conn);
-						}
+					try {
+						eventReceived(o);
+					} catch (Exception e) {
+						e.printStackTrace();
+						System.err.println("error pull events when connecting to Zookeeper: " + o.conn);
 					}
-					heartbeat(o);
 				}
 
 				try {
-					Thread.sleep(WORK_PERIOD);
+					latch.tryAcquire(WORK_PERIOD, TimeUnit.MILLISECONDS);
 				} catch (InterruptedException e) {
-
-				}
-			}
-		}
-
-		void heartbeat(ZKClusterWorker worker) {
-			// send heartbeat sync here
-			Set<RPCService> sv = worker.zkSR.getRegServices();
-			for (RPCService s : sv) {
-				if (s.online()) {
-					worker.syncWrite(s);
-				} else {
-					worker.syncClearRPCNode(s);
 				}
 			}
 		}
@@ -107,8 +100,6 @@ public class ZKClusterWorker implements Watcher {
 		public void eventReceived(ZKClusterWorker w) throws Exception {
 			if (w != null) {
 				try {
-					// watch it again
-					w.zkCli.getChildren(zkNodeBase, true);
 					// no problem just ignore all return, we will refresh force
 					RegistryInfo ret = w.lsnr.syncPull();
 					if (ret == null) {
@@ -120,6 +111,8 @@ public class ZKClusterWorker implements Watcher {
 					} else {
 						w.lsnr.updateAllNodes(ret.getURLs());
 					}
+					// watch it again
+					w.zkCli.getChildren(zkNodeBase, true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -198,7 +191,7 @@ public class ZKClusterWorker implements Watcher {
 		boolean ret = false;
 		try {
 			if (zkCli.exists(nodepath, false) == null) {
-				zkCli.create(nodepath, ret0.getBytes(enc), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+				zkCli.create(nodepath, ret0.getBytes(enc), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 			} else {
 				zkCli.setData(nodepath, ret0.getBytes(enc), -1);
 			}
@@ -222,7 +215,10 @@ public class ZKClusterWorker implements Watcher {
 			try {
 				String pathnode = zkNodeBase + "/" + p;
 				byte[] buf = zkCli.getData(pathnode, false, zkCli.exists(pathnode, false));
-				ret.add(RPCNode.fromBytes(buf));
+				RPCNode node = RPCNode.fromBytes(buf);
+				if (schema.contains(StringUtils.lowerCase(node.protocol))) {
+					ret.add(node);
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -322,7 +318,7 @@ public class ZKClusterWorker implements Watcher {
 
 	@Override
 	public void process(WatchedEvent event) {
-		changed.set(true);
+		monitor.resume();
 	}
 
 }

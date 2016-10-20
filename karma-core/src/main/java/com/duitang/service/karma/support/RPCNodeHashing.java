@@ -6,6 +6,7 @@
 package com.duitang.service.karma.support;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -14,6 +15,8 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * @author laurence
  * @since 2016年10月9日
@@ -21,7 +24,8 @@ import java.util.Set;
  */
 public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 
-	final static protected String DEFAULT_SCHEMA = "tcp";
+	final static String DEFAULT_SCHEMA = "tcp";
+	final static Set<String> purgeSchema = new HashSet<String>(Arrays.asList("tcp", "udp"));
 	protected ArrayList<RPCNode> nodes;
 	protected ArrayList<String> urls;
 	protected String schema;
@@ -139,7 +143,7 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 			ret.nodes.add(node);
 			sch.add(node.protocol);
 		}
-		if (sch.size() > 1) {
+		if (!checkSchema(sch)) {
 			throw new IllegalArgumentException("difference schema in rpc urls: " + urls);
 		}
 		ret.schema = ret.nodes.get(0).protocol;
@@ -156,12 +160,12 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 		Set<String> sch = new HashSet<String>();
 		for (RPCNode node : nodes) {
 			ret.nodes.add(node);
-			if (node.protocol == null){
+			if (node.protocol == null) {
 				node.protocol = getRawConnSchema(node.url);
 			}
 			sch.add(node.protocol);
 		}
-		if (sch.size() > 1) {
+		if (!checkSchema(sch)) {
 			throw new IllegalArgumentException("difference schema in rpc urls: " + nodes);
 		}
 		ret.schema = ret.nodes.get(0).protocol;
@@ -190,12 +194,29 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 			ret.nodes.add(node);
 			sch.add(node.protocol);
 		}
-		if (sch.size() > 1) {
+		if (!checkSchema(sch)) {
 			throw new IllegalArgumentException("difference schema in rpc urls: " + nodes);
 		}
 		ret.schema = ret.nodes.get(0).protocol;
 		sortNodes(ret);
 		return ret;
+	}
+
+	static boolean checkSchema(Set<String> sch) {
+		if (sch.size() < 2) {
+			return true;
+		} else if (sch.size() == purgeSchema.size()) {
+			int c = 0;
+			for (String s : sch) {
+				if (purgeSchema.contains(StringUtils.lowerCase(s))) {
+					c++;
+				}
+			}
+			if (c == purgeSchema.size()) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public LinkedHashMap<String, Double> reverseToMap() {
