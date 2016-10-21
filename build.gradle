@@ -111,18 +111,12 @@ subprojects {
         testLogging {
             showStandardStreams = true
         }
-    }
-    
-    jacocoTestReport {
-        additionalSourceDirs = files(sourceSets.main.allSource.srcDirs)
-        sourceDirectories = files(sourceSets.main.allSource.srcDirs)
-        classDirectories =  files(sourceSets.main.output)
-        reports {
-            html.enabled = true
-            xml.enabled = true
-            csv.enabled = false
+        jacoco {
+            excludes += ['**.demo.**']
         }
     }
+    
+
 
     
     findbugsMain {
@@ -167,10 +161,11 @@ task jacocoRootReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
             it.exists()
         })
     }
+    afterEvaluate {
+        classDirectories = files(classDirectories.files.collect {
+            fileTree(dir: it,
+                    exclude: ['**/demo/**'])
+        })
+    }
 }
 
-task jacocoMerge(type: JacocoMerge) {
-   subprojects.each { subproject ->
-      executionData subproject.tasks.withType(Test)
-   } 
-}

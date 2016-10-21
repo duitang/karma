@@ -44,7 +44,7 @@ public class TestOnceServerAndClient {
 
 		String url = "tcp://localhost:9999";
 
-		KarmaClient<IDemoService> client = KarmaClient.createKarmaClient(IDemoService.class, Arrays.asList(url), null);
+		KarmaClient<IDemoService> client = KarmaClient.createKarmaClient(IDemoService.class, Arrays.asList(url));
 
 		String ret = client.getService().memory_getString(KEY);
 		System.out.println("Karma Invoke Response: " + ret);

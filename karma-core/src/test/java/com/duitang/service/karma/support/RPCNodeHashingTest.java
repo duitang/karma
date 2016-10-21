@@ -147,13 +147,12 @@ public class RPCNodeHashingTest {
 		} catch (Exception e) {
 
 		}
-		Assert.assertNull(RPCNodeHashing.createNullableFromString(null));
 		Assert.assertNull(RPCNodeHashing.getRawConnSchema(null));
 
 		Assert.assertNull(RPCNodeHashing.getRawConnURL(null));
 
 		try {
-			RPCNodeHashing.createFromString(Arrays.asList("tcp://aa:11", "udp://bb:22"));
+			RPCNodeHashing.createFromString(Arrays.asList("tcp://aa:11", "http://bb:22"));
 			Assert.fail();
 		} catch (Exception e) {
 
@@ -161,7 +160,7 @@ public class RPCNodeHashingTest {
 		try {
 			LinkedHashMap<String, Double> m = new LinkedHashMap<>();
 			m.put("tcp://aa:11", 1d);
-			m.put("udp://bb:22", 1d);
+			m.put("http://bb:22", 1d);
 			RPCNodeHashing.createFromHashMap(m);
 			Assert.fail();
 		} catch (Exception e) {
@@ -171,7 +170,7 @@ public class RPCNodeHashingTest {
 			RPCNode a = new RPCNode();
 			a.url = "tcp://aa:11";
 			RPCNode b = new RPCNode();
-			b.url = "udp://bb:22";
+			b.url = "http://bb:22";
 			RPCNodeHashing.createFromNodes(Arrays.asList(a, b));
 			Assert.fail();
 		} catch (Exception e) {

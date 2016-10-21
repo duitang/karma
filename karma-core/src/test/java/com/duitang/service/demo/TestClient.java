@@ -41,7 +41,7 @@ public class TestClient {
 	// @Test
 	public void test2() throws Exception {
 		KarmaClient<IDemoService> cli = KarmaClient.createKarmaClient(IDemoService.class,
-				Arrays.asList("localhost:9999"), "dev1");
+				Arrays.asList("localhost:9999"));
 		IDemoService client = cli.getService();
 		for (int i = 0; i < 1000; i++) {
 			client.memory_setString("aaa", "bbb", 5000);

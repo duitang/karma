@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -34,19 +35,26 @@ public class TypesTest {
 		return ret;
 	}
 
+	int genPort() {
+		Random r = new Random();
+		return 2048 + r.nextInt(12000);
+	}
+
 	/**
 	 * primary types
 	 */
 	@SuppressWarnings("deprecation")
 	@Test
 	public void test0() throws Exception {
+		int port = genPort();
 		ServerBootstrap server = new ServerBootstrap();
 		Demo1 service = new Demo1Impl();
 		server.addService(Demo1.class, service);
-		server.startUp(9998);
-		Thread.sleep(100);
+		server.startUp(port);
+		Thread.sleep(1000);
 
-		KarmaClient<Demo1> client = KarmaClient.createKarmaClient(Demo1.class, Arrays.asList("localhost:9998"), "dev1");
+		KarmaClient<Demo1> client = KarmaClient.createKarmaClient(Demo1.class, Arrays.asList("localhost:" + port), null,
+				3000);
 		Demo1 cli = client.getService();
 
 		int a1 = 1;
@@ -97,14 +105,16 @@ public class TypesTest {
 	 */
 	@Test
 	public void test1() throws Exception {
+		int port = genPort();
 		ServerBootstrap server = new ServerBootstrap();
 		Demo2 service = new Demo2Impl();
 
 		server.addService(Demo2.class, service);
-		server.startUp(9998);
+		server.startUp(port);
 		Thread.sleep(100);
 
-		KarmaClient<Demo2> client = KarmaClient.createKarmaClient(Demo2.class, Arrays.asList("localhost:9998"), "dev1");
+		KarmaClient<Demo2> client = KarmaClient.createKarmaClient(Demo2.class, Arrays.asList("localhost:" + port), null,
+				3000);
 		Demo2 cli = client.getService();
 
 		HashMap<String, Number> p1 = new HashMap<String, Number>();
@@ -135,10 +145,11 @@ public class TypesTest {
 	 */
 	@Test
 	public void test2() throws Exception {
+		int port = genPort();
 		ServerBootstrap server = new ServerBootstrap();
 		Demo3 service = new Demo3Impl();
 		server.addService(Demo3.class, service);
-		server.startUp(9998);
+		server.startUp(port);
 		Thread.sleep(100);
 
 		DemoObject obj = new DemoObject();
@@ -150,7 +161,8 @@ public class TypesTest {
 		obj.m_v = new HashMap<String, String>();
 		obj.m_v.put("linux", "ddd");
 
-		KarmaClient<Demo3> client = KarmaClient.createKarmaClient(Demo3.class, Arrays.asList("localhost:9998"), "dev1");
+		KarmaClient<Demo3> client = KarmaClient.createKarmaClient(Demo3.class, Arrays.asList("localhost:" + port), null,
+				3000);
 		Demo3 cli = client.getService();
 		DemoObject ret1 = service.m1(obj);
 		DemoObject ret2 = cli.m1(obj);

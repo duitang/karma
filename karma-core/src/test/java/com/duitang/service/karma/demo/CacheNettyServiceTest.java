@@ -25,7 +25,7 @@ public class CacheNettyServiceTest {
 		boot.startUp(9090);
 
 		KarmaClient<IDemoService> client = KarmaClient.createKarmaClient(IDemoService.class,
-				Arrays.asList("localhost:9999"), "dev1");
+				Arrays.asList("localhost:9999"));
 		cli = client.getService();
 
 	}

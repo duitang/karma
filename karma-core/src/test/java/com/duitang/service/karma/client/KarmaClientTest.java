@@ -44,9 +44,9 @@ public class KarmaClientTest {
 	@Test
 	public void test() throws KarmaException, IOException, Exception {
 		List<String> urls = Arrays.asList(new String[] { "localhost:9999" });
-		String group = "dev1";
-		KarmaClientConfig.updateBalance(group, urls);
-		KarmaClient<IDemoService> cli = KarmaClient.createKarmaClient(IDemoService.class, urls, group);
+		String group = "dev2";
+		KarmaClientConfig.bindBalance(group, urls);
+		KarmaClient<IDemoService> cli = KarmaClient.createKarmaClient(IDemoService.class, group);
 		IDemoService client = cli.getService();
 		System.out.println(client.memory_getString("aaaa"));
 		System.out.println(client.trace_msg("laurence", 200));
@@ -71,14 +71,14 @@ public class KarmaClientTest {
 	@Test
 	public void test1() throws Exception {
 		try {
-			KarmaClient.createKarmaClient(MemoryCacheService.class, Arrays.asList("localhost:9999"), "dev1");
+			KarmaClient.createKarmaClient(MemoryCacheService.class, Arrays.asList("localhost:9999"));
 			Assert.fail();
 		} catch (Exception e) {
 			Assert.assertTrue(e instanceof KarmaException);
 		}
 
 		KarmaClient<IDemoService> cli = KarmaClient.createKarmaClient(IDemoService.class,
-				Arrays.asList("localhost:9999"), "dev1");
+				Arrays.asList("localhost:9999"));
 		long to = 2000;
 		cli.setTimeout(to);
 		Assert.assertTrue(cli.getTimeout() == to + 1);
@@ -96,7 +96,7 @@ public class KarmaClientTest {
 			e.printStackTrace();
 		}
 
-		KarmaClient.reset("dev1", Arrays.asList("localhost:9999"));
+		KarmaClient.bindGroup("dev2", Arrays.asList("localhost:9999"));
 		cli.resetTrace();
 
 		try {
@@ -112,6 +112,7 @@ public class KarmaClientTest {
 		} catch (KarmaRuntimeException e) {
 			e.printStackTrace();
 		}
+
 	}
 
 }

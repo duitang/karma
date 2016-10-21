@@ -116,13 +116,6 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 		h.urls = idx;
 	}
 
-	static public RPCNodeHashing createNullableFromString(List<String> urls) throws IllegalArgumentException {
-		if (urls == null || urls.isEmpty()) {
-			return null;
-		}
-		return createFromString(urls);
-	}
-
 	static public RPCNodeHashing createFromString(List<String> urls) throws IllegalArgumentException {
 		if (urls == null || urls.isEmpty()) {
 			throw new IllegalArgumentException("empty rpc urls! ");

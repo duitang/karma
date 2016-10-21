@@ -45,6 +45,9 @@ public class ReflectRPCHandler extends TraceableRPCHandler {
 
 	@Override
 	protected void invoke0(RPCContext ctx) throws KarmaException {
+		if (ctx.invoker == null){
+			throw new KarmaException("method[" + ctx.method + "] not found");
+		}
 		ctx.ret = ctx.invoker.invoke(ctx.method, ctx.params);
 	}
 

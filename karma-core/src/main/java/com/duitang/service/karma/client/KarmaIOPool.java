@@ -76,7 +76,7 @@ public class KarmaIOPool implements LifeCycle {
 		try {
 			return pool.borrowObject(timeout);
 		} catch (Exception e) {
-			throw new KarmaNoMoreConnException(e.getMessage());
+			throw new KarmaNoMoreConnException("[" + url + "] " + e.getMessage());
 		}
 	}
 

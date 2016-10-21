@@ -71,16 +71,11 @@ public class HTTPServerTest {
 		Assert.assertNotNull(ret);
 		Assert.assertEquals(decodeReturnValue(ret, String.class), "cccc");
 
-		try {
-
-			// parameter size error
-			m = IDemoService.class.getMethod("memory_getString", String.class);
-			ret = invoke(IDemoService.class, m, new Object[] { "aaaa", 12345 });
-			System.out.println(ret);
-			Assert.fail();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		// parameter size error
+		m = IDemoService.class.getMethod("memory_getString", String.class);
+		ret = invoke(IDemoService.class, m, new Object[] { "aaaa", 12345 });
+		System.out.println(ret);
+		Assert.assertTrue(ret.contains("KarmaException"));
 
 		try {
 
@@ -127,11 +122,11 @@ public class HTTPServerTest {
 
 		List<Map> ret = decodeReturn(r0s);
 		System.out.println(ret);
-		
+
 		Assert.assertNotNull(ret);
 		Assert.assertTrue(!ret.isEmpty());
 		Map r1 = ret.get(0);
-		if (r1.get("e") != null){
+		if (r1.get("e") != null) {
 			return (String) r1.get("e");
 		}
 		return (String) r1.get("r");

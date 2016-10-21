@@ -93,7 +93,7 @@ public class RunService {
 				return;
 			}
 			int port = ports.get(t);
-			KarmaClient cli = KarmaClient.createKarmaClient(t, Arrays.asList("localhost:" + port), "dev1");
+			KarmaClient cli = KarmaClient.createKarmaClient(t, Arrays.asList("localhost:" + port));
 			f.setAccessible(true);
 			f.set(obj, cli.getService());
 		}

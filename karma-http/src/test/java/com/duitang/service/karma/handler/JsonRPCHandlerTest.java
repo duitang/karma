@@ -2,7 +2,10 @@ package com.duitang.service.karma.handler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -48,6 +51,15 @@ public class JsonRPCHandlerTest {
 				return ret;
 			}
 
+			@Override
+			public Map<String, String> newyear(Map<Integer, Integer> p) {
+				Map<String, String> ret = new HashMap<String, String>();
+				for (Entry<Integer, Integer> en : p.entrySet()) {
+					ret.put(en.getKey().toString(), en.getValue().toString());
+				}
+				return ret;
+			}
+
 		};
 		cfg.addService(A.class, rpc);
 		ReflectRPCHandler src = new ReflectRPCHandler();
@@ -84,6 +96,7 @@ public class JsonRPCHandlerTest {
 		Assert.assertNull(ctx.ret);
 
 		test1(ivk, handler);
+		test2(ivk, handler);
 	}
 
 	static void test1(IgnCaseInvoker ivk, JsonRPCHandler handler) throws Exception {
@@ -98,6 +111,24 @@ public class JsonRPCHandlerTest {
 		Assert.assertNotNull(ctx.ret);
 		System.out.println(ctx.ret);
 		List lst = decodeReturnValue(ctx.ret, List.class);
+		System.out.println(lst);
+	}
+
+	static void test2(IgnCaseInvoker ivk, JsonRPCHandler handler) throws Exception {
+		RPCContext ctx = new RPCContext();
+		ctx.name = "com.duitang.service.karma.handler.A";
+		ctx.method = "newyear";
+		ctx.invoker = ivk;
+		Map<Integer, Integer> p = new HashMap<>();
+		p.put(11, 11);
+		p.put(22, 22);
+		p.put(33, 33);
+		String param = generateParam(Arrays.asList((Object) p));
+		ctx.params = new Object[] { param };
+		handler.invoke(ctx);
+		Assert.assertNotNull(ctx.ret);
+		System.out.println(ctx.ret);
+		Map lst = decodeReturnValue(ctx.ret, Map.class);
 		System.out.println(lst);
 	}
 
@@ -119,5 +150,7 @@ interface A {
 	String hello(String name, double val);
 
 	List<String> happy(String name, List<Integer> ids);
+
+	Map<String, String> newyear(Map<Integer, Integer> p);
 
 }

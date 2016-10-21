@@ -20,9 +20,7 @@ import com.duitang.service.karma.trace.Finder;
 public class RunClient {
 
 	/**
-	 * @param args
-	 * @throws Throwable
-	 * 			@throws
+	 * @param args @throws Throwable @throws
 	 */
 	public static void main(String[] args) throws Throwable {
 		run(args[0], Integer.valueOf(args[1]), Long.valueOf(args[2]));
@@ -37,7 +35,7 @@ public class RunClient {
 		Arrays.fill(u, url);
 		u[0] = "laurence:" + RunService.ports.get(ServiceG.class);
 		List<String> nodes = Arrays.asList(u);
-		KarmaClient<ServiceG> proxy = KarmaClient.createKarmaClient(ServiceG.class, nodes, "dev1");
+		KarmaClient<ServiceG> proxy = KarmaClient.createKarmaClient(ServiceG.class, nodes);
 		ServiceG cli = proxy.getService();
 		for (int i = 0; i < loop; i++) {
 			proxy.resetTrace();

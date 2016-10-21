@@ -146,7 +146,12 @@ public class ZKClientListenerTest {
 		// clear freezing mode
 		Assert.assertTrue(worker.syncClearMode());
 
-		info = lsnr.syncPull();
+		try {
+			info = lsnr.syncPull();
+		} catch (Throwable t) {
+			t.printStackTrace();
+			Assert.fail();
+		}
 		System.out.println(info.isFreezeMode());
 		System.out.println(info.getURLs());
 		Assert.assertFalse(info.isFreezeMode());
@@ -256,8 +261,7 @@ class Mock implements RPCService {
 
 	@Override
 	public String getServiceProtocol() {
-		// TODO Auto-generated method stub
-		return null;
+		return "tcp";
 	}
 
 	@Override

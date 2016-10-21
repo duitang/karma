@@ -12,8 +12,6 @@ import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.KarmaOverloadException;
 import com.duitang.service.karma.KarmaRuntimeException;
 import com.duitang.service.karma.KarmaTimeoutException;
-import com.duitang.service.karma.base.KarmaClientInfo;
-import com.duitang.service.karma.base.LifeCycle;
 import com.duitang.service.karma.boot.KarmaClientConfig;
 import com.duitang.service.karma.meta.BinaryPacketData;
 import com.duitang.service.karma.meta.RPCConfig;
@@ -26,7 +24,7 @@ import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 
 @SuppressWarnings("rawtypes")
-public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
+public class KarmaClient<T> implements MethodInterceptor {
 
 	static {
 		// just make sure 2 config is loaded
@@ -35,7 +33,6 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 		System.err.println("loading ...... " + clz.getName());
 	}
 
-	final static Map<String, Method> mgrCallbacks;
 	static KarmaIOPool pool = null;
 	final static protected Logger error = LoggerFactory.getLogger(KarmaClient.class);
 	final static private Long DEFAULT_TIMEOUT = 1000L;
@@ -48,13 +45,6 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 	protected String group;
 
 	static {
-		mgrCallbacks = new HashMap<>();
-		Class[] ifaces = new Class[] { LifeCycle.class, KarmaClientInfo.class };
-		for (Class clz : ifaces) {
-			for (Method m : clz.getDeclaredMethods()) {
-				mgrCallbacks.put(m.getName(), m);
-			}
-		}
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
@@ -64,10 +54,10 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 		});
 	}
 
-	synchronized public static void reset(String group, List<String> urls) throws KarmaException {
+	synchronized public static void bindGroup(String group, List<String> urls) throws KarmaException {
 		if (pool != null) {
+			KarmaClientConfig.bindBalance(group, urls);
 			pool.resetPool(urls);
-			KarmaClientConfig.updateBalance(group, urls);
 		}
 	}
 
@@ -80,12 +70,14 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 		}
 	}
 
-	static public <T> KarmaClient<T> createKarmaClient(Class<T> iface, List<String> urls, String group)
-			throws KarmaException {
-		return createKarmaClient(iface, urls, group, DEFAULT_TIMEOUT);
+	static public <T> KarmaClient<T> createKarmaClient(Class<T> iface, String group) throws KarmaException {
+		return createKarmaClient(iface, null, group, DEFAULT_TIMEOUT);
 	}
 
-	@SuppressWarnings("unchecked")
+	static public <T> KarmaClient<T> createKarmaClient(Class<T> iface, List<String> urls) throws KarmaException {
+		return createKarmaClient(iface, urls, null, DEFAULT_TIMEOUT);
+	}
+
 	static public <T> KarmaClient<T> createKarmaClient(Class<T> iface, List<String> urls, String group, long timeout)
 			throws KarmaException {
 		if (!iface.isInterface()) {
@@ -95,7 +87,7 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 		KarmaClient client = new KarmaClient(iface, iob);
 		client.group = group;
 		client.timeout = timeout;
-		client.dummy = Enhancer.create(null, new Class[] { iface, KarmaClientInfo.class }, client);
+		client.dummy = Enhancer.create(null, new Class[] { iface }, client);
 		return client;
 	}
 
@@ -129,12 +121,8 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 	@Override
 	public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
 		String name = method.getName();
-		if (!cutoffNames.containsKey(name) && !mgrCallbacks.containsKey(name)) {
+		if (!cutoffNames.containsKey(name)) {
 			return proxy.invokeSuper(obj, args);
-		}
-		if (mgrCallbacks.containsKey(name)) {
-			Method m = mgrCallbacks.get(name);
-			return m.invoke(this, args);
 		}
 		TraceCell tc = TraceContextHolder.accquire(true);
 		tc.host = NameUtil.getHostname();
@@ -212,11 +200,6 @@ public class KarmaClient<T> implements MethodInterceptor, KarmaClientInfo {
 			KarmaClientConfig.getTraceVisitor(group).visit(tc);
 		}
 		return ret;
-	}
-
-	@Override
-	public KarmaClient getProxy() {
-		return this;
 	}
 
 	public void resetTrace() {

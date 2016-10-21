@@ -16,7 +16,7 @@ public class MemoryTest {
 	public void test0() throws Exception {
 		List<String> urls = new ArrayList<String>();
 		urls.add("localhost:9999");
-		KarmaClient<IDemoService> client = KarmaClient.createKarmaClient(IDemoService.class, urls, "dev1");
+		KarmaClient<IDemoService> client = KarmaClient.createKarmaClient(IDemoService.class, urls);
 		IDemoService cli = client.getService();
 		long ts = System.currentTimeMillis();
 		String msg = cli.trace_msg("this will timeout ", 1000);
@@ -29,7 +29,7 @@ public class MemoryTest {
 	public void test1() throws KarmaException {
 		IDemoService cli = null;
 		KarmaClient<IDemoService> client = KarmaClient.createKarmaClient(IDemoService.class,
-				Arrays.asList("localhost:9999"), "dev1");
+				Arrays.asList("localhost:9999"));
 
 		System.out.println("-------------------");
 		cli = client.getService();
@@ -75,7 +75,7 @@ public class MemoryTest {
 	public void testConnections() throws KarmaException {
 		IDemoService cli = null;
 		KarmaClient<IDemoService> client = KarmaClient.createKarmaClient(IDemoService.class,
-				Arrays.asList("localhost:9999"), "dev1");
+				Arrays.asList("localhost:9999"));
 
 		// boolean r = false;
 		String s = null;
@@ -104,7 +104,7 @@ public class MemoryTest {
 	public void testHuge() throws KarmaException {
 		IDemoService cli = null;
 		KarmaClient<IDemoService> client = KarmaClient.createKarmaClient(IDemoService.class,
-				Arrays.asList("localhost:9999"), "dev1");
+				Arrays.asList("localhost:9999"));
 
 		int sz = 50000;
 		StringBuilder sb = new StringBuilder();
@@ -135,7 +135,7 @@ public class MemoryTest {
 	// @Test
 	public void testSomeError() throws KarmaException {
 		KarmaClient<IDemoService> client = KarmaClient.createKarmaClient(IDemoService.class,
-				Arrays.asList("localhost:9999"), "dev1");
+				Arrays.asList("localhost:9999"));
 		IDemoService cli = client.getService();
 		cli.getError();
 

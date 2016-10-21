@@ -27,7 +27,7 @@ public class CacheServiceTest {
 			Assert.fail(e.getMessage());
 		}
 		KarmaClient<IDemoService> client = KarmaClient.createKarmaClient(IDemoService.class,
-				Arrays.asList("localhost:9999"), "dev1");
+				Arrays.asList("localhost:9999"));
 		cli = client.getService();
 	}
 

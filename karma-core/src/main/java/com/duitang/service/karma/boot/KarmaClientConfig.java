@@ -54,21 +54,20 @@ public class KarmaClientConfig {
 		logger.info("using IOBalanceFacotry: " + simpleFactory.getClass().getName());
 	}
 
-	synchronized public static void updateFactory(String group, IOBalanceFactory fac) {
+	synchronized public static void bindFactory(String group, IOBalanceFactory fac) {
 		Map<String, IOBalanceFactory> m0 = new HashMap<String, IOBalanceFactory>(routerFac);
 		m0.put(group, fac);
 		routerFac = Collections.unmodifiableMap(m0);
 	}
 
-	synchronized public static void updateBalance(String group, List<String> urls) throws KarmaException {
-		IOBalanceFactory fac = routerFac.get(group);
-		if (fac == null) {
-			fac = simpleFactory;
-		}
-		IOBalance b = fac.createIOBalance(clusterAware, RPCNodeHashing.createFromString(urls));
+	synchronized public static IOBalance bindBalance(String group, List<String> urls) throws KarmaException {
+		IOBalanceFactory fac = getFactory(group);
+		RPCNodeHashing u = urls == null ? null : RPCNodeHashing.createFromString(urls);
+		IOBalance ret = fac.createIOBalance(clusterAware, u);
 		Map<String, IOBalance> m = new HashMap<String, IOBalance>(balanceRouter);
-		m.put(group, b);
+		m.put(group, ret);
 		balanceRouter = Collections.unmodifiableMap(m);
+		return ret;
 	}
 
 	synchronized public static void updateTracer(String group, TraceVisitor v) {
@@ -78,13 +77,19 @@ public class KarmaClientConfig {
 	}
 
 	public static IOBalance getOrCreateIOBalance(String group, List<String> urls) throws KarmaException {
-		IOBalance ret = balanceRouter.get(group);
-		if (ret == null) {
-			IOBalanceFactory fac = routerFac.get(group);
-			if (fac == null) {
-				fac = simpleFactory;
+		IOBalance ret = null;
+		if (group == null && urls == null) {
+			throw new KarmaException("no group, no urls for create client!");
+		}
+
+		if (group != null) { // high priority using grp
+			ret = balanceRouter.get(group);
+			if (ret == null) {
+				ret = bindBalance(group, urls);
 			}
-			ret = fac.createIOBalance(clusterAware, RPCNodeHashing.createNullableFromString(urls));
+		} else { // using urls and no binding
+			IOBalanceFactory fac = getFactory(group);
+			ret = fac.createIOBalance(clusterAware, RPCNodeHashing.createFromString(urls));
 		}
 		return ret;
 	}
@@ -93,6 +98,14 @@ public class KarmaClientConfig {
 		TraceVisitor ret = tracer.get(group);
 		if (ret == null) {
 			ret = simpleVisitor;
+		}
+		return ret;
+	}
+
+	static IOBalanceFactory getFactory(String grp) {
+		IOBalanceFactory ret = routerFac.get(grp);
+		if (ret == null) {
+			ret = simpleFactory;
 		}
 		return ret;
 	}
