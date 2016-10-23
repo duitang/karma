@@ -161,13 +161,17 @@ class Candidates {
 	DescriptiveStatistics[] failAvg; // 4
 	DescriptiveStatistics[] loadAvg; // 5
 
+	double[] decay; // 6
+
 	public Candidates(int sz, int minWin, int moreWin) {
 		count = sz;
 		choice = new double[sz];
+		decay = new double[sz];
 		// initial for equal probabilities
 		choice[0] = 1d / sz;
 		for (int i = 1; i < sz; i++) {
 			choice[i] += choice[i - 1];
+			decay[i] = 1; // no change
 		}
 		resp = new DescriptiveStatistics[count];
 		load = new double[count];
@@ -230,8 +234,8 @@ class Candidates {
 			double loadAvg_snap = l2 > 0 ? l2 : VERY_TRIVIA;
 			double failAvg_snap = failAvg[i].getMean();
 
-			choice[i] = (wResp * resp_snap * l + wRespAvg * respAvg_snap * l2)
-					+ (wFail * fail_snap * l + wFailAvg * failAvg_snap * l2);
+			choice[i] = decay[i] * ((wResp * resp_snap * l + wRespAvg * respAvg_snap * l2)
+					+ (wFail * fail_snap * l + wFailAvg * failAvg_snap * l2));
 			choice[i] = 1d / (1 + choice[i]);
 
 			if (AutoReBalance.log.isDebugEnabled()) {

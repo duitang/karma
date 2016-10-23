@@ -19,6 +19,7 @@ import com.duitang.service.karma.client.IOBalanceFactory;
 import com.duitang.service.karma.client.impl.RRRFactory;
 import com.duitang.service.karma.router.Router;
 import com.duitang.service.karma.server.RPCService;
+import com.duitang.service.karma.support.RPCNode;
 import com.duitang.service.karma.support.RPCNodeHashing;
 import com.duitang.service.karma.support.RPCRegistry;
 import com.duitang.service.karma.support.RegistryInfo;
@@ -97,22 +98,14 @@ public class ZKClientListenerTest {
 	static void reg2RPC(ZKClusterWorker worker, boolean[] create) {
 		Mock r1 = new Mock();
 		r1.url = "aa:444";
-		r1.online = true;
+		r1.online = create[0];
 		r1.grp = "dev1";
 		Mock r2 = new Mock();
 		r2.url = "bb:555";
-		r2.online = true;
+		r2.online = create[1];
 		r2.grp = "dev1";
-		if (create[0]) {
-			worker.syncWrite(r1);
-		} else {
-			worker.syncClearRPCNode(r1);
-		}
-		if (create[1]) {
-			worker.syncWrite(r2);
-		} else {
-			worker.syncClearRPCNode(r2);
-		}
+		worker.syncWrite(r1);
+		worker.syncWrite(r2);
 	}
 
 	@Test
@@ -148,6 +141,7 @@ public class ZKClientListenerTest {
 
 		try {
 			info = lsnr.syncPull();
+			System.out.println("0. sync pull: " + info);
 		} catch (Throwable t) {
 			t.printStackTrace();
 			Assert.fail();
@@ -167,9 +161,11 @@ public class ZKClientListenerTest {
 
 		info = lsnr.syncPull();
 		Assert.assertNull(info);
+		System.out.println("A. sync pull: " + info);
 
 		reg2RPC(worker, new boolean[] { false, true });
 		info = lsnr.syncPull();
+		System.out.println("B. sync pull: " + info);
 		Assert.assertNotNull(info);
 
 		System.out.println(info.isFreezeMode());
@@ -182,6 +178,30 @@ public class ZKClientListenerTest {
 		// if nodes not change will return null
 		info = lsnr.syncPull();
 		Assert.assertNull(info);
+
+		worker.zkSR.service.clear();
+
+		// Sleeping for MAX peroid
+		for (int i = 0; i < RPCNode.MAX_LOSE_CONTACT; i++) {
+			info = lsnr.syncPull();
+			Assert.assertNull(info);
+			System.out.println("C[" + i + "]. sync pull: " + info);
+			System.out.println("C[" + i + "]. snap: " + lsnr.snap);
+			Thread.sleep(RPCNode.HEART_BEAT_PERIOD - 10);
+		}
+
+		Thread.sleep(RPCNode.HEART_BEAT_PERIOD); // ensure
+		RegistryInfo ret = worker.refreshRPCNodes();
+		Assert.assertNotNull(ret);
+		// every node is gone
+		System.out.println("D. sync pull: " + ret);
+		System.out.println("D. snap: " + lsnr.snap);
+		ret = RegistryInfo.purged(false, ret.getHashing());
+		Assert.assertNotNull(ret);
+		System.out.println("E. purge: " + ret);
+		System.out.println("E. snap: " + lsnr.snap);
+		System.out.println(ret.getHashing().getDecays());
+		Assert.assertNull(ret.getHashing().getDecays().get(0));
 
 	}
 

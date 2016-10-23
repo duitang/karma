@@ -5,6 +5,7 @@
  */
 package com.duitang.service.karma.support;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -31,6 +32,19 @@ public class RegistryInfo {
 	public RegistryInfo(boolean freezing, List<RPCNode> nodes) {
 		this.freezeMode = freezing;
 		this.hashing = RPCNodeHashing.createFromNodes(nodes);
+	}
+
+	static public RegistryInfo purged(boolean freezing, RPCNodeHashing hashing) {
+		List<RPCNode> nodes = new ArrayList<>();
+		for (int i = 0; i < hashing.getNodes().size(); i++) {
+			if (hashing.decays.get(i) != null) {
+				nodes.add(hashing.getNodes().get(i));
+			}
+		}
+		if (nodes.isEmpty()) { // at least 1 node alive
+			nodes.add(hashing.getNodes().get(0));
+		}
+		return new RegistryInfo(freezing, RPCNodeHashing.createFromNodes(nodes));
 	}
 
 	public RPCNode getNode(String url) {
@@ -64,15 +78,31 @@ public class RegistryInfo {
 		if (hashing != null && hashing.getNodes() != null) {
 			s = hashing.getNodes().toString();
 		}
-		return "freezing:" + freezeMode + "; " + s;
+		return "freezing:" + freezeMode + "; " + s + "; " + hashing.decays;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof RegistryInfo){
+		if (obj instanceof RegistryInfo) {
 			return this.toString().equals(obj.toString());
 		}
 		return super.equals(obj);
+	}
+
+	public RPCNodeHashing calcDecayFactor(RPCNodeHashing snap) {
+		// 1. merge from snap if node is not exist at current and not halted
+		List<RPCNode> extra = new ArrayList<RPCNode>();
+		extra.addAll(this.hashing.getNodes());
+		for (int i = 0; i < snap.getNodes().size(); i++) {
+			RPCNode node = snap.getNodes().get(i);
+			int idx = this.hashing.getURLs().indexOf(node.url);
+			if (idx < 0) {
+				extra.add(node);
+			}
+		}
+		RPCNodeHashing ret = RPCNodeHashing.createFromNodes(extra);
+		RPCNodeHashing.calcDecay(ret, RPCNode.HEART_BEAT_PERIOD);
+		return ret;
 	}
 
 }

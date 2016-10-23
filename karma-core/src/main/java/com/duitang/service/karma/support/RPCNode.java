@@ -27,8 +27,8 @@ public class RPCNode implements Comparable<RPCNode> {
 		mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 	}
 
-	static final long HEART_BEAT_PERIOD = 30 * 1000; // 30s
-	static final long MAX_LOSE_CONTACT = 5; // 5 period
+	public static long HEART_BEAT_PERIOD = 10 * 1000; // 30s
+	public static long MAX_LOSE_CONTACT = 3; // 3 period
 
 	public String url;
 	public String protocol;
@@ -39,6 +39,8 @@ public class RPCNode implements Comparable<RPCNode> {
 	public Long heartbeat;
 	public String hbcaption; // just for production human traceable information
 	public Double load; // currently not used
+	public Long halted; // halted time
+	public String htcaption; // just for production human traceable information
 
 	public String toDataString() {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -47,6 +49,9 @@ public class RPCNode implements Comparable<RPCNode> {
 		}
 		if (heartbeat != null) {
 			hbcaption = sdf.format(heartbeat);
+		}
+		if (halted != null) {
+			htcaption = sdf.format(halted);
 		}
 		try {
 			return mapper.writeValueAsString(this);
@@ -71,7 +76,7 @@ public class RPCNode implements Comparable<RPCNode> {
 
 	@JsonIgnore
 	public boolean isAlive() {
-		boolean alive = (System.currentTimeMillis() - heartbeat) < MAX_LOSE_CONTACT * HEART_BEAT_PERIOD;
+		boolean alive = halted == null ? true : ((System.currentTimeMillis() - halted) < 0);
 		return url != null && alive;
 	}
 

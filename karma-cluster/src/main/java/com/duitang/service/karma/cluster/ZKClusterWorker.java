@@ -82,12 +82,10 @@ public class ZKClusterWorker implements Watcher {
 						continue;
 					}
 
-					try {
-						eventReceived(o);
-					} catch (Exception e) {
-						e.printStackTrace();
-						System.err.println("error pull events when connecting to Zookeeper: " + o.conn);
+					for (RPCService rpc : o.zkSR.getRegServices()) {
+						o.syncWrite(rpc);
 					}
+
 				}
 
 				try {
@@ -176,14 +174,19 @@ public class ZKClusterWorker implements Watcher {
 		}
 	}
 
-	synchronized public boolean syncWrite(RPCService rpc) {
+	public boolean syncWrite(RPCService rpc) {
+		return syncWrite(rpc, rpc.online());
+	}
+
+	synchronized boolean syncWrite(RPCService rpc, boolean online) {
 		RPCNode info = new RPCNode();
 		info.url = RPCNodeHashing.getRawConnURL(rpc.getServiceURL());
 		info.protocol = rpc.getServiceProtocol();
 		info.group = rpc.getGroup();
-		info.online = rpc.online();
+		info.online = online;
 		info.up = rpc.getUptime().getTime();
 		info.heartbeat = new Date().getTime();
+		info.halted = online ? null : info.heartbeat + 1;
 		String ret0 = info.toDataString();
 
 		ensureBasedir();
@@ -216,7 +219,7 @@ public class ZKClusterWorker implements Watcher {
 				String pathnode = zkNodeBase + "/" + p;
 				byte[] buf = zkCli.getData(pathnode, false, zkCli.exists(pathnode, false));
 				RPCNode node = RPCNode.fromBytes(buf);
-				if (schema.contains(StringUtils.lowerCase(node.protocol))) {
+				if (schema.contains(StringUtils.lowerCase(node.protocol)) && node.isAlive()) {
 					ret.add(node);
 				}
 			} catch (Exception e) {

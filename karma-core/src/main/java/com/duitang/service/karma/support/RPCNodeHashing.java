@@ -28,6 +28,7 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 	final static Set<String> purgeSchema = new HashSet<String>(Arrays.asList("tcp", "udp"));
 	protected ArrayList<RPCNode> nodes;
 	protected ArrayList<String> urls;
+	protected ArrayList<Double> decays;
 	protected String schema;
 
 	private RPCNodeHashing() {
@@ -107,6 +108,10 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 		return schema;
 	}
 
+	public List<Double> getDecays() {
+		return decays;
+	}
+
 	static void sortNodes(RPCNodeHashing h) {
 		Collections.sort(h.nodes);
 		ArrayList<String> idx = new ArrayList<String>();
@@ -114,6 +119,34 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 			idx.add(n.url);
 		}
 		h.urls = idx;
+		calcDecay(h, RPCNode.HEART_BEAT_PERIOD);
+	}
+
+	static void calcDecay(RPCNodeHashing h, double period) {
+		ArrayList<Double> de = new ArrayList<Double>();
+		boolean haltit = false;
+		Double d = null;
+		long hb = 0;
+		for (RPCNode n : h.nodes) {
+			if (n.halted == null) { // if online
+				haltit = false;
+			} else {
+				haltit = (System.currentTimeMillis() - n.halted) >= 0;
+			}
+			d = null; // offline
+			if (!haltit) { // heartbeat check
+				hb = n.heartbeat == null ? System.currentTimeMillis() - 1 : n.heartbeat;
+				d = (System.currentTimeMillis() - hb) * 1.0d / period;
+				if (d >= RPCNode.MAX_LOSE_CONTACT) {
+					d = null;
+				} else {
+					d = d <= 1 ? 1 : 1 / d; // decay using 1/t
+					d = d * d; // square
+				}
+			}
+			de.add(d);
+		}
+		h.decays = de;
 	}
 
 	static public RPCNodeHashing createFromString(List<String> urls) throws IllegalArgumentException {

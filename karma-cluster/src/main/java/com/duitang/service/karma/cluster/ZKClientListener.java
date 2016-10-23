@@ -68,11 +68,21 @@ public class ZKClientListener implements AsyncRegistryReader {
 			snap = ret;
 			return ret; // first pull
 		}
-		if (snap.getHashing().equals(ret.getHashing())) {
+		RegistryInfo merged = null;
+		try {
+			merged = RegistryInfo.purged(ret.isFreezeMode(), ret.getHashing());
+		} catch (Exception e) {
+			// maybe zookeeper is not available or empty nodes
+		}
+		if (merged == null) {
 			return null; // no change
 		}
-		snap = ret; // changed
-		return ret;
+		RegistryInfo s0 = snap;
+		snap = merged; // changed
+		if (s0.getHashing().equals(merged.getHashing())) {
+			return null;
+		}
+		return merged;
 	}
 
 }

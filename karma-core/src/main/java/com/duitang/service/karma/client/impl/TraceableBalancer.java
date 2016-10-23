@@ -164,7 +164,13 @@ public abstract class TraceableBalancer implements IOBalance {
 		if (stage.isFreezeMode()) {
 			policy = new FixedPolicy(samples);
 		} else {
-			policy = new AutoReBalance(stage.getURLs().size());
+			AutoReBalance pl = new AutoReBalance(stage.getURLs().size());
+			List<Double> dc = stage.getHashing().getDecays();
+			pl.cdd.decay = new double[dc.size()];
+			for (int i = 0; i < pl.cdd.decay.length; i++) {
+				pl.cdd.decay[i] = dc.get(i) == null ? 0 : Math.pow(Math.E, dc.get(i));
+			}
+			policy = pl;
 		}
 
 		NodesAndPolicy ret = new NodesAndPolicy();
@@ -197,7 +203,8 @@ public abstract class TraceableBalancer implements IOBalance {
 
 	public String getDebugInfo() {
 		return "Current NodesAndPolicy checkpoint version: " + checkpointVer.get() + ", reload version: "
-				+ reloadVer.get() + "; Hashing=" + nap.hashing.getURLs() + Arrays.toString(nap.policy.getDebugInfo());
+				+ reloadVer.get() + "; Hashing=" + nap.hashing.getURLs() + Arrays.toString(nap.policy.getDebugInfo())
+				+ "; Decays=" + nap.hashing.getDecays();
 	}
 
 }
