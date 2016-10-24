@@ -199,7 +199,6 @@ public class PeriodCountCPBalancerTest {
 			n.url = RPCNodeHashing.getRawConnURL(ss);
 			n.protocol = "tcp";
 			n.load = u.getNodes().get(pos).load;
-			n.online = u.getNodes().get(pos).online;
 			n.up = u.getNodes().get(pos).up;
 			Assert.assertTrue(u.getNodes().contains(n));
 		}

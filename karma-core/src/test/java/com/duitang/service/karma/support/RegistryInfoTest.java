@@ -8,7 +8,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-
 public class RegistryInfoTest {
 
 	@Before
@@ -35,10 +34,10 @@ public class RegistryInfoTest {
 		System.out.println(ret1.toString());
 
 		Assert.assertEquals(ret0, ret1);
-		
+
 		Assert.assertNotNull(ret0.getNode("aa:11"));
 		Assert.assertNull(ret0.getNode("aaa:11"));
-		
+
 	}
 
 }

@@ -8,8 +8,6 @@ package com.duitang.service.karma.support;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -27,13 +25,12 @@ public class RPCNode implements Comparable<RPCNode> {
 		mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 	}
 
-	public static long HEART_BEAT_PERIOD = 10 * 1000; // 30s
+	public static long HEARTBEAT_PERIOD = 10 * 1000; // 30s
 	public static long MAX_LOSE_CONTACT = 3; // 3 period
 
 	public String url;
 	public String protocol;
 	public String group;
-	public Boolean online;
 	public Long up; // up time
 	public String upcaption; // just for production human traceable information
 	public Long heartbeat;
@@ -80,21 +77,9 @@ public class RPCNode implements Comparable<RPCNode> {
 		return url != null && alive;
 	}
 
-	public boolean diff(RPCNode node) {
-		if (node == null) {
-			return true;
-		}
-
-		boolean ur = !StringUtils.equals(node.url, this.url);
-		boolean p = !StringUtils.equals(node.protocol, this.protocol);
-		boolean g = !StringUtils.equals(node.group, this.group);
-		boolean o = node.online != this.online;
-		boolean u = node.up != this.up;
-		return ur || p || g || o || u;
-	}
-
 	public String toString() {
-		return protocol + "://" + url;
+		int o = (halted == null ? true : (System.currentTimeMillis() - halted < 0)) ? 1 : 0;
+		return protocol + "://" + url + " (" + group + ") " + o + "," + up + "," + halted;
 	}
 
 	@Override
@@ -104,10 +89,20 @@ public class RPCNode implements Comparable<RPCNode> {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof RPCNode) {
-			return !diff((RPCNode) obj);
+		if (obj == null || !(obj instanceof RPCNode)) {
+			return false;
 		}
-		return false;
+		return toString().equals(obj.toString());
+	}
+
+	public static void setHeartBeat(long heartbeat, long lost_period) {
+		RPCNode.HEARTBEAT_PERIOD = heartbeat;
+		RPCNode.MAX_LOSE_CONTACT = lost_period;
+	}
+
+	@Override
+	public int hashCode() {
+		return this.toString().hashCode();
 	}
 
 }

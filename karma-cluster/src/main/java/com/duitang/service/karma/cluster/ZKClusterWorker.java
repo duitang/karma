@@ -183,7 +183,6 @@ public class ZKClusterWorker implements Watcher {
 		info.url = RPCNodeHashing.getRawConnURL(rpc.getServiceURL());
 		info.protocol = rpc.getServiceProtocol();
 		info.group = rpc.getGroup();
-		info.online = online;
 		info.up = rpc.getUptime().getTime();
 		info.heartbeat = new Date().getTime();
 		info.halted = online ? null : info.heartbeat + 1;

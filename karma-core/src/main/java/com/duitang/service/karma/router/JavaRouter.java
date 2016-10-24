@@ -138,11 +138,11 @@ public class JavaRouter implements Router<BinaryPacketRaw>, Closeable {
 					}
 				} while (false);
 
-				if (raw.ctx != null) {
+				if (raw.ctx != null && data != null) {
 					raw.ctx.writeAndFlush(data.getBytes());
 				}
 			} finally {
-				tc.passivate(data.ex);
+				tc.passivate(data == null ? new KarmaException("unknow raw data null!") : data.ex);
 				TraceContextHolder.release();
 				KarmaServerConfig.tracer.visit(tc);
 			}

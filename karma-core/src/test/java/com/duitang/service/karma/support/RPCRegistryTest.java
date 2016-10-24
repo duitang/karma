@@ -160,48 +160,48 @@ public class RPCRegistryTest {
 
 	@Test
 	public void test2() {
+		RPCNode.setHeartBeat(3 * 1000, 5);
 		RPCNodeHashing h_new = RPCNodeHashing.createFromString(Arrays.asList("aa:111", "bb:222"));
 		RPCNodeHashing h_snap = RPCNodeHashing.createFromString(Arrays.asList("aa:111", "bb:222", "cc:333"));
 
 		// testing for 2 period
 		for (int i = 0; i < h_new.nodes.size(); i++) {
 			RPCNode node = h_new.nodes.get(i);
-			node.heartbeat = System.currentTimeMillis() - RPCNode.HEART_BEAT_PERIOD + 300;
+			node.heartbeat = System.currentTimeMillis() - RPCNode.HEARTBEAT_PERIOD + 300;
 		}
 		for (int i = 0; i < h_snap.nodes.size(); i++) {
 			RPCNode node = h_snap.nodes.get(i);
-			node.heartbeat = System.currentTimeMillis() - 2 * RPCNode.HEART_BEAT_PERIOD + 300;
+			node.heartbeat = System.currentTimeMillis() - 2 * RPCNode.HEARTBEAT_PERIOD - 300;
 		}
 		RegistryInfo info = new RegistryInfo(false, h_new);
 		RPCNodeHashing h_ret = info.calcDecayFactor(h_snap);
 		System.out.println(h_ret.decays);
 		int pos = h_ret.urls.indexOf("cc:333");
-		Assert.assertTrue(h_ret.decays.get(pos) < (1d / 4 + 0.01) && h_ret.decays.get(pos) > 0);
+		Assert.assertTrue(h_ret.decays.get(pos) > 2 && h_ret.decays.get(pos) > 0);
 
 		// testing for very very little, just dying
 		for (int i = 0; i < h_new.nodes.size(); i++) {
 			RPCNode node = h_new.nodes.get(i);
-			node.heartbeat = System.currentTimeMillis() - RPCNode.HEART_BEAT_PERIOD + 300;
+			node.heartbeat = System.currentTimeMillis() - RPCNode.HEARTBEAT_PERIOD + 300;
 		}
 		for (int i = 0; i < h_snap.nodes.size(); i++) {
 			RPCNode node = h_snap.nodes.get(i);
-			node.heartbeat = System.currentTimeMillis() - (RPCNode.MAX_LOSE_CONTACT) * RPCNode.HEART_BEAT_PERIOD + 300;
+			node.heartbeat = System.currentTimeMillis() - (RPCNode.MAX_LOSE_CONTACT) * RPCNode.HEARTBEAT_PERIOD - 300;
 		}
 		info = new RegistryInfo(false, h_new);
 		h_ret = info.calcDecayFactor(h_snap);
 		System.out.println(h_ret.decays);
 		pos = h_ret.urls.indexOf("cc:333");
-		Assert.assertTrue(h_ret.decays.get(pos) < (1d / Math.pow(RPCNode.MAX_LOSE_CONTACT, 2) + 0.01)
-				&& h_ret.decays.get(pos) > 0);
+		Assert.assertNull(h_ret.decays.get(pos));
 
 		// testing for died
 		for (int i = 0; i < h_new.nodes.size(); i++) {
 			RPCNode node = h_new.nodes.get(i);
-			node.heartbeat = System.currentTimeMillis() - RPCNode.HEART_BEAT_PERIOD + 300;
+			node.heartbeat = System.currentTimeMillis() - RPCNode.HEARTBEAT_PERIOD + 300;
 		}
 		for (int i = 0; i < h_snap.nodes.size(); i++) {
 			RPCNode node = h_snap.nodes.get(i);
-			node.heartbeat = System.currentTimeMillis() - RPCNode.MAX_LOSE_CONTACT * RPCNode.HEART_BEAT_PERIOD - 2;
+			node.heartbeat = System.currentTimeMillis() - RPCNode.MAX_LOSE_CONTACT * RPCNode.HEARTBEAT_PERIOD - 2;
 		}
 		info = new RegistryInfo(false, h_new);
 		h_ret = info.calcDecayFactor(h_snap);

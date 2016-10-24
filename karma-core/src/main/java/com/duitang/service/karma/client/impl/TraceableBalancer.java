@@ -168,7 +168,7 @@ public abstract class TraceableBalancer implements IOBalance {
 			List<Double> dc = stage.getHashing().getDecays();
 			pl.cdd.decay = new double[dc.size()];
 			for (int i = 0; i < pl.cdd.decay.length; i++) {
-				pl.cdd.decay[i] = dc.get(i) == null ? 0 : Math.pow(Math.E, dc.get(i));
+				pl.cdd.decay[i] = dc.get(i) == null ? Long.MAX_VALUE : Math.pow(Math.E, dc.get(i));
 			}
 			policy = pl;
 		}

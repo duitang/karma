@@ -76,17 +76,23 @@ public class RegistryInfo {
 	public String toString() {
 		String s = "[]";
 		if (hashing != null && hashing.getNodes() != null) {
-			s = hashing.getNodes().toString();
+			s = hashing.getNodes().toString() + "; " + hashing.decays;
 		}
-		return "freezing:" + freezeMode + "; " + s + "; " + hashing.decays;
+		return "freezing:" + freezeMode + "; " + s;
+	}
+
+	@Override
+	public int hashCode() {
+		return toString().hashCode();
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof RegistryInfo) {
-			return this.toString().equals(obj.toString());
+		if (obj == null || !(obj instanceof RegistryInfo)) {
+			return false;
 		}
-		return super.equals(obj);
+		RegistryInfo o = ((RegistryInfo) obj);
+		return this.toString().equals(o.toString());
 	}
 
 	public RPCNodeHashing calcDecayFactor(RPCNodeHashing snap) {
@@ -101,7 +107,7 @@ public class RegistryInfo {
 			}
 		}
 		RPCNodeHashing ret = RPCNodeHashing.createFromNodes(extra);
-		RPCNodeHashing.calcDecay(ret, RPCNode.HEART_BEAT_PERIOD);
+		RPCNodeHashing.calcDecay(ret, RPCNode.HEARTBEAT_PERIOD);
 		return ret;
 	}
 

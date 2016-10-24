@@ -29,7 +29,6 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 	protected ArrayList<RPCNode> nodes;
 	protected ArrayList<String> urls;
 	protected ArrayList<Double> decays;
-	protected String schema;
 
 	private RPCNodeHashing() {
 	}
@@ -87,13 +86,20 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof RPCNodeHashing) {
-			RPCNodeHashing u = (RPCNodeHashing) obj;
-			boolean bnodes = this.nodes.toString().equals(u.nodes.toString());
-			boolean bschema = this.schema.equals(u.schema);
-			return bnodes && bschema;
+		if (obj == null || !(obj instanceof RPCNodeHashing)) {
+			return false;
 		}
-		return false;
+		RPCNodeHashing u = (RPCNodeHashing) obj;
+		return this.toString().equals(u.toString());
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode();
+	}
+
+	public String toString() {
+		return "" + nodes;
 	}
 
 	public List<RPCNode> getNodes() {
@@ -102,10 +108,6 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 
 	public List<String> getURLs() {
 		return urls;
-	}
-
-	public String getSchema() {
-		return schema;
 	}
 
 	public List<Double> getDecays() {
@@ -119,7 +121,7 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 			idx.add(n.url);
 		}
 		h.urls = idx;
-		calcDecay(h, RPCNode.HEART_BEAT_PERIOD);
+		calcDecay(h, RPCNode.HEARTBEAT_PERIOD);
 	}
 
 	static void calcDecay(RPCNodeHashing h, double period) {
@@ -140,8 +142,7 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 				if (d >= RPCNode.MAX_LOSE_CONTACT) {
 					d = null;
 				} else {
-					d = d <= 1 ? 1 : 1 / d; // decay using 1/t
-					d = d * d; // square
+					d = d <= 1 ? 1 : d; // decay using t
 				}
 			}
 			de.add(d);
@@ -162,7 +163,6 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 			node.protocol = getRawConnSchema(u);
 			node.url = getRawConnURL(u);
 			node.group = null;
-			node.online = true;
 			node.up = new Date().getTime();
 			node.heartbeat = new Date().getTime();
 			node.load = 1.0d;
@@ -172,7 +172,6 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 		if (!checkSchema(sch)) {
 			throw new IllegalArgumentException("difference schema in rpc urls: " + urls);
 		}
-		ret.schema = ret.nodes.get(0).protocol;
 		sortNodes(ret);
 		return ret;
 	}
@@ -194,7 +193,6 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 		if (!checkSchema(sch)) {
 			throw new IllegalArgumentException("difference schema in rpc urls: " + nodes);
 		}
-		ret.schema = ret.nodes.get(0).protocol;
 		sortNodes(ret);
 		return ret;
 	}
@@ -213,7 +211,6 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 			node.protocol = getRawConnSchema(en.getKey());
 			node.url = getRawConnURL(en.getKey());
 			node.group = null;
-			node.online = true;
 			node.up = new Date().getTime();
 			node.heartbeat = new Date().getTime();
 			node.load = en.getValue();
@@ -223,7 +220,6 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 		if (!checkSchema(sch)) {
 			throw new IllegalArgumentException("difference schema in rpc urls: " + nodes);
 		}
-		ret.schema = ret.nodes.get(0).protocol;
 		sortNodes(ret);
 		return ret;
 	}
@@ -253,10 +249,6 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 			ret.put(n.url, n.getSafeLoad(1.0d));
 		}
 		return ret;
-	}
-
-	public String toString() {
-		return "schema: " + schema + "; " + nodes;
 	}
 
 }

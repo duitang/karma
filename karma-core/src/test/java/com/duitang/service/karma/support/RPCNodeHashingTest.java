@@ -41,6 +41,9 @@ public class RPCNodeHashingTest {
 		List<String> nodes = Arrays.asList("aa:11", "bb:22", "cc:33", "dd:44");
 		RPCNodeHashing a = RPCNodeHashing.createFromString(nodes);
 		RPCNodeHashing b = RPCNodeHashing.createFromString(nodes);
+		for (int i = 0; i < a.getNodes().size(); i++) {
+			a.getNodes().get(i).up = b.getNodes().get(i).up;
+		}
 
 		boolean r = a.equals(b);
 		Assert.assertTrue(r);
@@ -76,6 +79,9 @@ public class RPCNodeHashingTest {
 		h.put(hosts[1], 1d);
 		h.put(hosts[2], 1d);
 		RPCNodeHashing r2 = RPCNodeHashing.createFromHashMap(h);
+		for (int i = 0; i < r2.getNodes().size(); i++) {
+			r2.getNodes().get(i).up = r1.getNodes().get(i).up;
+		}
 
 		try {
 			RPCNodeHashing.createFromHashMap(null);
@@ -92,11 +98,17 @@ public class RPCNodeHashingTest {
 
 		RPCNode n0 = new RPCNode();
 		n0.url = hosts[0];
+		n0.up = r1.getNodes().get(0).up;
 		RPCNode n1 = new RPCNode();
 		n1.url = hosts[1];
+		n1.up = r1.getNodes().get(1).up;
 		RPCNode n2 = new RPCNode();
 		n2.url = hosts[2];
+		n2.up = r1.getNodes().get(2).up;
 		RPCNodeHashing r3 = RPCNodeHashing.createFromNodes(Arrays.asList(n0, n1, n2));
+		for (int i = 0; i < r3.getNodes().size(); i++) {
+			r3.getNodes().get(i).up = r1.getNodes().get(i).up;
+		}
 		try {
 			RPCNodeHashing.createFromNodes(null);
 			Assert.fail();
@@ -110,6 +122,9 @@ public class RPCNodeHashingTest {
 
 		}
 
+		System.out.println(r1);
+		System.out.println(r2);
+		System.out.println(r3);
 		Assert.assertTrue(r1.equals(r2));
 		Assert.assertTrue(r3.equals(r2));
 
@@ -118,7 +133,6 @@ public class RPCNodeHashingTest {
 
 		System.out.println(r1.getNodes());
 		System.out.println(r3.getURLs());
-		System.out.println(r2.getSchema());
 
 		RPCNodeHashing r4 = RPCNodeHashing.createFromNodes(Arrays.asList(n2, n1, n0));
 		Assert.assertTrue(r4.equals(r3));

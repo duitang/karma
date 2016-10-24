@@ -110,6 +110,8 @@ public class ZKClientListenerTest {
 
 	@Test
 	public void testSyncPull() throws Exception {
+		RPCNode.setHeartBeat(RPCNode.HEARTBEAT_PERIOD, 5);
+
 		ZKClusterWorker worker = ZKClusterWorker.createInstance(zk);
 		lsnr = worker.lsnr;
 
@@ -187,10 +189,10 @@ public class ZKClientListenerTest {
 			Assert.assertNull(info);
 			System.out.println("C[" + i + "]. sync pull: " + info);
 			System.out.println("C[" + i + "]. snap: " + lsnr.snap);
-			Thread.sleep(RPCNode.HEART_BEAT_PERIOD - 10);
+			Thread.sleep(RPCNode.HEARTBEAT_PERIOD - 10);
 		}
 
-		Thread.sleep(RPCNode.HEART_BEAT_PERIOD); // ensure
+		Thread.sleep(RPCNode.HEARTBEAT_PERIOD); // ensure
 		RegistryInfo ret = worker.refreshRPCNodes();
 		Assert.assertNotNull(ret);
 		// every node is gone
