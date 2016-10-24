@@ -79,7 +79,7 @@ public class RPCNode implements Comparable<RPCNode> {
 
 	public String toString() {
 		int o = (halted == null ? true : (System.currentTimeMillis() - halted < 0)) ? 1 : 0;
-		return protocol + "://" + url + " (" + group + ") " + o + "," + up + "," + halted;
+		return "{" + protocol + "://" + url + " (" + group + ") " + o + "," + up + "," + halted + "}";
 	}
 
 	@Override

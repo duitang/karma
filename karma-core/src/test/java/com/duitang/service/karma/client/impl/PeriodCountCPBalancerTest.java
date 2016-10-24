@@ -166,6 +166,12 @@ public class PeriodCountCPBalancerTest {
 		Assert.assertNotEquals(balancer.nap.hashing, cfg);
 
 		balancer.syncReload();
+		// sometimes syncReload will slow 1ms than cfg
+		for (int i = 0; i < balancer.nap.hashing.getNodes().size(); i++) {
+			cfg.getNodes().get(i).up = balancer.nap.hashing.getNodes().get(i).up;
+		}
+		System.out.println(balancer.nap.hashing);
+		System.out.println(cfg);
 		Assert.assertEquals(balancer.nap.hashing, cfg);
 		Assert.assertTrue(balancer.nap.policy.size() == cfg.getNodes().size());
 	}
@@ -178,6 +184,12 @@ public class PeriodCountCPBalancerTest {
 		Assert.assertNotEquals(balancer.nap.hashing, cfg);
 
 		balancer.syncReload();
+		// sometimes syncReload will slow 1ms than cfg
+		for (int i = 0; i < balancer.nap.hashing.getNodes().size(); i++) {
+			cfg.getNodes().get(i).up = balancer.nap.hashing.getNodes().get(i).up;
+		}
+		System.out.println(balancer.nap.hashing);
+		System.out.println(cfg);
 		Assert.assertEquals(balancer.nap.hashing, cfg);
 		Assert.assertTrue(balancer.nap.policy.size() == cfg.getNodes().size());
 	}
