@@ -48,7 +48,7 @@ public class KarmaClientConfig {
 		RPCRegistry aware = KarmaFinders.findClusterRegistry();
 		if (aware != null) {
 			clusterAware = aware;
-			simpleFactory = aware.getFactory();
+			simpleFactory = aware.getFactory() != null ? aware.getFactory() : simpleFactory;
 		}
 		logger.info("using ClusterAware: " + clusterAware.getInfo());
 		logger.info("using IOBalanceFacotry: " + simpleFactory.getClass().getName());

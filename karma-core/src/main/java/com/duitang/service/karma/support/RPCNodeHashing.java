@@ -142,7 +142,7 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 				if (d >= RPCNode.MAX_LOSE_CONTACT) {
 					d = null;
 				} else {
-					d = d <= 1 ? 1 : d; // decay using t
+					d = d <= 1d ? 1d : d; // decay using t
 				}
 			}
 			de.add(d);

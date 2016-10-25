@@ -20,7 +20,6 @@ public class KarmaRemoteLatch {
 	protected Object result;
 	protected Throwable ex;
 	protected long timeout;
-	protected boolean canThrowIt;
 	protected long uuid;
 	protected TraceCell tc;
 
@@ -35,7 +34,6 @@ public class KarmaRemoteLatch {
 	public KarmaRemoteLatch(long timeout, boolean canThrowIt) {
 		this.timeout = timeout;
 		this.latch = new CountDownLatch(1);
-		this.canThrowIt = canThrowIt;
 	}
 
 	public void setTraceCell(TraceCell tc) {

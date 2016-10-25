@@ -23,7 +23,7 @@ import io.netty.util.concurrent.GenericFutureListener;
 public class TCPServer implements RPCService, GenericFutureListener {
 
 	final static int DEFAULT_TCP_PORT = 7778;
-	static KarmaHandlerInitializer starter;
+	protected KarmaHandlerInitializer starter;
 
 	protected NioEventLoopGroup boss;
 	protected NioEventLoopGroup worker;

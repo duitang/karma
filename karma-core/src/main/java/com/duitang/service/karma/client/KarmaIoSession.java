@@ -35,7 +35,7 @@ public class KarmaIoSession implements LifeCycle {
 	static final protected long default_timeout = 500; // 0.5s
 	static final protected int ERROR_WATER_MARK = 2;
 
-	static EventLoopGroup worker = null;
+	static EventLoopGroup worker = new NioEventLoopGroup(0, new DaemonThreadFactory());
 	static final KarmaHandlerInitializer starter = new KarmaHandlerInitializer(new JavaClientHandler());
 
 	protected String url;
@@ -71,19 +71,12 @@ public class KarmaIoSession implements LifeCycle {
 		this.url = hostAndPort;
 		this.timeout = timeout;
 		this.conn = new Bootstrap();
-		if (worker == null) {
-			synchronized (KarmaIoSession.class) {
-				if (worker == null) {
-					worker = new NioEventLoopGroup(0, new DaemonThreadFactory());
-				}
-			}
-		}
 		this.conn.group(worker);
 		this.conn.option(ChannelOption.TCP_NODELAY, true);
 		this.conn.channel(NioSocketChannel.class).handler(new KarmaHandlerInitializer(new JavaClientHandler()));
 		String[] uu = url.split(":");
 		String host = uu[0];
-		int port = Integer.valueOf(uu[1]).intValue();
+		int port = Integer.parseInt(uu[1]);
 		this.cf = this.conn.connect(new InetSocketAddress(host, port));
 	}
 
@@ -196,7 +189,8 @@ public class KarmaIoSession implements LifeCycle {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			worker = null;
+			// renew one
+			worker = new NioEventLoopGroup(0, new DaemonThreadFactory());
 		}
 	}
 

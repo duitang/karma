@@ -3,7 +3,6 @@ package com.duitang.service.karma.router;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -51,7 +50,7 @@ public class JavaRouter implements Router<BinaryPacketRaw>, Closeable {
 	@Override
 	public void route(RPCContext ctx, BinaryPacketRaw raw) throws KarmaException {
 		KarmaJobRunner k = new KarmaJobRunner(ctx, raw);
-		k.future = execPool.submit(k);
+		execPool.submit(k);
 		int sz = execPool.getActiveCount();
 		if (sz >= CORE_SIZE) {
 			out.warn("JavaRouter_threads_exceed:" + sz);
@@ -72,7 +71,6 @@ public class JavaRouter implements Router<BinaryPacketRaw>, Closeable {
 		BinaryPacketRaw raw;
 		long submitTime;
 		long schdTime;
-		Future<?> future;
 		TraceCell tc;
 
 		public KarmaJobRunner(RPCContext ctx, BinaryPacketRaw rawPack) {

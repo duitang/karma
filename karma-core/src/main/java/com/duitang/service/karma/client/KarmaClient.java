@@ -33,7 +33,7 @@ public class KarmaClient<T> implements MethodInterceptor {
 		System.err.println("loading ...... " + clz.getName());
 	}
 
-	static KarmaIOPool pool = null;
+	static KarmaIOPool pool = new KarmaIOPool();
 	final static protected Logger error = LoggerFactory.getLogger(KarmaClient.class);
 	final static private Long DEFAULT_TIMEOUT = 1000L;
 
@@ -64,7 +64,7 @@ public class KarmaClient<T> implements MethodInterceptor {
 	synchronized public static void shutdownIOPool() {
 		if (pool != null) {
 			KarmaIOPool p = pool;
-			pool = null;
+			pool = new KarmaIOPool();
 			p.close();
 			KarmaIoSession.shutdown();
 		}
@@ -150,13 +150,6 @@ public class KarmaClient<T> implements MethodInterceptor {
 		String u = null;
 		try {
 			u = router.next(null);
-			if (pool == null) {
-				synchronized (KarmaClient.class) {
-					if (pool == null) {
-						pool = new KarmaIOPool();
-					}
-				}
-			}
 			iosession = pool.getIOSession(u);
 			data.uuid = iosession.getUuid().incrementAndGet();
 			latch.setUuid(data.uuid);
