@@ -31,6 +31,7 @@ public class TestOnceServerAndClient {
 		Finder.enableZKRegistry(zk, Arrays.asList("localhost:9999"));
 		// Finder.enableZKRegistry("192.168.10.216",
 		// Arrays.asList("localhost:9999"));
+		Thread.sleep(1200);// waiting for embed ZK
 
 		ServerBootstrap boot = new ServerBootstrap();
 		MemoryCacheService s1 = new MemoryCacheService();

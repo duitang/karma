@@ -86,10 +86,16 @@ public class ZKClusterWorker implements Watcher {
 						o.syncWrite(rpc);
 					}
 
+					try {
+						eventReceived(o);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 
 				try {
 					latch.tryAcquire(WORK_PERIOD, TimeUnit.MILLISECONDS);
+					latch.drainPermits();
 				} catch (InterruptedException e) {
 				}
 			}

@@ -23,6 +23,27 @@ public class ZKServerRegistry implements AsyncRegistryWriter {
 	protected ZKClusterWorker worker;
 	protected ConcurrentHashMap<String, RPCService> service = new ConcurrentHashMap<>();
 
+	class AsyncReg implements Runnable {
+
+		RPCService rpc;
+
+		AsyncReg(RPCService rpc) {
+			this.rpc = rpc;
+		}
+
+		@Override
+		public void run() {
+			while (!worker.syncWrite(rpc)) {
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+	}
+
 	public void setWorker(ZKClusterWorker worker) {
 		this.worker = worker;
 	}
@@ -31,7 +52,12 @@ public class ZKServerRegistry implements AsyncRegistryWriter {
 	public void register(RPCService rpc) {
 		String conn = RPCNodeHashing.getRawConnURL(rpc.getServiceURL());
 		service.put(conn, rpc);
-		worker.syncWrite(rpc); // later using async mode
+		if (!worker.syncWrite(rpc)) {
+			Thread t = new Thread(new AsyncReg(rpc));
+			t.setDaemon(true);
+			t.setName("async-register-" + rpc.getClass().getName());
+			t.start();
+		} // later using async mode
 	}
 
 	@Override

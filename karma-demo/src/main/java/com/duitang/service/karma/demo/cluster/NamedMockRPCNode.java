@@ -3,7 +3,7 @@
  * @since 2016年10月25日
  *
  */
-package com.duitang.service.lb;
+package com.duitang.service.karma.demo.cluster;
 
 import java.util.ArrayList;
 import java.util.Date;
