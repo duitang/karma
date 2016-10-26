@@ -106,7 +106,7 @@ public abstract class TraceableBalancer implements IOBalance {
 		if (idx != null) {
 			n.updateLoad(token, -1);
 			if (tc != null) {
-				n.policy.updateResponse(idx, tc.duration * 0.000001, tc.successful);
+				n.policy.updateResponse(idx, tc.duration * 0.000001f, tc.successful);
 			}
 		}
 		// maybe checkpoint
@@ -154,10 +154,10 @@ public abstract class TraceableBalancer implements IOBalance {
 		Map<String, AtomicInteger> load = new HashMap<>();
 
 		RPCNode n = null;
-		double[] samples = new double[stage.getURLs().size()];
+		float[] samples = new float[stage.getURLs().size()];
 		for (int ii = 0; ii < stage.getURLs().size(); ii++) {
 			n = stage.getNodes().get(ii);
-			samples[ii] = n.getSafeLoad(1.0d);
+			samples[ii] = n.getSafeLoad(1.0f);
 			load.put(n.url, new AtomicInteger(0));
 		}
 
@@ -166,9 +166,10 @@ public abstract class TraceableBalancer implements IOBalance {
 		} else {
 			AutoReBalance pl = new AutoReBalance(stage.getURLs().size());
 			List<Double> dc = stage.getHashing().getDecays();
-			pl.cdd.decay = new double[dc.size()];
+			pl.cdd.decay = new float[dc.size()];
 			for (int i = 0; i < pl.cdd.decay.length; i++) {
-				pl.cdd.decay[i] = dc.get(i) == null ? Long.MAX_VALUE : Math.pow(Math.E, dc.get(i));
+				pl.cdd.decay[i] = dc.get(i) == null ? Float.MAX_VALUE
+						: Double.valueOf(Math.pow(Math.E, dc.get(i))).floatValue();
 			}
 			policy = pl;
 		}
@@ -193,7 +194,7 @@ public abstract class TraceableBalancer implements IOBalance {
 	}
 
 	@Override
-	public void setNodesWithWeights(LinkedHashMap<String, Double> nodes) {
+	public void setNodesWithWeights(LinkedHashMap<String, Float> nodes) {
 		if (nodes != null) {
 			RPCNodeHashing hashing = RPCNodeHashing.createFromHashMap(nodes);
 			this.staging = new RegistryInfo(true, hashing);
@@ -222,8 +223,8 @@ class NodesAndPolicy {
 		}
 	}
 
-	double[] fetchLoads() {
-		double[] ret = new double[load.size()];
+	float[] fetchLoads() {
+		float[] ret = new float[load.size()];
 		for (int i = 0; i < hashing.getURLs().size(); i++) {
 			ret[i] = load.get(hashing.getURLs().get(i)).get();
 			ret[i] = ret[i] > 0 ? ret[i] : Candidates.VERY_TRIVIA;

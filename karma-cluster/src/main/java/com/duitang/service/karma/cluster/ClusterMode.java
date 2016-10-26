@@ -14,7 +14,7 @@ public class ClusterMode {
 		mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 	}
 
-	public LinkedHashMap<String, Double> nodes; // node connection string
+	public LinkedHashMap<String, Float> nodes; // node connection string
 	public Boolean freeze; // freeze mode if staging for deployment
 
 	public String toDataString() {

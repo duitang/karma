@@ -19,11 +19,11 @@ public class FixedPolicyTest {
 
 	@Test
 	public void test1() {
-		double[] loads = new double[] { 0.4d, 0.8d, 0.8d };
+		float[] loads = new float[] { 0.4f, 0.8f, 0.8f };
 		FixedPolicy p = new FixedPolicy(loads);
 
 		Assert.assertTrue(p.size() == loads.length);
-		double[] ss = p.getWeights();
+		float[] ss = p.getWeights();
 		Assert.assertTrue(Math.abs(Double.valueOf(ss[0] - 0.2d)) < 0.001);
 		Assert.assertTrue(Math.abs(Double.valueOf(ss[1] - 0.4d)) < 0.001);
 		Assert.assertTrue(Math.abs(Double.valueOf(ss[2] - 0.4d)) < 0.001);

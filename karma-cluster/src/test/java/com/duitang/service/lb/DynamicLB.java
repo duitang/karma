@@ -43,7 +43,7 @@ import com.duitang.service.karma.trace.TraceCell;
  * @author laurence
  *
  */
-public class DynamicLB implements IOBalance{
+public class DynamicLB implements IOBalance {
 
 	static Logger log = LoggerFactory.getLogger(DynamicLB.class);
 
@@ -70,11 +70,11 @@ public class DynamicLB implements IOBalance{
 	protected DescriptiveStatistics[] failAvg; // successful = 0, failure = 1
 												// history
 
-	protected double[] choice; // choice probability
+	protected float[] choice; // choice probability
 
 	public DynamicLB(int nodeCount, int latestWindowSize, int avgWindowSize) {
 		this.nodeCount = nodeCount;
-		this.choice = new double[nodeCount];
+		this.choice = new float[nodeCount];
 		log.info("initialized load balance for nodes = " + nodeCount);
 		resp = new DescriptiveStatistics[nodeCount];
 		load = new DescriptiveStatistics[nodeCount];
@@ -105,7 +105,7 @@ public class DynamicLB implements IOBalance{
 		return nodeCount;
 	}
 
-	protected void updateOneResp(int i, double resp1, boolean ok1) {
+	protected void updateOneResp(int i, float resp1, boolean ok1) {
 		synchronized (resp) {
 
 			resp[i].addValue(resp1);
@@ -146,9 +146,9 @@ public class DynamicLB implements IOBalance{
 			double loadAvg_rate = Math.min(loadAvg_snap / LOAD_REF, 1d);
 			double failAvg_rate = failAvg_snap;
 
-			choice[i] = (-1) * (wResp * Math.log(resp_rate) + wLoad * Math.log(load_rate)
+			choice[i] = Double.valueOf((-1) * (wResp * Math.log(resp_rate) + wLoad * Math.log(load_rate)
 					+ wRespAvg * Math.log(respAvg_rate) + wLoadAvg * Math.log(loadAvg_rate)
-					+ wFail * Math.log(fail_rate) + wFailAvg * Math.log(failAvg_rate));
+					+ wFail * Math.log(fail_rate) + wFailAvg * Math.log(failAvg_rate))).floatValue();
 			total += choice[i];
 		}
 		for (int i = 0; i < choice.length; i++) {
@@ -186,19 +186,19 @@ public class DynamicLB implements IOBalance{
 	@Override
 	public void traceFeed(String token, TraceCell tc) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void setNodes(List<String> nodes) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
-	public void setNodesWithWeights(LinkedHashMap<String, Double> nodes) {
+	public void setNodesWithWeights(LinkedHashMap<String, Float> nodes) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

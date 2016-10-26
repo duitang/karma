@@ -35,7 +35,7 @@ public class RPCNode implements Comparable<RPCNode> {
 	public String upcaption; // just for production human traceable information
 	public Long heartbeat;
 	public String hbcaption; // just for production human traceable information
-	public Double load; // currently not used
+	public Float load; // currently not used
 	public Long halted; // halted time
 	public String htcaption; // just for production human traceable information
 
@@ -67,7 +67,7 @@ public class RPCNode implements Comparable<RPCNode> {
 		return null;
 	}
 
-	public double getSafeLoad(double def) {
+	public float getSafeLoad(float def) {
 		return load == null ? def : load;
 	}
 

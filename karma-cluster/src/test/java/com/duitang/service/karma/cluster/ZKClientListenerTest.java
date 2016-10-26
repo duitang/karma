@@ -80,10 +80,10 @@ public class ZKClientListenerTest {
 	@Test
 	public void testUpdateAllNodesLinkedHashMapOfStringDouble() throws KarmaException {
 		lsnr = new ZKClientListener();
-		LinkedHashMap<String, Double> nodes = new LinkedHashMap<String, Double>();
-		nodes.put("a:111", 1d);
-		nodes.put("b:222", 2d);
-		nodes.put("c:333", 3d);
+		LinkedHashMap<String, Float> nodes = new LinkedHashMap<String, Float>();
+		nodes.put("a:111", 1f);
+		nodes.put("b:222", 2f);
+		nodes.put("c:333", 3f);
 		IOBalanceDebuger io = new IOBalanceDebuger();
 		lsnr.register(io);
 
@@ -91,7 +91,7 @@ public class ZKClientListenerTest {
 		lsnr.updateAllNodes(nodes);
 		Assert.assertTrue(IOBalanceDebuger.debuger1.size() == 1);
 
-		LinkedHashMap<String, Double> m = IOBalanceDebuger.debuger1.get(0);
+		LinkedHashMap<String, Float> m = IOBalanceDebuger.debuger1.get(0);
 		Assert.assertEquals(nodes.toString(), m.toString());
 	}
 
@@ -125,10 +125,10 @@ public class ZKClientListenerTest {
 		reg2RPC(worker, new boolean[] { true, true });
 
 		ClusterMode mode = new ClusterMode();
-		mode.nodes = new LinkedHashMap<String, Double>();
-		mode.nodes.put("a:111", 1d);
-		mode.nodes.put("b:222", 2d);
-		mode.nodes.put("c:333", 3d);
+		mode.nodes = new LinkedHashMap<String, Float>();
+		mode.nodes.put("a:111", 1f);
+		mode.nodes.put("b:222", 2f);
+		mode.nodes.put("c:333", 3f);
 		mode.freeze = true;
 		worker.syncSetMode(mode);
 
@@ -154,10 +154,10 @@ public class ZKClientListenerTest {
 		// wNodes is defined by all server , not sure here
 
 		mode = new ClusterMode();
-		mode.nodes = new LinkedHashMap<String, Double>();
-		mode.nodes.put("a:111", 1d);
-		mode.nodes.put("b:222", 2d);
-		mode.nodes.put("c:333", 3d);
+		mode.nodes = new LinkedHashMap<String, Float>();
+		mode.nodes.put("a:111", 1f);
+		mode.nodes.put("b:222", 2f);
+		mode.nodes.put("c:333", 3f);
 		mode.freeze = false;
 		worker.syncSetMode(mode);
 
@@ -212,7 +212,7 @@ public class ZKClientListenerTest {
 class IOBalanceDebuger implements IOBalance {
 
 	static List<List<String>> debuger0 = new ArrayList<>();
-	static List<LinkedHashMap<String, Double>> debuger1 = new ArrayList<>();
+	static List<LinkedHashMap<String, Float>> debuger1 = new ArrayList<>();
 
 	@Override
 	public String next(String token) {
@@ -230,7 +230,7 @@ class IOBalanceDebuger implements IOBalance {
 	}
 
 	@Override
-	public void setNodesWithWeights(LinkedHashMap<String, Double> nodes) {
+	public void setNodesWithWeights(LinkedHashMap<String, Float> nodes) {
 		debuger1.add(nodes);
 	}
 

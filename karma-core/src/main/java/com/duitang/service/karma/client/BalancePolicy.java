@@ -45,26 +45,26 @@ public interface BalancePolicy {
 	 * @param resp1
 	 * @param ok1
 	 */
-	public void updateResponse(int i, double resp1, boolean ok1);
+	public void updateResponse(int i, float resp1, boolean ok1);
 
 	/**
 	 * update load information
 	 * 
 	 * @param active
 	 */
-	public void updateLoad(double[] load);
+	public void updateLoad(float[] load);
 
 	/**
 	 * reload with candidates
 	 */
-	void reload(double[] samples);
+	void reload(float[] samples);
 
 	/**
 	 * get current weights for sampling
 	 * 
 	 * @return
 	 */
-	double[] getWeights();
+	float[] getWeights();
 
 	/**
 	 * get statistics

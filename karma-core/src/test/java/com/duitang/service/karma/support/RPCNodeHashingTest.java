@@ -74,10 +74,10 @@ public class RPCNodeHashingTest {
 
 		}
 
-		LinkedHashMap<String, Double> h = new LinkedHashMap<>();
-		h.put(hosts[0], 1d);
-		h.put(hosts[1], 1d);
-		h.put(hosts[2], 1d);
+		LinkedHashMap<String, Float> h = new LinkedHashMap<>();
+		h.put(hosts[0], 1f);
+		h.put(hosts[1], 1f);
+		h.put(hosts[2], 1f);
 		RPCNodeHashing r2 = RPCNodeHashing.createFromHashMap(h);
 		for (int i = 0; i < r2.getNodes().size(); i++) {
 			r2.getNodes().get(i).up = r1.getNodes().get(i).up;
@@ -90,7 +90,7 @@ public class RPCNodeHashingTest {
 
 		}
 		try {
-			RPCNodeHashing.createFromHashMap(new LinkedHashMap<String, Double>());
+			RPCNodeHashing.createFromHashMap(new LinkedHashMap<String, Float>());
 			Assert.fail();
 		} catch (Exception e) {
 
@@ -138,7 +138,7 @@ public class RPCNodeHashingTest {
 		Assert.assertTrue(r4.equals(r3));
 		Assert.assertTrue(r4.compareTo(r3) == 0);
 
-		LinkedHashMap<String, Double> m = r4.reverseToMap();
+		LinkedHashMap<String, Float> m = r4.reverseToMap();
 		Set<String> s1 = new HashSet(h.keySet());
 		Set<String> s2 = new HashSet(m.keySet());
 		s1.removeAll(s2);
@@ -172,9 +172,9 @@ public class RPCNodeHashingTest {
 
 		}
 		try {
-			LinkedHashMap<String, Double> m = new LinkedHashMap<>();
-			m.put("tcp://aa:11", 1d);
-			m.put("http://bb:22", 1d);
+			LinkedHashMap<String, Float> m = new LinkedHashMap<>();
+			m.put("tcp://aa:11", 1f);
+			m.put("http://bb:22", 1f);
 			RPCNodeHashing.createFromHashMap(m);
 			Assert.fail();
 		} catch (Exception e) {

@@ -48,7 +48,7 @@ public class ZKClientListener implements AsyncRegistryReader {
 		}
 	}
 
-	public void updateAllNodes(LinkedHashMap<String, Double> nodes) {
+	public void updateAllNodes(LinkedHashMap<String, Float> nodes) {
 		HashSet<IOBalance> all = new HashSet<>(members.keySet());
 		for (IOBalance balancer : all) {
 			balancer.setNodesWithWeights(nodes);

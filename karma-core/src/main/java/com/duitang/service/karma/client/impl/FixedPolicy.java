@@ -18,7 +18,7 @@ public class FixedPolicy implements BalancePolicy {
 
 	protected SimplePointer sp;
 
-	public FixedPolicy(double[] choice) {
+	public FixedPolicy(float[] choice) {
 		reload(choice);
 	}
 
@@ -45,21 +45,21 @@ public class FixedPolicy implements BalancePolicy {
 	}
 
 	@Override
-	public void updateResponse(int i, double resp1, boolean ok1) {
+	public void updateResponse(int i, float resp1, boolean ok1) {
 		// ignore
 	}
 
 	@Override
-	public void updateLoad(double[] load) {
+	public void updateLoad(float[] load) {
 		// ignore
 	}
 
 	@Override
-	public void reload(double[] samples) {
+	public void reload(float[] samples) {
 		SimplePointer ret = new SimplePointer();
-		ret.choice = new double[samples.length];
-		double total = 0;
-		for (double d : samples) {
+		ret.choice = new float[samples.length];
+		float total = 0;
+		for (float d : samples) {
 			total += d;
 		}
 		for (int i = 0; i < ret.choice.length; i++) {
@@ -72,9 +72,9 @@ public class FixedPolicy implements BalancePolicy {
 	}
 
 	@Override
-	public double[] getWeights() {
+	public float[] getWeights() {
 		SimplePointer p = sp;
-		double[] ret = new double[p.choice.length];
+		float[] ret = new float[p.choice.length];
 		ret[0] = p.choice[0];
 		for (int i = 1; i < ret.length; i++) {
 			ret[i] = p.choice[i] - p.choice[i - 1];
@@ -92,6 +92,6 @@ public class FixedPolicy implements BalancePolicy {
 
 class SimplePointer {
 
-	double[] choice;
+	float[] choice;
 
 }

@@ -54,7 +54,7 @@ public class NaiveBalancer implements IOBalance {
 	}
 
 	@Override
-	public void setNodesWithWeights(LinkedHashMap<String, Double> nodes) {
+	public void setNodesWithWeights(LinkedHashMap<String, Float> nodes) {
 		this.urls = RPCNodeHashing.createFromHashMap(nodes);
 	}
 

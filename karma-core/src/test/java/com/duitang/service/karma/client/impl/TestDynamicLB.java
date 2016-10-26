@@ -92,10 +92,10 @@ public class TestDynamicLB {
 			loads[i] = new NormalDistribution(loadSample[profile[i]][0], loadSample[profile[i]][1]);
 		}
 
-		double[] load = new double[lb.size()];
+		float[] load = new float[lb.size()];
 		for (int j = 0; j < lb.size(); j++) {
 			for (int i = 0; i < count; i++) { // how many records
-				double resp = profiles[j].sample();
+				float resp = Double.valueOf(profiles[j].sample()).floatValue();
 				boolean ok = r.nextDouble() < opOKSample[profile[j]] ? true : false;
 				lb.updateResponse(j, resp, ok); // after every RPC_CALL finished
 			}

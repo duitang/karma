@@ -19,7 +19,7 @@ public class RegistryInfo {
 	protected RPCNodeHashing hashing;
 	protected boolean freezeMode;
 
-	public RegistryInfo(boolean freezing, LinkedHashMap<String, Double> n) {
+	public RegistryInfo(boolean freezing, LinkedHashMap<String, Float> n) {
 		this.hashing = RPCNodeHashing.createFromHashMap(n);
 		this.freezeMode = freezing;
 	}

@@ -121,8 +121,8 @@ public class ZKClusterWorkerTest {
 		ClusterMode mode = new ClusterMode();
 		mode.freeze = true;
 		mode.nodes = new LinkedHashMap<>();
-		mode.nodes.put("a:11", 1.0d);
-		mode.nodes.put("b:22", 2.0d);
+		mode.nodes.put("a:11", 1.0f);
+		mode.nodes.put("b:22", 2.0f);
 		worker.syncSetMode(mode);
 	}
 

@@ -45,9 +45,9 @@ public class TestWithPolicy {
 
 	static void test(int loop, int count, int[] profiles) {
 		AutoReBalance lb = new AutoReBalance(profiles.length);
-		double[] init = new double[profiles.length];
+		float[] init = new float[profiles.length];
 		for (int i = 0; i < init.length; i++) {
-			init[i] = 1d / init.length;
+			init[i] = 1f / init.length;
 		}
 		lb.reload(init);
 		for (int i = 0; i < loop; i++) { // turn
@@ -88,12 +88,12 @@ public class TestWithPolicy {
 
 		for (int k = 0; k < 20; k++) { // should give times for stable
 
-			double[] load = new double[lb.size()];
+			float[] load = new float[lb.size()];
 			for (int i = 0; i < count; i++) { // how many records
 				int j = lb.sample(); // choice next node
 				load[j]++;
 				// generate node's performance
-				double resp = profiles[j].sample();
+				float resp = Double.valueOf(profiles[j].sample()).floatValue();
 				// generate if node's failure
 				boolean ok = r.nextDouble() < opOKSample[profile[j]] ? true : false;
 				lb.updateResponse(j, resp, ok); // after every RPC_CALL finished

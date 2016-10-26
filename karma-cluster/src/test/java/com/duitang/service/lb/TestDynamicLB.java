@@ -98,7 +98,7 @@ public class TestDynamicLB {
 		int[] load = new int[lb.nodeCount()];
 		for (int j = 0; j < lb.nodeCount(); j++) {
 			for (int i = 0; i < count; i++) { // how many records
-				double resp = profiles[j].sample();
+				float resp = Double.valueOf(profiles[j].sample()).floatValue();
 				boolean ok = r.nextDouble() < opOKSample[profile[j]] ? true : false;
 				lb.updateOneResp(j, resp, ok); // after every RPC_CALL finished
 			}

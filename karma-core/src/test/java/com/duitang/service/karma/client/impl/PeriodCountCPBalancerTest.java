@@ -156,10 +156,10 @@ public class PeriodCountCPBalancerTest {
 
 	@Test
 	public void testSetNodesWithWeights() {
-		LinkedHashMap<String, Double> r = new LinkedHashMap<>();
-		r.put("a:9999", 1.0d);
-		r.put("b:9999", 3.0d);
-		r.put("c:9999", 2.0d);
+		LinkedHashMap<String, Float> r = new LinkedHashMap<>();
+		r.put("a:9999", 1.0f);
+		r.put("b:9999", 3.0f);
+		r.put("c:9999", 2.0f);
 		RPCNodeHashing cfg = RPCNodeHashing.createFromHashMap(r);
 		balancer = new PeriodCountCPBalancer(nodes);
 		balancer.setNodes(cfg.getURLs());
@@ -196,10 +196,10 @@ public class PeriodCountCPBalancerTest {
 
 	@Test
 	public void testGetSafeNodesLinkedHashMapOfStringDouble() {
-		LinkedHashMap<String, Double> m = new LinkedHashMap<>();
+		LinkedHashMap<String, Float> m = new LinkedHashMap<>();
 		List<String> s = Arrays.asList(new String[] { "aaa:123", "tcp://bbb:456", "aaa:789" });
 		for (String ss : s) {
-			m.put(ss, 1.0d);
+			m.put(ss, 1.0f);
 		}
 		RPCNodeHashing u = RPCNodeHashing.createFromHashMap(m);
 		System.out.println(u.getNodes());

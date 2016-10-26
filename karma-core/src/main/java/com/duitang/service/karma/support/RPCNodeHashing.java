@@ -62,7 +62,7 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 	}
 
 	public static String getSafeConnURL(String url) throws IllegalArgumentException {
-		String ret = getRawConnURL(url);
+		String ret = getRawConnSchema(url) + "_" + getRawConnURL(url);
 		if (ret != null) {
 			ret = ret.replace(':', '_');
 		}
@@ -165,7 +165,7 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 			node.group = null;
 			node.up = new Date().getTime();
 			node.heartbeat = new Date().getTime();
-			node.load = 1.0d;
+			node.load = 1.0f;
 			ret.nodes.add(node);
 			sch.add(node.protocol);
 		}
@@ -197,8 +197,7 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 		return ret;
 	}
 
-	static public RPCNodeHashing createFromHashMap(LinkedHashMap<String, Double> nodes)
-			throws IllegalArgumentException {
+	static public RPCNodeHashing createFromHashMap(LinkedHashMap<String, Float> nodes) throws IllegalArgumentException {
 		if (nodes == null || nodes.isEmpty()) {
 			throw new IllegalArgumentException("empty rpc urls! ");
 		}
@@ -206,7 +205,7 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 		ret.nodes = new ArrayList<RPCNode>();
 		RPCNode node;
 		Set<String> sch = new HashSet<String>();
-		for (Entry<String, Double> en : nodes.entrySet()) {
+		for (Entry<String, Float> en : nodes.entrySet()) {
 			node = new RPCNode();
 			node.protocol = getRawConnSchema(en.getKey());
 			node.url = getRawConnURL(en.getKey());
@@ -241,12 +240,12 @@ public class RPCNodeHashing implements Comparable<RPCNodeHashing> {
 		return false;
 	}
 
-	public LinkedHashMap<String, Double> reverseToMap() {
-		LinkedHashMap<String, Double> ret = new LinkedHashMap<>();
+	public LinkedHashMap<String, Float> reverseToMap() {
+		LinkedHashMap<String, Float> ret = new LinkedHashMap<>();
 		RPCNode n;
 		for (int i = 0; i < nodes.size(); i++) {
 			n = nodes.get(i);
-			ret.put(n.url, n.getSafeLoad(1.0d));
+			ret.put(n.url, n.getSafeLoad(1.0f));
 		}
 		return ret;
 	}

@@ -42,6 +42,6 @@ public interface IOBalance {
 	 * 
 	 * @param nodes
 	 */
-	public void setNodesWithWeights(LinkedHashMap<String, Double> nodes);
+	public void setNodesWithWeights(LinkedHashMap<String, Float> nodes);
 
 }

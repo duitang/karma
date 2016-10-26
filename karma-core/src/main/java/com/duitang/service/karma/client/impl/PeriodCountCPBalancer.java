@@ -17,7 +17,7 @@ import com.duitang.service.karma.support.RPCNodeHashing;
  */
 public class PeriodCountCPBalancer extends TraceableBalancer {
 
-	public final static long PERIOD = 60 * 1000; // in milliseconds, 60s
+	public final static long PERIOD = 30 * 1000; // in milliseconds, 60s
 	public final static int COUNT = 0; // in count
 	public final static boolean AND = false; // use and logic
 

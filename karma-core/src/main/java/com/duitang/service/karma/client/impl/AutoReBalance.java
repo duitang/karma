@@ -54,15 +54,15 @@ public class AutoReBalance implements BalancePolicy {
 	}
 
 	@Override
-	public void updateResponse(int i, double resp1, boolean ok1) {
-		cdd.updateByIdx(i, new double[] { resp1, ok1 ? 0.000000001 : 1, -1 });
+	public void updateResponse(int i, float resp1, boolean ok1) {
+		cdd.updateByIdx(i, new float[] { resp1, ok1 ? 0.000000001f : 1, -1 });
 	}
 
 	@Override
-	public void updateLoad(double[] load) {
+	public void updateLoad(float[] load) {
 		Candidates cd = cdd;
 		for (int i = 0; i < load.length; i++) {
-			cd.updateByIdx(i, new double[] { -1, -1, load[i] });
+			cd.updateByIdx(i, new float[] { -1, -1, load[i] });
 		}
 	}
 
@@ -94,11 +94,11 @@ public class AutoReBalance implements BalancePolicy {
 	}
 
 	@Override
-	synchronized public void reload(double[] samples) {
+	synchronized public void reload(float[] samples) {
 		Candidates cdd1 = new Candidates(samples.length, minWin, moreWin);
-		double total = 0;
-		cdd1.choice = new double[samples.length];
-		for (double d : samples) {
+		float total = 0;
+		cdd1.choice = new float[samples.length];
+		for (float d : samples) {
 			total += d;
 		}
 		for (int i = 0; i < cdd1.choice.length; i++) {
@@ -111,9 +111,9 @@ public class AutoReBalance implements BalancePolicy {
 	}
 
 	@Override
-	public double[] getWeights() {
+	public float[] getWeights() {
 		Candidates cdd1 = cdd;
-		double[] ret = new double[cdd1.choice.length];
+		float[] ret = new float[cdd1.choice.length];
 		ret[0] = cdd1.choice[0];
 		for (int i = 1; i < ret.length; i++) {
 			ret[i] = cdd1.choice[i] - cdd1.choice[i - 1];
@@ -127,11 +127,14 @@ public class AutoReBalance implements BalancePolicy {
 		String[] ret = new String[cdd1.count];
 		for (int i = 0; i < ret.length; i++) {
 			StringBuilder sb = new StringBuilder();
+			sb.append("Node[").append(i).append("] ==> ").append(Arrays.toString(cdd1.choice)).append(" ");
 			sb.append("Current[" + minWin + "]: resp=").append(cdd1.resp[i].getMean()).append("s ; failure=")
-					.append(cdd1.fail[i].getMean()).append(" ; load=").append(cdd1.load[i]);
-			sb.append(". History[" + moreWin + "]: resp=").append(cdd1.resp[i].getMean()).append("s ; failure=")
-					.append(cdd1.fail[i].getMean()).append(" ; load=").append(cdd1.load[i]);
-			ret[i] = sb.toString();
+					.append(cdd1.fail[i].getMean()).append(" ; load=").append(cdd1.load[i]).append(" ; decay=")
+					.append(cdd1.decay[i]);
+			sb.append(" .+. History[" + moreWin + "]: resp=").append(cdd1.resp[i].getMean()).append("s ; failure=")
+					.append(cdd1.fail[i].getMean()).append(" ; load=").append(cdd1.load[i]).append(" ; decay=")
+					.append(cdd1.decay[i]);
+			ret[i] = sb.append("\n").toString();
 		}
 		return ret;
 	}
@@ -140,41 +143,41 @@ public class AutoReBalance implements BalancePolicy {
 
 class Candidates {
 
-	public final static double VERY_TRIVIA = 0.000001d;
+	public final static float VERY_TRIVIA = 0.000001f;
 
-	protected double wResp = 0.3; // weight of response
+	protected float wResp = 0.3f; // weight of response
 	// protected double wLoad = 0.15; // weight of Load
-	protected double wFail = 0.4; // weight of Failure
+	protected float wFail = 0.4f; // weight of Failure
 
-	protected double wRespAvg = 0.1; // weight of response history
+	protected float wRespAvg = 0.1f; // weight of response history
 	// protected double wLoadAvg = 0.05; // weight of Load history
-	protected double wFailAvg = 0.2; // weight of Failure history
+	protected float wFailAvg = 0.2f; // weight of Failure history
 
 	int count;
-	double[] choice;
+	float[] choice;
 
 	DescriptiveStatistics[] resp; // 0
 	DescriptiveStatistics[] fail; // 1
-	double[] load; // 2
+	float[] load; // 2
 
 	DescriptiveStatistics[] respAvg; // 3
 	DescriptiveStatistics[] failAvg; // 4
 	DescriptiveStatistics[] loadAvg; // 5
 
-	double[] decay; // 6
+	float[] decay; // 6
 
 	public Candidates(int sz, int minWin, int moreWin) {
 		count = sz;
-		choice = new double[sz];
-		decay = new double[sz];
+		choice = new float[sz];
+		decay = new float[sz];
 		// initial for equal probabilities
-		choice[0] = 1d / sz;
+		choice[0] = 1f / sz;
 		for (int i = 1; i < sz; i++) {
-			choice[i] += choice[i - 1];
+			choice[i] += (choice[i - 1] + choice[0]);
 			decay[i] = 1; // no change
 		}
 		resp = new DescriptiveStatistics[count];
-		load = new double[count];
+		load = new float[count];
 		fail = new DescriptiveStatistics[count];
 
 		respAvg = new DescriptiveStatistics[count];
@@ -198,7 +201,7 @@ class Candidates {
 		AutoReBalance.log.info("initialized load balance for nodes = " + count);
 	}
 
-	public void updateByIdx(int idx, double[] vals) {
+	public void updateByIdx(int idx, float[] vals) {
 		if (idx < count) {
 			if (vals[0] > 0) {
 				resp[idx].addValue(vals[0]);
@@ -218,25 +221,25 @@ class Candidates {
 	}
 
 	public void checkpoint() {
-		double total = 0d;
+		float total = 0f;
 
-		double l;
-		double l2;
+		float l;
+		float l2;
 
 		for (int i = 0; i < choice.length; i++) {
 			l = load[i];
-			double resp_snap = resp[i].getMean();
-			double load_snap = l > 0 ? l : VERY_TRIVIA;
-			double fail_snap = fail[i].getMean();
+			float resp_snap = Double.valueOf(resp[i].getMean()).floatValue();
+			float load_snap = l > 0 ? l : VERY_TRIVIA;
+			float fail_snap = Double.valueOf(fail[i].getMean()).floatValue();
 
-			l2 = loadAvg[i].getMean();
-			double respAvg_snap = respAvg[i].getMean();
-			double loadAvg_snap = l2 > 0 ? l2 : VERY_TRIVIA;
-			double failAvg_snap = failAvg[i].getMean();
+			l2 = Double.valueOf(loadAvg[i].getMean()).floatValue();
+			float respAvg_snap = Double.valueOf(respAvg[i].getMean()).floatValue();
+			float loadAvg_snap = l2 > 0 ? l2 : VERY_TRIVIA;
+			float failAvg_snap = Double.valueOf(failAvg[i].getMean()).floatValue();
 
 			choice[i] = decay[i] * ((wResp * resp_snap * l + wRespAvg * respAvg_snap * l2)
 					+ (wFail * fail_snap * l + wFailAvg * failAvg_snap * l2));
-			choice[i] = 1d / (1 + choice[i]);
+			choice[i] = 1f / (1 + choice[i]);
 
 			if (AutoReBalance.log.isDebugEnabled()) {
 				AutoReBalance.log.debug("checkpoint => " + choice[i] + ", statistics = "

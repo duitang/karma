@@ -16,7 +16,7 @@ public class AutoReBalanceTest {
 	@Before
 	public void setUp() throws Exception {
 		auto = new AutoReBalance(5);
-		auto.reload(new double[] { 0.1, 0.1, 0.1, 0.1, 0.1 });
+		auto.reload(new float[] { 0.1f, 0.1f, 0.1f, 0.1f, 0.1f });
 	}
 
 	@After
@@ -27,17 +27,18 @@ public class AutoReBalanceTest {
 	public void testUpdateResponse() {
 		int sz = 5;
 		auto = new AutoReBalance(sz);
-		auto.reload(new double[] { 0.1, 0.1, 0.1, 0.1, 0.1 });
+		auto.reload(new float[] { 0.1f, 0.1f, 0.1f, 0.1f, 0.1f });
 
-		auto.updateResponse(0, 0.1, true);
-		auto.updateResponse(1, 0.2, false);
-		auto.updateResponse(2, 0.3, true);
-		auto.updateResponse(3, 0.4, false);
-		auto.updateResponse(4, 0.5, true);
+		auto.updateResponse(0, 0.1f, true);
+		auto.updateResponse(1, 0.2f, false);
+		auto.updateResponse(2, 0.3f, true);
+		auto.updateResponse(3, 0.4f, false);
+		auto.updateResponse(4, 0.5f, true);
 		for (int i = 0; i < sz; i++) {
 			double a = Double.valueOf(auto.cdd.resp[i].getElement(0)) - Double.valueOf(((i + 1) * 0.1));
 			Assert.assertTrue(Math.abs(a) < 0.0001);
-			a = Double.valueOf(auto.cdd.fail[i].getElement(0)) - Double.valueOf(((i % 2 == 0) ? Candidates.VERY_TRIVIA : 1));
+			a = Double.valueOf(auto.cdd.fail[i].getElement(0))
+					- Double.valueOf(((i % 2 == 0) ? Candidates.VERY_TRIVIA : 1));
 			Assert.assertTrue(Math.abs(a) < 0.0001);
 		}
 	}
@@ -46,10 +47,10 @@ public class AutoReBalanceTest {
 	public void testUpdateLoad() {
 		int sz = 5;
 		auto = new AutoReBalance(sz);
-		auto.reload(new double[] { 0.1, 0.1, 0.1, 0.1, 0.1 });
-		auto.updateLoad(new double[] { 10, 11, 12, 13, 14 });
+		auto.reload(new float[] { 0.1f, 0.1f, 0.1f, 0.1f, 0.1f });
+		auto.updateLoad(new float[] { 10f, 11f, 12f, 13f, 14f });
 		for (int i = 0; i < sz; i++) {
-//			Assert.assertTrue(auto.cdd.load[i].getElement(0) == 10 + i);
+			// Assert.assertTrue(auto.cdd.load[i].getElement(0) == 10 + i);
 		}
 	}
 
@@ -57,13 +58,13 @@ public class AutoReBalanceTest {
 	public void testCheckpoint() {
 		int sz = 5;
 		auto = new AutoReBalance(sz);
-		auto.reload(new double[] { 0.1, 0.1, 0.1, 0.1, 0.1 });
-		auto.updateResponse(0, 0.1, true);
-		auto.updateResponse(1, 0.1, true);
-		auto.updateResponse(2, 0.1, true);
-		auto.updateResponse(3, 0.1, true);
-		auto.updateResponse(4, 0.1, true);
-		auto.updateLoad(new double[] { 10, 10, 50, 10, 10 });
+		auto.reload(new float[] { 0.1f, 0.1f, 0.1f, 0.1f, 0.1f });
+		auto.updateResponse(0, 0.1f, true);
+		auto.updateResponse(1, 0.1f, true);
+		auto.updateResponse(2, 0.1f, true);
+		auto.updateResponse(3, 0.1f, true);
+		auto.updateResponse(4, 0.1f, true);
+		auto.updateLoad(new float[] { 10, 10, 50, 10, 10 });
 		auto.checkpoint();
 		Integer[] arr = new Integer[10000];
 		for (int i = 0; i < arr.length; i++) {
@@ -80,7 +81,7 @@ public class AutoReBalanceTest {
 	@Test
 	public void testReload() {
 		auto = new AutoReBalance(5);
-		auto.reload(new double[] { 0.1, 0.1, 0.1, 0.1, 0.1 });
+		auto.reload(new float[] { 0.1f, 0.1f, 0.1f, 0.1f, 0.1f });
 		Integer[] arr = new Integer[10000];
 		for (int i = 0; i < arr.length; i++) {
 			arr[i] = auto.sample();

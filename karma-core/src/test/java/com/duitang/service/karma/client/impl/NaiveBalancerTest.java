@@ -39,10 +39,10 @@ public class NaiveBalancerTest {
 		}
 		System.out.println(Arrays.toString(ct));
 
-		LinkedHashMap<String, Double> nds = new LinkedHashMap<>();
-		nds.put("aa:111", 0.2d);
-		nds.put("bb:222", 0.4d);
-		nds.put("cc:333", 0.4d);
+		LinkedHashMap<String, Float> nds = new LinkedHashMap<>();
+		nds.put("aa:111", 0.2f);
+		nds.put("bb:222", 0.4f);
+		nds.put("cc:333", 0.4f);
 		nb.setNodesWithWeights(nds);
 		ct = new int[nds.size()];
 		for (int i = 0; i < 10000; i++) {

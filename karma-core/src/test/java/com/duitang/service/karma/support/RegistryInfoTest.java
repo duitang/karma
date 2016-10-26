@@ -20,10 +20,10 @@ public class RegistryInfoTest {
 
 	@Test
 	public void testRegistry() {
-		LinkedHashMap<String, Double> nodes = new LinkedHashMap<>();
-		nodes.put("aa:11", 11d);
-		nodes.put("bb:22", 22d);
-		nodes.put("bb:33", 33d);
+		LinkedHashMap<String, Float> nodes = new LinkedHashMap<>();
+		nodes.put("aa:11", 11f);
+		nodes.put("bb:22", 22f);
+		nodes.put("bb:33", 33f);
 		RegistryInfo ret0 = new RegistryInfo(false, nodes);
 
 		System.out.println(ret0.toString());

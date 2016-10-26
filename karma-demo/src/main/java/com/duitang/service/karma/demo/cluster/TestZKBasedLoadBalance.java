@@ -9,21 +9,28 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
 import org.slf4j.LoggerFactory;
 
 import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.boot.KarmaServerConfig;
 import com.duitang.service.karma.client.IOBalance;
 import com.duitang.service.karma.client.IOBalanceFactory;
+import com.duitang.service.karma.client.impl.TraceableBalancer;
 import com.duitang.service.karma.cluster.Finder;
 import com.duitang.service.karma.demo.cluster.NamedMockRPCNode.Perf;
 import com.duitang.service.karma.server.AsyncRegistryWriter;
@@ -43,6 +50,7 @@ import ch.qos.logback.classic.Logger;
 public class TestZKBasedLoadBalance {
 
 	static ExecutorService exec = Executors.newCachedThreadPool();
+	static Map<String, AtomicInteger> counter = new HashMap<String, AtomicInteger>();
 
 	/**
 	 * @param args
@@ -54,25 +62,33 @@ public class TestZKBasedLoadBalance {
 		// root = (Logger) LoggerFactory.getLogger(KarmaServerConfig.class);
 		// root.setLevel(Level.INFO);
 
-		int threadCount = 3;
-		String conn = null;
-		if (args.length > 0) {
-			threadCount = Integer.parseInt(args[0]);
-		}
-		if (args.length > 1) {
-			conn = args[1];
-		} else {
+		TestArgs cfg = initArgs(args);
+
+		int threadCount = cfg.threadCount;
+		System.err.println("using threads = " + threadCount);
+		int nodesCount = cfg.nodesCount;
+		System.err.println("using nodes = " + nodesCount);
+		String zk = cfg.zk;
+		System.err.println("using zookeeper = " + zk);
+		String zipkin = cfg.zipkin;
+		System.err.println("using zipkin = " + zipkin);
+
+		if (zk.contains("localhost")) {
 			startLocalZK();
-			conn = "localhost:2181";
 		}
 		Thread.sleep(1200);
-		List<NamedMockRPCNode> nodes = initRPCs(threadCount);
+		List<NamedMockRPCNode> nodes = initRPCs(nodesCount);
 		List<String> urls = NamedMockRPCNode.getURLs();
 		RPCNodeHashing hashing = RPCNodeHashing.createFromString(urls);
 		TraceContextHolder.alwaysSampling();
-		com.duitang.service.karma.trace.Finder.enableZipkin("tesing", "http://192.168.1.180:9411");
-		// com.duitang.service.karma.trace.Finder.enableConsole(true);
-		Finder.enableZKRegistry(conn, urls);
+		if (zipkin != null) {
+			com.duitang.service.karma.trace.Finder.enableZipkin("tesing", zipkin);
+			com.duitang.service.karma.trace.Finder.enableConsole(false);
+		} else {
+			com.duitang.service.karma.trace.Finder.enableConsole(true);
+		}
+
+		Finder.enableZKRegistry(zk, urls);
 
 		// register writer
 		for (NamedMockRPCNode n : nodes) {
@@ -81,6 +97,9 @@ public class TestZKBasedLoadBalance {
 
 		IOBalanceFactory fac = Finder.getRegistry().getFactory();
 		IOBalance balancer = fac.createIOBalance(Finder.getRegistry(), hashing);
+
+		System.err.println("using IOBalance: " + balancer.getClass().getName());
+		System.err.println("using IOBalance: " + ((TraceableBalancer) balancer).getDebugInfo());
 
 		runner(threadCount, balancer);
 
@@ -93,6 +112,7 @@ public class TestZKBasedLoadBalance {
 			NamedMockRPCNode node = NamedMockRPCNode.create(i);
 			node.start();
 			ret.add(node);
+			counter.put(node.name, new AtomicInteger(0));
 		}
 		return ret;
 	}
@@ -139,8 +159,21 @@ public class TestZKBasedLoadBalance {
 	static void runner(int count, IOBalance balancer) {
 		for (int i = 0; i < count; i++) {
 			MockRunner runner = new MockRunner(balancer);
+			runner.name = "runner-" + i;
 			exec.submit(runner);
 		}
+	}
+
+	static TestArgs initArgs(String[] args) {
+		TestArgs ret = new TestArgs();
+		CmdLineParser parser = new CmdLineParser(ret);
+
+		try {
+			parser.parseArgument(args);
+		} catch (CmdLineException e) {
+			e.printStackTrace();
+		}
+		return ret;
 	}
 }
 
@@ -158,7 +191,9 @@ class ModifyItem {
 class MockRunner implements Runnable {
 
 	Random rnd = new Random();
-	protected IOBalance bala;
+	IOBalance bala;
+	AtomicLong lcount = new AtomicLong();
+	String name;
 
 	public MockRunner(IOBalance balancer) {
 		bala = balancer;
@@ -178,17 +213,24 @@ class MockRunner implements Runnable {
 				tb.tc.props.put("has_error", String.valueOf(resp.error));
 				// mock response
 				Thread.sleep(resp.elapsed);
-//				System.err.println("......... " + resp.elapsed);
+				// System.err.println("......... " + resp.elapsed);
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			} finally {
-				bala.traceFeed(url, tb.tc);
-				KarmaServerConfig.tracer.visit(tb.tc);
 				try {
-					tb.close();
+					tb.close(); // trigger trace report automatic
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+				bala.traceFeed(url, tb.tc);
+			}
+
+			TestZKBasedLoadBalance.counter.get(url).incrementAndGet();
+
+			long id = lcount.incrementAndGet();
+			if (id % 100 == 0) {
+				System.err.println(name + " run " + id);
+				System.err.println(TestZKBasedLoadBalance.counter);
 			}
 
 			try {
