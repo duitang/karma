@@ -126,6 +126,7 @@ public class AutoReBalance implements BalancePolicy {
 	public String[] getDebugInfo() {
 		Candidates cdd1 = cdd;
 		String[] ret = new String[cdd1.count];
+		float last = 0;
 		for (int i = 0; i < ret.length; i++) {
 			NodeDD r = new NodeDD();
 			r.setAttr("node_index", i);
@@ -137,6 +138,8 @@ public class AutoReBalance implements BalancePolicy {
 			r.setAttr("latest_load", cdd1.load[i]);
 			r.setAttr("hisotry_load", cdd1.loadAvg[i].getMean());
 			r.setAttr("decay_rate", cdd1.decay[i]);
+			r.setAttr("sample_prob", cdd1.choice[i] - last);
+			last = cdd1.choice[i];
 			ret[i] = r.toString();
 		}
 		return ret;
@@ -147,14 +150,15 @@ public class AutoReBalance implements BalancePolicy {
 class Candidates {
 
 	public final static float VERY_TRIVIA = 0.000001f;
+	final static float PREC = 1000f;
 
-	protected float wResp = 0.3f; // weight of response
+	protected float wResp = 0.003f; // weight of response
 	// protected double wLoad = 0.15; // weight of Load
-	protected float wFail = 0.4f; // weight of Failure
+	protected float wFail = 0.004f; // weight of Failure
 
-	protected float wRespAvg = 0.1f; // weight of response history
+	protected float wRespAvg = 0.001f; // weight of response history
 	// protected double wLoadAvg = 0.05; // weight of Load history
-	protected float wFailAvg = 0.2f; // weight of Failure history
+	protected float wFailAvg = 0.002f; // weight of Failure history
 
 	int count;
 	float[] choice;
@@ -230,15 +234,15 @@ class Candidates {
 		float l2;
 
 		for (int i = 0; i < choice.length; i++) {
-			l = load[i];
-			float resp_snap = Double.valueOf(resp[i].getMean()).floatValue();
+			l = ((Number) Math.log(Float.valueOf(load[i]).doubleValue())).floatValue();
+			float resp_snap = Double.valueOf(resp[i].getMean()).floatValue() * PREC;
 			float load_snap = l > 0 ? l : VERY_TRIVIA;
-			float fail_snap = Double.valueOf(fail[i].getMean()).floatValue();
+			float fail_snap = Double.valueOf(fail[i].getMean()).floatValue() * PREC;
 
 			l2 = Double.valueOf(loadAvg[i].getMean()).floatValue();
-			float respAvg_snap = Double.valueOf(respAvg[i].getMean()).floatValue();
+			float respAvg_snap = Double.valueOf(respAvg[i].getMean()).floatValue() * PREC;
 			float loadAvg_snap = l2 > 0 ? l2 : VERY_TRIVIA;
-			float failAvg_snap = Double.valueOf(failAvg[i].getMean()).floatValue();
+			float failAvg_snap = Double.valueOf(failAvg[i].getMean()).floatValue() * PREC;
 
 			choice[i] = decay[i] * ((wResp * resp_snap * l + wRespAvg * respAvg_snap * l2)
 					+ (wFail * fail_snap * l + wFailAvg * failAvg_snap * l2));

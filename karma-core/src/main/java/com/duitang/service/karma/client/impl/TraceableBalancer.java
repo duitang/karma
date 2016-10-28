@@ -104,7 +104,6 @@ public abstract class TraceableBalancer implements IOBalance {
 		NodesAndPolicy n = nap;
 		Integer idx = n.hashing.getURLs().indexOf(token);
 		if (idx != null) {
-			n.updateLoad(token, -1);
 			if (tc != null) {
 				n.policy.updateResponse(idx, tc.duration * 0.000001f, tc.successful);
 			}
@@ -231,7 +230,7 @@ class NodesAndPolicy {
 	float[] fetchLoads() {
 		float[] ret = new float[load.size()];
 		for (int i = 0; i < hashing.getURLs().size(); i++) {
-			ret[i] = load.get(hashing.getURLs().get(i)).get();
+			ret[i] = load.get(hashing.getURLs().get(i)).getAndSet(0);
 			ret[i] = ret[i] > 0 ? ret[i] : Candidates.VERY_TRIVIA;
 		}
 		return ret;

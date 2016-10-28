@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -244,6 +245,16 @@ class Command {
 		return s + "  ==> read object error";
 	}
 
+	public String show() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("{");
+		for (Entry<String, AtomicInteger> item : TestZKBasedLoadBalance.counter.entrySet()) {
+			sb.append("\"").append(item.getKey()).append("\":").append(item.getValue()).append(",");
+		}
+		sb.deleteCharAt(sb.length() - 1).append("}");
+		return sb.toString();
+	}
+
 }
 
 class ModifyItem {
@@ -300,11 +311,11 @@ class MockRunner implements Runnable {
 			long id = lcount.incrementAndGet();
 			if (id % 100 == 0) {
 				System.err.println(name + " run " + id);
-				System.err.println(TestZKBasedLoadBalance.counter);
+				// System.err.println(TestZKBasedLoadBalance.counter);
 			}
 
 			try {
-				Thread.sleep(50 * rnd.nextInt(5));
+				Thread.sleep(5 * rnd.nextInt(5));
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

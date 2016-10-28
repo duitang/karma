@@ -53,6 +53,9 @@ public class ZKNodeAlterHandler extends AbstractHandler {
 	}
 
 	static Object[] parseParameters(String qry) {
+		if (qry == null){
+			return new Object[0];
+		}
 		List<Object> ret = new ArrayList();
 		String[] sss = qry.split("&");
 		for (String ss : sss) {
@@ -81,19 +84,19 @@ public class ZKNodeAlterHandler extends AbstractHandler {
 	}
 
 	public static void main(String[] args) throws Exception {
-//		class Foobar {
-//			@SuppressWarnings("unused")
-//			public String hello(String msg) {
-//				return "hello," + msg + "," + new Date();
-//			}
-//		}
-//		Object foo = new Foobar();
-//		Server server = new Server(8080);
-//		server.setHandler(new ZKNodeAlterHandler(foo));
-//		server.start();
-//		server.join();
+		// class Foobar {
+		// @SuppressWarnings("unused")
+		// public String hello(String msg) {
+		// return "hello," + msg + "," + new Date();
+		// }
+		// }
+		// Object foo = new Foobar();
+		// Server server = new Server(8080);
+		// server.setHandler(new ZKNodeAlterHandler(foo));
+		// server.start();
+		// server.join();
 
-		String s = "{\"begin\": true, \"ok\": 0.99, \"lost\": false, \"u\": 1, \"end\": false, \"id\": 1, \"mean\": 200}";
+		String s = "{\"begin\": true, \"ok\": 0.99, \"lost\": false, \"u\":1, \"end\": false, \"id\": 1, \"mean\": 200}";
 		ObjectMapper mapper = new ObjectMapper();
 		ModifyItem obj = mapper.readValue(s, ModifyItem.class);
 		System.out.println(obj);
