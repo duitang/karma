@@ -44,4 +44,11 @@ public interface IOBalance {
 	 */
 	public void setNodesWithWeights(LinkedHashMap<String, Float> nodes);
 
+	/**
+	 * debug info for trace
+	 * 
+	 * @return
+	 */
+	public String getDebugInfo();
+
 }

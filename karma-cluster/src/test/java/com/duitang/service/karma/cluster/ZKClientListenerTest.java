@@ -234,6 +234,11 @@ class IOBalanceDebuger implements IOBalance {
 		debuger1.add(nodes);
 	}
 
+	@Override
+	public String getDebugInfo() {
+		return null;
+	}
+
 }
 
 class Mock implements RPCService {

@@ -6,7 +6,6 @@
 package com.duitang.service.karma.client.impl;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -19,6 +18,7 @@ import com.duitang.service.karma.KarmaException;
 import com.duitang.service.karma.client.AsyncRegistryReader;
 import com.duitang.service.karma.client.BalancePolicy;
 import com.duitang.service.karma.client.IOBalance;
+import com.duitang.service.karma.support.NodeDD;
 import com.duitang.service.karma.support.RPCNode;
 import com.duitang.service.karma.support.RPCNodeHashing;
 import com.duitang.service.karma.support.RegistryInfo;
@@ -125,17 +125,12 @@ public abstract class TraceableBalancer implements IOBalance {
 		// just wrapper method
 		TraceBlock ts = new TraceBlock(myName, KEY);
 		n.policy.updateLoad(n.fetchLoads());
-		ts.tc.props.put("nodes", n.hashing.getNodes().toString());
-		ts.tc.props.put("old_samples", Arrays.toString(n.policy.getWeights()));
-		ts.tc.props.put("old_statistics", Arrays.toString(n.policy.getDebugInfo()));
 		// try syncReload first
 		if (!syncReload()) {
 			n.policy.checkpoint();
 			checkpointVer.incrementAndGet();
 		}
-		n = nap;
-		ts.tc.props.put("new_samples", Arrays.toString(n.policy.getWeights()));
-		ts.tc.props.put("new_statistics", Arrays.toString(n.policy.getDebugInfo()));
+		ts.tc.props.putAll(getNodeDD(n).getAtrrs());
 		try {
 			ts.close();
 		} catch (IOException e) {
@@ -203,9 +198,19 @@ public abstract class TraceableBalancer implements IOBalance {
 	}
 
 	public String getDebugInfo() {
-		return "Current NodesAndPolicy checkpoint version: " + checkpointVer.get() + ", reload version: "
-				+ reloadVer.get() + "; Hashing=" + nap.hashing.getURLs() + Arrays.toString(nap.policy.getDebugInfo())
-				+ "; Decays=" + nap.hashing.getDecays();
+		return getNodeDD(nap).toString();
+	}
+
+	protected NodeDD getNodeDD(NodesAndPolicy n) {
+		NodeDD ret = new NodeDD();
+		ret.setAttr("policy", this.getClass().getName());
+		ret.setAttr("nodes", n.policy.getDebugInfo());
+		ret.setAttr("urls", n.hashing.getURLs());
+		ret.setAttr("rpcload", n.load);
+		ret.setAttr("checkpoint_version", checkpointVer.get());
+		ret.setAttr("reload_version", reloadVer.get());
+		ret.setAttr("decays", nap.hashing.getDecays());
+		return ret;
 	}
 
 }

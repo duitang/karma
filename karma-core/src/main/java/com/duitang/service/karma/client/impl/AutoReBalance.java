@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.duitang.service.karma.client.BalancePolicy;
+import com.duitang.service.karma.support.NodeDD;
 
 /**
  * DYNAMIC LOAD BALANCE
@@ -126,15 +127,17 @@ public class AutoReBalance implements BalancePolicy {
 		Candidates cdd1 = cdd;
 		String[] ret = new String[cdd1.count];
 		for (int i = 0; i < ret.length; i++) {
-			StringBuilder sb = new StringBuilder();
-			sb.append("Node[").append(i).append("] ==> ").append(Arrays.toString(cdd1.choice)).append(" ");
-			sb.append("Current[" + minWin + "]: resp=").append(cdd1.resp[i].getMean()).append("s ; failure=")
-					.append(cdd1.fail[i].getMean()).append(" ; load=").append(cdd1.load[i]).append(" ; decay=")
-					.append(cdd1.decay[i]);
-			sb.append(" .+. History[" + moreWin + "]: resp=").append(cdd1.resp[i].getMean()).append("s ; failure=")
-					.append(cdd1.fail[i].getMean()).append(" ; load=").append(cdd1.load[i]).append(" ; decay=")
-					.append(cdd1.decay[i]);
-			ret[i] = sb.append("\n").toString();
+			NodeDD r = new NodeDD();
+			r.setAttr("node_index", i);
+			r.setAttr("latest_choice", cdd1.choice[i]);
+			r.setAttr("latest_resp", cdd1.resp[i].getMean());
+			r.setAttr("history_resp", cdd1.respAvg[i].getMean());
+			r.setAttr("latest_fail", cdd1.fail[i].getMean());
+			r.setAttr("history_fail", cdd1.failAvg[i].getMean());
+			r.setAttr("latest_load", cdd1.load[i]);
+			r.setAttr("hisotry_load", cdd1.loadAvg[i].getMean());
+			r.setAttr("decay_rate", cdd1.decay[i]);
+			ret[i] = r.toString();
 		}
 		return ret;
 	}

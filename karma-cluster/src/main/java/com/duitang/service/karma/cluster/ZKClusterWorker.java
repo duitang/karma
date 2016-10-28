@@ -199,7 +199,7 @@ public class ZKClusterWorker implements Watcher {
 		boolean ret = false;
 		try {
 			if (zkCli.exists(nodepath, false) == null) {
-				zkCli.create(nodepath, ret0.getBytes(enc), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+				zkCli.create(nodepath, ret0.getBytes(enc), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
 			} else {
 				zkCli.setData(nodepath, ret0.getBytes(enc), -1);
 			}

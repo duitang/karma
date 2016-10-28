@@ -201,4 +201,10 @@ public class DynamicLB implements IOBalance {
 
 	}
 
+	@Override
+	public String getDebugInfo() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

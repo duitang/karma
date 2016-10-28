@@ -8,8 +8,10 @@ package com.duitang.service.karma.demo.cluster;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -22,6 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
+import org.eclipse.jetty.server.Server;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.slf4j.LoggerFactory;
@@ -32,12 +35,15 @@ import com.duitang.service.karma.client.IOBalance;
 import com.duitang.service.karma.client.IOBalanceFactory;
 import com.duitang.service.karma.client.impl.TraceableBalancer;
 import com.duitang.service.karma.cluster.Finder;
+import com.duitang.service.karma.cluster.ZKClusterWorker;
+import com.duitang.service.karma.cluster.ZKServerRegistry;
 import com.duitang.service.karma.demo.cluster.NamedMockRPCNode.Perf;
 import com.duitang.service.karma.server.AsyncRegistryWriter;
 import com.duitang.service.karma.server.RPCService;
 import com.duitang.service.karma.support.RPCNodeHashing;
 import com.duitang.service.karma.trace.TraceBlock;
 import com.duitang.service.karma.trace.TraceContextHolder;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -103,6 +109,8 @@ public class TestZKBasedLoadBalance {
 
 		runner(threadCount, balancer);
 
+		console(zk);
+
 		new CountDownLatch(1).await();
 	}
 
@@ -113,6 +121,8 @@ public class TestZKBasedLoadBalance {
 			node.start();
 			ret.add(node);
 			counter.put(node.name, new AtomicInteger(0));
+			Perf perf = new Perf();
+			NamedMockRPCNode.putPerfPredict(node.getName(), perf);
 		}
 		return ret;
 	}
@@ -121,16 +131,16 @@ public class TestZKBasedLoadBalance {
 		for (ModifyItem item : items) {
 			String name = NamedMockRPCNode.getName(item.id);
 			Perf perf = NamedMockRPCNode.getPerfPredict(name);
-			perf.respMui = item.respMui;
-			perf.respTou = item.respTou;
-			perf.respOKSample = item.respOKSample;
+			perf.respMui = item.mean;
+			perf.respTou = item.u;
+			perf.respOKSample = item.ok;
 			perf.sampler = new NormalDistribution(perf.respMui, perf.respTou);
 
 			NamedMockRPCNode node = NamedMockRPCNode.getRPCNode(item.id);
-			if (item.startUp) {
+			if (item.begin) {
 				node.created = new Date();
 			}
-			if (item.shutDown) {
+			if (item.end) {
 				node.halted = new Date();
 			}
 			if (item.lost) {
@@ -138,6 +148,9 @@ public class TestZKBasedLoadBalance {
 				s = (ConcurrentHashMap<String, RPCService>) getField(wrt, "service", ConcurrentHashMap.class);
 				String conn = RPCNodeHashing.getRawConnURL(node.getServiceURL());
 				s.remove(conn);
+			}
+			for (Perf p : NamedMockRPCNode.nodesPerf.values()) {
+				System.out.println("Perf: " + p.respMui + "," + p.respTou + "," + p.respOKSample);
 			}
 		}
 	}
@@ -152,8 +165,22 @@ public class TestZKBasedLoadBalance {
 		return (T) field.get(src);
 	}
 
-	static void console() {
+	static <T> T getField2(Class clz, String f, Class<T> type) throws Exception {
+		Field field = clz.getDeclaredField(f);
+		field.setAccessible(true);
+		return (T) field.get(null);
+	}
 
+	static void console(String zk) throws Exception {
+		ConcurrentHashMap<String, ZKClusterWorker> m = getField2(ZKClusterWorker.class, "owner",
+				ConcurrentHashMap.class);
+		ZKClusterWorker w0 = m.get(zk);
+		ZKServerRegistry w1 = getField(w0, "zkSR", ZKServerRegistry.class);
+		Command cmd = new Command(w1);
+		Server server = new Server(8080);
+		server.setHandler(new ZKNodeAlterHandler(cmd));
+		server.start();
+		server.join();
 	}
 
 	static void runner(int count, IOBalance balancer) {
@@ -177,15 +204,57 @@ public class TestZKBasedLoadBalance {
 	}
 }
 
-class ModifyItem {
-	int id;
-	double respMui;
-	double respTou;
-	double respOKSample;
+class Command {
 
-	boolean startUp;
-	boolean shutDown;
-	boolean lost;
+	final static ObjectMapper mapper = new ObjectMapper();
+
+	AsyncRegistryWriter writer;
+
+	public Command(AsyncRegistryWriter w) {
+		writer = w;
+	}
+
+	public String update(String s) {
+		ModifyItem[] p = null;
+		if (p == null) {
+
+			try {
+				ModifyItem obj = mapper.readValue(s, ModifyItem.class);
+				p = new ModifyItem[] { obj };
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+		}
+		if (p == null) {
+			try {
+				ModifyItem[] objs = mapper.readValue(s, ModifyItem[].class);
+				p = objs;
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		if (p != null) {
+			try {
+				TestZKBasedLoadBalance.alterRPCServiceStatus(writer, new HashSet(Arrays.asList(p)));
+				return "OK";
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return s + "  ==> read object error";
+	}
+
+}
+
+class ModifyItem {
+	public int id;
+	public double mean;
+	public double u;
+	public double ok;
+
+	public boolean begin;
+	public boolean end;
+	public boolean lost;
 }
 
 class MockRunner implements Runnable {
@@ -222,6 +291,7 @@ class MockRunner implements Runnable {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+				// just feedback to IOBalance
 				bala.traceFeed(url, tb.tc);
 			}
 

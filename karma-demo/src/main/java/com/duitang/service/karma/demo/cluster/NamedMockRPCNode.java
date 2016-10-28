@@ -50,8 +50,13 @@ public class NamedMockRPCNode implements RPCService {
 		Perf p = nodesPerf.get(url);
 		if (p == null) {
 			p = defaultPerf;
+			throw new RuntimeException("using default error!");			
 		}
 		return p;
+	}
+
+	static public void putPerfPredict(String url, Perf perf) {
+		nodesPerf.put(url, perf);
 	}
 
 	static public List<String> getURLs() {
@@ -139,7 +144,7 @@ public class NamedMockRPCNode implements RPCService {
 	public MockResponse getResponse() {
 		MockResponse ret = new MockResponse();
 		ret.url = getServiceURL();
-		Perf perf = getPerfPredict(ret.url);
+		Perf perf = getPerfPredict(getName());
 		ret.elapsed = Math.abs(Math.round(perf.sampler.sample()));
 		ret.error = !(rnd.nextDouble() < perf.respOKSample);
 		return ret;

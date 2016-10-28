@@ -23,9 +23,10 @@ dependencies {
     compile project(":karma-cluster")
     compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.7'
     compile group: 'args4j', name: 'args4j', version: '2.33'
+    compile group: 'de.codeshelf.consoleui', name: 'consoleui', version: '0.0.9'
        
     //compile project(":karma-core").sourceSets.test.output
-    testCompile("junit:junit:4.11")
+    testCompile("junit:junit:4.11")    
     compile files(project(":karma-core").sourceSets.test.output.classesDir)
     
 }

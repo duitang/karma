@@ -1,10 +1,13 @@
 package com.duitang.service.karma.client.impl;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.duitang.service.karma.client.IOBalance;
+import com.duitang.service.karma.support.NodeDD;
 import com.duitang.service.karma.support.RPCNodeHashing;
 import com.duitang.service.karma.trace.TraceCell;
 
@@ -22,13 +25,19 @@ public class NaiveBalancer implements IOBalance {
 
 	static Random iid = new Random();
 	protected RPCNodeHashing urls;
+	protected AtomicLong[] count;
 
 	public NaiveBalancer(List<String> urls) {
-		this.urls = RPCNodeHashing.createFromString(urls);
+		this(RPCNodeHashing.createFromString(urls));
 	}
 
 	public NaiveBalancer(RPCNodeHashing urls) {
+		reload(urls);
+	}
+
+	void reload(RPCNodeHashing urls) {
 		this.urls = urls;
+		count = new AtomicLong[urls.getNodes().size()];
 	}
 
 	@Override
@@ -40,6 +49,7 @@ public class NaiveBalancer implements IOBalance {
 		}
 		// ignore this token, just next
 		int idx = iid.nextInt(sz);
+		count[idx].incrementAndGet();
 		return urls.getURLs().get(idx);
 	}
 
@@ -50,12 +60,21 @@ public class NaiveBalancer implements IOBalance {
 
 	@Override
 	public void setNodes(List<String> nodes) {
-		this.urls = RPCNodeHashing.createFromString(nodes);
+		reload(RPCNodeHashing.createFromString(nodes));
 	}
 
 	@Override
 	public void setNodesWithWeights(LinkedHashMap<String, Float> nodes) {
-		this.urls = RPCNodeHashing.createFromHashMap(nodes);
+		reload(RPCNodeHashing.createFromHashMap(nodes));
+	}
+
+	@Override
+	public String getDebugInfo() {
+		NodeDD ret = new NodeDD();
+		ret.setAttr("policy", NaiveBalancer.class.getName());
+		ret.setAttr("urls", urls.getURLs());
+		ret.setAttr("rpcload", Arrays.toString(count));
+		return ret.toString();
 	}
 
 }

@@ -1,11 +1,11 @@
 package com.sun.btrace.samples;
 
+import static com.sun.btrace.BTraceUtils.*;
+
 import com.sun.btrace.aggregation.Aggregation;
 import com.sun.btrace.aggregation.AggregationFunction;
 import com.sun.btrace.aggregation.AggregationKey;
 import com.sun.btrace.annotations.*;
-
-import static com.sun.btrace.BTraceUtils.*;
 
 @BTrace
 public class KarmaMonitor {
