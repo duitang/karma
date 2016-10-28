@@ -150,8 +150,7 @@ public class AutoReBalance implements BalancePolicy {
 
 class Candidates {
 
-
-	final static float PREC = 1000000f;
+	final static float PREC = 10000f;
 
 	protected float wResp = 0.003f; // weight of response
 	// protected double wLoad = 0.15; // weight of Load
@@ -232,30 +231,58 @@ class Candidates {
 	public void checkpoint() {
 		float total = 0f;
 
-		float l;
-		float l2;
+		float l; // latest load
+		float l2; // average load
+		float r; // latest response
+		float r2; // average response
+		float f; // latest fail
+		float f2; // average fail
 
-		float fat = 0;
+		float fa_total = 0;
 		float fa[] = new float[choice.length];
+		float re_total = 0;
+		float re[] = new float[choice.length];
+		float fa_total2 = 0;
+		float fa2[] = new float[choice.length];
+		float re_total2 = 0;
+		float re2[] = new float[choice.length];
+
+		// calculate all total values
 		for (int i = 0; i < choice.length; i++) {
 			fa[i] = fail[i].getAndSet(0);
-			fa[i] += 0.001;
-			fat += fa[i];
+			fa[i] += 0.0001; // far from zero
+			fa_total += fa[i];
+
+			fa2[i] = Double.valueOf(failAvg[i].getMean()).floatValue();
+			fa2[i] += 0.0001; // far from zero
+			fa_total2 += fa2[i];
+
+			re[i] = Double.valueOf(resp[i].getMean()).floatValue();
+			re[i] += 0.0001; // far from zero
+			re_total += re[i];
+
+			re2[i] = Double.valueOf(respAvg[i].getMean()).floatValue();
+			re2[i] += 0.0001; // far from zero
+			re_total2 += re2[i];
 		}
 
 		for (int i = 0; i < choice.length; i++) {
-			l = ((Number) Math.log(Float.valueOf(load[i]).doubleValue() + 1)).floatValue();
-			l2 = ((Number) Math.log(loadAvg[i].getMean() + 1)).floatValue();
-			float resp_snap = Double.valueOf(resp[i].getMean()).floatValue();
-			float fail_snap = (fa[i] / fat);
-			failAvg[i].addValue(fail_snap);
-			fail_snap = Double.valueOf(Math.log(fail_snap * 100 + 1)).floatValue();
-			float failAvg_snap = Double.valueOf(Math.log(failAvg[i].getMean() * 100 + 1)).floatValue();
+			// latest load level > 1
+			l = ((Number) Math.log(Float.valueOf(load[i]).doubleValue() + Math.E)).floatValue();
+			// average load level > 1
+			l2 = ((Number) Math.log(loadAvg[i].getMean() + Math.E)).floatValue();
 
-			float respAvg_snap = Double.valueOf(respAvg[i].getMean()).floatValue();
+			// latest response energy rate (0,1)
+			r = (re[i] / re_total);
+			// average response energy rate (0,1)
+			r2 = (re2[i] / re_total2);
 
-			choice[i] = decay[i] * ((PREC * wResp * resp_snap * l * wFail * fail_snap
-					+ PREC * wRespAvg * respAvg_snap * l2 * wFailAvg * failAvg_snap));
+			// latest fail level > 1
+			f = Double.valueOf(Math.log(100d * (fa[i] / fa_total) + Math.E)).floatValue();
+			// average fail level > 1
+			f2 = Double.valueOf(Math.log(100d * (fa2[i] / fa_total2) + Math.E)).floatValue();
+
+			choice[i] = decay[i] * ((PREC * wResp * r * l * wFail * f + PREC * wRespAvg * r2 * l2 * wFailAvg * f2));
 			// System.out.println("a: " + (PREC * wResp * resp_snap * l * wFail
 			// * fail_snap)
 			// + ", b: " + (PREC * wRespAvg * respAvg_snap * l2 * wFailAvg *
@@ -263,8 +290,8 @@ class Candidates {
 			choice[i] = 1f / (1 + choice[i]);
 
 			if (AutoReBalance.log.isDebugEnabled()) {
-				AutoReBalance.log.debug("checkpoint => " + choice[i] + ", statistics = "
-						+ Arrays.asList(resp_snap, l, fail_snap, respAvg_snap, l2, failAvg_snap));
+				AutoReBalance.log
+						.debug("checkpoint => " + choice[i] + ", statistics = " + Arrays.asList(r, l, f, r2, l2, f2));
 			}
 			total += choice[i];
 		}
