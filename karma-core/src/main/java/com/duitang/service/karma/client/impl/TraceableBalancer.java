@@ -203,7 +203,12 @@ public abstract class TraceableBalancer implements IOBalance {
 	protected NodeDD getNodeDD(NodesAndPolicy n) {
 		NodeDD ret = new NodeDD();
 		ret.setAttr("policy", this.getClass().getName());
-		ret.setAttr("nodes", n.policy.getDebugInfo());
+		// stupid zipkin's json array support, so using loop
+		// ret.setAttr("nodes", n.policy.getDebugInfo());
+		String[] d = n.policy.getDebugInfo();
+		for (int i = 0; i < d.length; i++) {
+			ret.setAttr("node[" + i + "]", d[i]);
+		}
 		ret.setAttr("urls", n.hashing.getURLs());
 		ret.setAttr("rpcload", n.load);
 		ret.setAttr("checkpoint_version", checkpointVer.get());
