@@ -231,7 +231,7 @@ class NodesAndPolicy {
 		float[] ret = new float[load.size()];
 		for (int i = 0; i < hashing.getURLs().size(); i++) {
 			ret[i] = load.get(hashing.getURLs().get(i)).getAndSet(0);
-			ret[i] = ret[i] > 0 ? ret[i] : Candidates.VERY_TRIVIA;
+			ret[i] = ret[i] > 0 ? ret[i] : 1;
 		}
 		return ret;
 	}

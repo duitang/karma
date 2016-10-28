@@ -1,8 +1,9 @@
 package com.duitang.service.karma.client.impl;
 
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.apache.commons.math3.stat.descriptive.SynchronizedDescriptiveStatistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,14 +57,14 @@ public class AutoReBalance implements BalancePolicy {
 
 	@Override
 	public void updateResponse(int i, float resp1, boolean ok1) {
-		cdd.updateByIdx(i, new float[] { resp1, ok1 ? 0.000000001f : 1, -1 });
+		cdd.updateByIdx(i, new float[] { resp1, ok1 ? 0 : 1, -1 });
 	}
 
 	@Override
 	public void updateLoad(float[] load) {
 		Candidates cd = cdd;
 		for (int i = 0; i < load.length; i++) {
-			cd.updateByIdx(i, new float[] { -1, -1, load[i] });
+			cd.updateByIdx(i, new float[] { -1, -1, load[i] > 0 ? load[i] : 0 });
 		}
 	}
 
@@ -133,7 +134,7 @@ public class AutoReBalance implements BalancePolicy {
 			r.setAttr("latest_choice", cdd1.choice[i]);
 			r.setAttr("latest_resp", cdd1.resp[i].getMean());
 			r.setAttr("history_resp", cdd1.respAvg[i].getMean());
-			r.setAttr("latest_fail", cdd1.fail[i].getMean());
+			r.setAttr("latest_fail", cdd1.fail[i]);
 			r.setAttr("history_fail", cdd1.failAvg[i].getMean());
 			r.setAttr("latest_load", cdd1.load[i]);
 			r.setAttr("hisotry_load", cdd1.loadAvg[i].getMean());
@@ -149,8 +150,8 @@ public class AutoReBalance implements BalancePolicy {
 
 class Candidates {
 
-	public final static float VERY_TRIVIA = 0.000001f;
-	final static float PREC = 1000f;
+
+	final static float PREC = 1000000f;
 
 	protected float wResp = 0.003f; // weight of response
 	// protected double wLoad = 0.15; // weight of Load
@@ -163,13 +164,13 @@ class Candidates {
 	int count;
 	float[] choice;
 
-	DescriptiveStatistics[] resp; // 0
-	DescriptiveStatistics[] fail; // 1
+	SynchronizedDescriptiveStatistics[] resp; // 0
+	AtomicLong[] fail; // 1
 	float[] load; // 2
 
-	DescriptiveStatistics[] respAvg; // 3
-	DescriptiveStatistics[] failAvg; // 4
-	DescriptiveStatistics[] loadAvg; // 5
+	SynchronizedDescriptiveStatistics[] respAvg; // 3
+	SynchronizedDescriptiveStatistics[] failAvg; // 4
+	SynchronizedDescriptiveStatistics[] loadAvg; // 5
 
 	float[] decay; // 6
 
@@ -183,27 +184,28 @@ class Candidates {
 			choice[i] += (choice[i - 1] + choice[0]);
 			decay[i] = 1; // no change
 		}
-		resp = new DescriptiveStatistics[count];
+		resp = new SynchronizedDescriptiveStatistics[count];
 		load = new float[count];
-		fail = new DescriptiveStatistics[count];
+		fail = new AtomicLong[count];
 
-		respAvg = new DescriptiveStatistics[count];
-		loadAvg = new DescriptiveStatistics[count];
-		failAvg = new DescriptiveStatistics[count];
+		respAvg = new SynchronizedDescriptiveStatistics[count];
+		loadAvg = new SynchronizedDescriptiveStatistics[count];
+		failAvg = new SynchronizedDescriptiveStatistics[count];
 
 		for (int i = 0; i < count; i++) {
-			resp[i] = new DescriptiveStatistics();
+			resp[i] = new SynchronizedDescriptiveStatistics();
 			resp[i].setWindowSize(minWin);
-			load[i] = VERY_TRIVIA;
-			fail[i] = new DescriptiveStatistics();
-			fail[i].setWindowSize(minWin);
+			load[i] = 0;
+			fail[i] = new AtomicLong(0);
 
-			respAvg[i] = new DescriptiveStatistics();
+			respAvg[i] = new SynchronizedDescriptiveStatistics();
 			respAvg[i].setWindowSize(moreWin);
-			loadAvg[i] = new DescriptiveStatistics();
+			loadAvg[i] = new SynchronizedDescriptiveStatistics();
 			loadAvg[i].setWindowSize(minWin); // special
-			failAvg[i] = new DescriptiveStatistics();
-			failAvg[i].setWindowSize(moreWin);
+			loadAvg[i].addValue(0);
+			failAvg[i] = new SynchronizedDescriptiveStatistics();
+			failAvg[i].setWindowSize(minWin);
+			failAvg[i].addValue(0);
 		}
 		AutoReBalance.log.info("initialized load balance for nodes = " + count);
 	}
@@ -216,7 +218,7 @@ class Candidates {
 			}
 
 			if (vals[1] > 0) {
-				fail[idx].addValue(vals[1]);
+				fail[idx].addAndGet(Float.valueOf(vals[1]).longValue());
 				failAvg[idx].addValue(vals[1]);
 			}
 
@@ -233,24 +235,36 @@ class Candidates {
 		float l;
 		float l2;
 
+		float fat = 0;
+		float fa[] = new float[choice.length];
 		for (int i = 0; i < choice.length; i++) {
-			l = ((Number) Math.log(Float.valueOf(load[i]).doubleValue())).floatValue();
-			float resp_snap = Double.valueOf(resp[i].getMean()).floatValue() * PREC;
-			float load_snap = l > 0 ? l : VERY_TRIVIA;
-			float fail_snap = Double.valueOf(fail[i].getMean()).floatValue() * PREC;
+			fa[i] = fail[i].getAndSet(0);
+			fa[i] += 0.001;
+			fat += fa[i];
+		}
 
-			l2 = Double.valueOf(loadAvg[i].getMean()).floatValue();
-			float respAvg_snap = Double.valueOf(respAvg[i].getMean()).floatValue() * PREC;
-			float loadAvg_snap = l2 > 0 ? l2 : VERY_TRIVIA;
-			float failAvg_snap = Double.valueOf(failAvg[i].getMean()).floatValue() * PREC;
+		for (int i = 0; i < choice.length; i++) {
+			l = ((Number) Math.log(Float.valueOf(load[i]).doubleValue() + 1)).floatValue();
+			l2 = ((Number) Math.log(loadAvg[i].getMean() + 1)).floatValue();
+			float resp_snap = Double.valueOf(resp[i].getMean()).floatValue();
+			float fail_snap = (fa[i] / fat);
+			failAvg[i].addValue(fail_snap);
+			fail_snap = Double.valueOf(Math.log(fail_snap * 100 + 1)).floatValue();
+			float failAvg_snap = Double.valueOf(Math.log(failAvg[i].getMean() * 100 + 1)).floatValue();
 
-			choice[i] = decay[i] * ((wResp * resp_snap * l + wRespAvg * respAvg_snap * l2)
-					+ (wFail * fail_snap * l + wFailAvg * failAvg_snap * l2));
+			float respAvg_snap = Double.valueOf(respAvg[i].getMean()).floatValue();
+
+			choice[i] = decay[i] * ((PREC * wResp * resp_snap * l * wFail * fail_snap
+					+ PREC * wRespAvg * respAvg_snap * l2 * wFailAvg * failAvg_snap));
+			// System.out.println("a: " + (PREC * wResp * resp_snap * l * wFail
+			// * fail_snap)
+			// + ", b: " + (PREC * wRespAvg * respAvg_snap * l2 * wFailAvg *
+			// failAvg_snap));
 			choice[i] = 1f / (1 + choice[i]);
 
 			if (AutoReBalance.log.isDebugEnabled()) {
 				AutoReBalance.log.debug("checkpoint => " + choice[i] + ", statistics = "
-						+ Arrays.asList(resp_snap, load_snap, fail_snap, respAvg_snap, loadAvg_snap, failAvg_snap));
+						+ Arrays.asList(resp_snap, l, fail_snap, respAvg_snap, l2, failAvg_snap));
 			}
 			total += choice[i];
 		}
