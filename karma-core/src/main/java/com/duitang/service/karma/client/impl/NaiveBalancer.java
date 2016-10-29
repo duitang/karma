@@ -38,6 +38,9 @@ public class NaiveBalancer implements IOBalance {
 	void reload(RPCNodeHashing urls) {
 		this.urls = urls;
 		count = new AtomicLong[urls.getNodes().size()];
+		for (int i = 0; i < count.length; i++) {
+			count[i] = new AtomicLong(0);
+		}
 	}
 
 	@Override
