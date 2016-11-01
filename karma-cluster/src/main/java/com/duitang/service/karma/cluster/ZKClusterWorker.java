@@ -150,7 +150,7 @@ public class ZKClusterWorker implements Watcher {
 					}
 					zkSR.setWorker(ret);
 					lsnr.setWorker(ret);
-					owner.put(conn, ret);
+					owner.putIfAbsent(conn, ret);
 				}
 			}
 		}
@@ -292,7 +292,7 @@ public class ZKClusterWorker implements Watcher {
 		return ret;
 	}
 
-	public boolean syncClearRPCNode(RPCService rpc) {
+	synchronized public boolean syncClearRPCNode(RPCService rpc) {
 		String nodepath = zkNodeBase + "/" + RPCNodeHashing.getSafeConnURL(rpc.getServiceURL());
 		boolean ret = false;
 		try {
