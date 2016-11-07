@@ -285,12 +285,14 @@ class MockRunner implements Runnable {
 			String url = bala.next(null);
 			TraceBlock tb = new TraceBlock();
 			tb.tc.group = "testing";
+			boolean err = false;
 			try {
 				NamedMockRPCNode node = NamedMockRPCNode.getRPCNode(url);
 				MockResponse resp = node.getResponse();
 				tb.tc.props.put("url", resp.url);
 				tb.tc.props.put("elapsed", String.valueOf(resp.elapsed));
 				tb.tc.props.put("has_error", String.valueOf(resp.error));
+				err = resp.error;
 				// mock response
 				Thread.sleep(resp.elapsed);
 				// System.err.println("......... " + resp.elapsed);
@@ -298,7 +300,11 @@ class MockRunner implements Runnable {
 				e1.printStackTrace();
 			} finally {
 				try {
-					tb.close(); // trigger trace report automatic
+					if (err) {
+						tb.close(new Exception("mock error happen!"));
+					} else {
+						tb.close(); // trigger trace report automatic
+					}
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
