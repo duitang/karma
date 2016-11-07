@@ -283,11 +283,10 @@ class Candidates {
 			f2 = Double.valueOf(Math.log(100d * (fa2[i] / fa_total2) + Math.E)).floatValue();
 
 			choice[i] = decay[i] * ((PREC * wResp * r * l * wFail * f + PREC * wRespAvg * r2 * l2 * wFailAvg * f2));
-			// System.out.println("a: " + (PREC * wResp * resp_snap * l * wFail
-			// * fail_snap)
-			// + ", b: " + (PREC * wRespAvg * respAvg_snap * l2 * wFailAvg *
-			// failAvg_snap));
+			// higher energy => smaller probability 
 			choice[i] = 1f / (1 + choice[i]);
+			// SOFTMAX
+			choice[i] = Double.valueOf(Math.pow(Math.E, choice[i])).floatValue();
 
 			if (AutoReBalance.log.isDebugEnabled()) {
 				AutoReBalance.log

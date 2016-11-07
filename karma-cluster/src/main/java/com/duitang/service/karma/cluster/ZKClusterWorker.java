@@ -78,8 +78,10 @@ public class ZKClusterWorker implements Watcher {
 		public void run() {
 			while (true) {
 				for (ZKClusterWorker o : owner.values()) {
-					if (!o.zkCli.getState().isConnected()) {
-						continue;
+					synchronized (o) {
+						if (!o.zkCli.getState().isConnected()) {
+							continue;
+						}
 					}
 
 					for (RPCService rpc : o.zkSR.getRegServices()) {
@@ -103,24 +105,26 @@ public class ZKClusterWorker implements Watcher {
 
 		public void eventReceived(ZKClusterWorker w) throws Exception {
 			if (w != null) {
-				try {
-					// no problem just ignore all return, we will refresh force
-					RegistryInfo ret = w.lsnr.syncPull();
-					if (ret == null) {
-						return;
-					}
+				synchronized (w) {
+					try {
+						// no problem just ignore all return, we will refresh
+						// force
+						RegistryInfo ret = w.lsnr.syncPull();
+						if (ret == null) {
+							return;
+						}
 
-					if (ret.isFreezeMode()) {
-						w.lsnr.updateAllNodes(ret.getHashing().reverseToMap());
-					} else {
-						w.lsnr.updateAllNodes(ret.getURLs());
+						if (ret.isFreezeMode()) {
+							w.lsnr.updateAllNodes(ret.getHashing().reverseToMap());
+						} else {
+							w.lsnr.updateAllNodes(ret.getURLs());
+						}
+						// watch it again
+						w.zkCli.getChildren(zkNodeBase, true);
+					} catch (Exception e) {
+						e.printStackTrace();
 					}
-					// watch it again
-					w.zkCli.getChildren(zkNodeBase, true);
-				} catch (Exception e) {
-					e.printStackTrace();
 				}
-
 			}
 		}
 
@@ -135,26 +139,22 @@ public class ZKClusterWorker implements Watcher {
 	public static ZKClusterWorker createInstance(String conn) {
 		ZKClusterWorker ret = owner.get(conn);
 		if (ret == null) {
-			synchronized (ZKClusterWorker.class) {
-				ret = owner.get(conn);
-				if (ret == null) {
-					ZKServerRegistry zkSR = new ZKServerRegistry();
-					ZKClientListener lsnr = new ZKClientListener();
-					ret = new ZKClusterWorker(zkSR, lsnr, conn);
-					try {
-						// 1.5s reconnect
-						ret.zkCli = new ZooKeeper(conn, 1500, ret);
-					} catch (IOException e) {
-						e.printStackTrace();
-						System.err.println("Warning: not connected Zookeeper --> " + conn);
-					}
-					zkSR.setWorker(ret);
-					lsnr.setWorker(ret);
-					owner.putIfAbsent(conn, ret);
-				}
+			ZKServerRegistry zkSR = new ZKServerRegistry();
+			ZKClientListener lsnr = new ZKClientListener();
+			ret = new ZKClusterWorker(zkSR, lsnr, conn);
+			try {
+				// 1.5s reconnect
+				ret.zkCli = new ZooKeeper(conn, 1500, ret);
+			} catch (IOException e) {
+				e.printStackTrace();
+				System.err.println("Warning: not connected Zookeeper --> " + conn);
 			}
+			zkSR.setWorker(ret);
+			lsnr.setWorker(ret);
+			owner.putIfAbsent(conn, ret);
 		}
 		return ret;
+
 	}
 
 	ZKClusterWorker(ZKServerRegistry zkSR, ZKClientListener lsnr, String conn) {
