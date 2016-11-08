@@ -50,7 +50,7 @@ public class FixedPolicy implements BalancePolicy {
 	}
 
 	@Override
-	public void updateLoad(float[] load) {
+	public void updateLoad(int i, float load) {
 		// ignore
 	}
 
@@ -86,6 +86,11 @@ public class FixedPolicy implements BalancePolicy {
 	public String[] getDebugInfo() {
 		SimplePointer p = sp;
 		return new String[] { "samples=" + Arrays.toString(p.choice) };
+	}
+
+	@Override
+	public float[] getLoads() {
+		return new float[sp.choice.length];
 	}
 
 }

@@ -47,7 +47,11 @@ public class AutoReBalanceTest {
 		int sz = 5;
 		auto = new AutoReBalance(sz);
 		auto.reload(new float[] { 0.1f, 0.1f, 0.1f, 0.1f, 0.1f });
-		auto.updateLoad(new float[] { 10f, 11f, 12f, 13f, 14f });
+		auto.updateLoad(0, 10);
+		auto.updateLoad(1, 11);
+		auto.updateLoad(2, 12);
+		auto.updateLoad(3, 13);
+		auto.updateLoad(4, 14);
 		for (int i = 0; i < sz; i++) {
 			// Assert.assertTrue(auto.cdd.load[i].getElement(0) == 10 + i);
 		}
@@ -63,7 +67,11 @@ public class AutoReBalanceTest {
 		auto.updateResponse(2, 0.1f, true);
 		auto.updateResponse(3, 0.1f, true);
 		auto.updateResponse(4, 0.1f, true);
-		auto.updateLoad(new float[] { 10, 10, 50, 10, 10 });
+		auto.updateLoad(0, 10);
+		auto.updateLoad(1, 10);
+		auto.updateLoad(2, 50);
+		auto.updateLoad(3, 10);
+		auto.updateLoad(4, 10);
 		auto.checkpoint();
 		Integer[] arr = new Integer[10000];
 		for (int i = 0; i < arr.length; i++) {

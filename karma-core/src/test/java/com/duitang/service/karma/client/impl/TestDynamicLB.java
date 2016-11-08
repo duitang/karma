@@ -103,7 +103,9 @@ public class TestDynamicLB {
 		}
 
 		// at checkpoint
-		lb.updateLoad(load);
+		for (int i = 0; i < load.length; i++) {
+			lb.updateLoad(i, load[i]);
+		}
 		lb.checkpoint(); // checkpoint for choice probability update
 
 	}

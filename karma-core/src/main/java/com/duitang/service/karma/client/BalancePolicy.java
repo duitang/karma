@@ -45,14 +45,14 @@ public interface BalancePolicy {
 	 * @param resp1
 	 * @param ok1
 	 */
-	public void updateResponse(int i, float resp1, boolean ok1);
+	void updateResponse(int i, float resp1, boolean ok1);
 
 	/**
 	 * update load information
 	 * 
 	 * @param active
 	 */
-	public void updateLoad(float[] load);
+	void updateLoad(int i, float load);
 
 	/**
 	 * reload with candidates
@@ -72,5 +72,12 @@ public interface BalancePolicy {
 	 * @return
 	 */
 	String[] getDebugInfo();
+
+	/**
+	 * get all nodes' load info
+	 * 
+	 * @return
+	 */
+	float[] getLoads();
 
 }

@@ -61,16 +61,26 @@ public class AutoReBalance implements BalancePolicy {
 	}
 
 	@Override
-	public void updateLoad(float[] load) {
-		Candidates cd = cdd;
-		for (int i = 0; i < load.length; i++) {
-			cd.updateByIdx(i, new float[] { -1, -1, load[i] > 0 ? load[i] : 0 });
+	public void updateLoad(int i, float load) {
+		if (load <= 0) {
+			return;
 		}
+		Candidates cd = cdd;
+		cd.updateByIdx(i, new float[] { -1, -1, load });
 	}
 
 	@Override
 	public void checkpoint() {
 		cdd.checkpoint();
+	}
+
+	@Override
+	public float[] getLoads() {
+		float[] ret = new float[cdd.load.length];
+		for (int i = 0; i < ret.length; i++) {
+			ret[i] = Long.valueOf(cdd.load[i].get()).floatValue();
+		}
+		return ret;
 	}
 
 	/**
@@ -134,9 +144,9 @@ public class AutoReBalance implements BalancePolicy {
 			r.setAttr("latest_choice", cdd1.choice[i]);
 			r.setAttr("latest_resp", cdd1.resp[i].getMean());
 			r.setAttr("history_resp", cdd1.respAvg[i].getMean());
-			r.setAttr("latest_fail", cdd1.fail[i]);
+			r.setAttr("latest_fail", cdd1.failSnap[i]);
 			r.setAttr("history_fail", cdd1.failAvg[i].getMean());
-			r.setAttr("latest_load", cdd1.load[i]);
+			r.setAttr("latest_load", cdd1.loadSnap[i]);
 			r.setAttr("hisotry_load", cdd1.loadAvg[i].getMean());
 			r.setAttr("decay_rate", cdd1.decay[i]);
 			r.setAttr("sample_prob", cdd1.choice[i] - last);
@@ -150,22 +160,18 @@ public class AutoReBalance implements BalancePolicy {
 
 class Candidates {
 
-	final static float PREC = 10000f;
+	final static float TRIFLE = 0.00001f;
+	final static float TRIFLE2 = 0.001f;
 
-	protected float wResp = 0.003f; // weight of response
-	// protected double wLoad = 0.15; // weight of Load
-	protected float wFail = 0.004f; // weight of Failure
-
-	protected float wRespAvg = 0.001f; // weight of response history
-	// protected double wLoadAvg = 0.05; // weight of Load history
-	protected float wFailAvg = 0.002f; // weight of Failure history
+	float[] failSnap;
+	float[] loadSnap;
 
 	int count;
 	float[] choice;
 
 	SynchronizedDescriptiveStatistics[] resp; // 0
 	AtomicLong[] fail; // 1
-	float[] load; // 2
+	AtomicLong[] load; // 2
 
 	SynchronizedDescriptiveStatistics[] respAvg; // 3
 	SynchronizedDescriptiveStatistics[] failAvg; // 4
@@ -184,8 +190,10 @@ class Candidates {
 			decay[i] = 1; // no change
 		}
 		resp = new SynchronizedDescriptiveStatistics[count];
-		load = new float[count];
+		load = new AtomicLong[count];
 		fail = new AtomicLong[count];
+		failSnap = new float[count];
+		loadSnap = new float[count];
 
 		respAvg = new SynchronizedDescriptiveStatistics[count];
 		loadAvg = new SynchronizedDescriptiveStatistics[count];
@@ -194,11 +202,13 @@ class Candidates {
 		for (int i = 0; i < count; i++) {
 			resp[i] = new SynchronizedDescriptiveStatistics();
 			resp[i].setWindowSize(minWin);
-			load[i] = 0;
+			resp[i].addValue(0);
+			load[i] = new AtomicLong(0);
 			fail[i] = new AtomicLong(0);
 
 			respAvg[i] = new SynchronizedDescriptiveStatistics();
 			respAvg[i].setWindowSize(moreWin);
+			respAvg[i].addValue(0);
 			loadAvg[i] = new SynchronizedDescriptiveStatistics();
 			loadAvg[i].setWindowSize(minWin); // special
 			loadAvg[i].addValue(0);
@@ -222,7 +232,7 @@ class Candidates {
 			}
 
 			if (vals[2] > 0) {
-				load[idx] = vals[2];
+				load[idx].addAndGet(Float.valueOf(vals[2]).longValue());
 				loadAvg[idx].addValue(vals[2]);
 			}
 		}
@@ -231,73 +241,69 @@ class Candidates {
 	public void checkpoint() {
 		float total = 0f;
 
-		float l; // latest load
-		float l2; // average load
-		float r; // latest response
-		float r2; // average response
-		float f; // latest fail
-		float f2; // average fail
+		float l[] = new float[choice.length]; // latest load
+		float l2[] = new float[choice.length]; // average load
+		float r[] = new float[choice.length]; // latest response
+		float r2[] = new float[choice.length]; // average response
+		float f[] = new float[choice.length]; // latest fail
+		float f2[] = new float[choice.length]; // average fail
+		float valid[] = new float[choice.length]; // valid energy
+		float error[] = new float[choice.length]; // error energy
+		float brate[] = new float[choice.length]; // latest bad rate
 
-		float fa_total = 0;
-		float fa[] = new float[choice.length];
-		float re_total = 0;
-		float re[] = new float[choice.length];
-		float fa_total2 = 0;
-		float fa2[] = new float[choice.length];
-		float re_total2 = 0;
-		float re2[] = new float[choice.length];
+		float rank[] = new float[choice.length];
+
+		float least = 0.1f / choice.length;
 
 		// calculate all total values
 		for (int i = 0; i < choice.length; i++) {
-			fa[i] = fail[i].getAndSet(0);
-			fa[i] += 0.0001; // far from zero
-			fa_total += fa[i];
+			f[i] = fail[i].getAndSet(0);
+			f2[i] = Double.valueOf(failAvg[i].getSum()).floatValue();
+			l[i] = load[i].getAndSet(0);
+			l2[i] = Double.valueOf(loadAvg[i].getMean()).floatValue();
+			r[i] = Double.valueOf(resp[i].getMean()).floatValue();
+			r2[i] = Double.valueOf(respAvg[i].getMean()).floatValue();
 
-			fa2[i] = Double.valueOf(failAvg[i].getMean()).floatValue();
-			fa2[i] += 0.0001; // far from zero
-			fa_total2 += fa2[i];
+			loadSnap[i] = l[i];
+			failSnap[i] = f[i];
 
-			re[i] = Double.valueOf(resp[i].getMean()).floatValue();
-			re[i] += 0.0001; // far from zero
-			re_total += re[i];
+			// min(valid[i]) = 1
+			valid[i] = Math.max(1, l[i] - f[i] + TRIFLE);
+			valid[i] = Double.valueOf(Math.log10(valid[i])).floatValue();
+			// min(error[i]) = 1
+			error[i] = Math.max(1, f[i] + TRIFLE);
+			error[i] = Double.valueOf(Math.log(error[i])).floatValue();
+			// min(brate[i]) = 1
+			brate[i] = 1000 * f[i] / (l[i] + TRIFLE);
+			// max(brate[i]) = 1000
+			brate[i] = Math.min(1000, brate[i]);
+			// min(brate[i]) = 1
+			brate[i] = Math.max(1, brate[i]);
 
-			re2[i] = Double.valueOf(respAvg[i].getMean()).floatValue();
-			re2[i] += 0.0001; // far from zero
-			re_total2 += re2[i];
-		}
+			valid[i] = valid[i] < 1 ? 1 : valid[i];
+			error[i] = error[i] < 1 ? 1 : error[i];
+			brate[i] = Double.valueOf(Math.log(brate[i])).floatValue();
 
-		for (int i = 0; i < choice.length; i++) {
-			// latest load level > 1
-			l = ((Number) Math.log(Float.valueOf(load[i]).doubleValue() + Math.E)).floatValue();
-			// average load level > 1
-			l2 = ((Number) Math.log(loadAvg[i].getMean() + Math.E)).floatValue();
-
-			// latest response energy rate (0,1)
-			r = (re[i] / re_total);
-			// average response energy rate (0,1)
-			r2 = (re2[i] / re_total2);
-
-			// latest fail level > 1
-			f = Double.valueOf(Math.log(100d * (fa[i] / fa_total) + Math.E)).floatValue();
-			// average fail level > 1
-			f2 = Double.valueOf(Math.log(100d * (fa2[i] / fa_total2) + Math.E)).floatValue();
-
-			choice[i] = decay[i] * ((PREC * wResp * r * l * wFail * f + PREC * wRespAvg * r2 * l2 * wFailAvg * f2));
-			// higher energy => smaller probability 
-			choice[i] = 1f / (1 + choice[i]);
-			// SOFTMAX
-			choice[i] = Double.valueOf(Math.pow(Math.E, choice[i])).floatValue();
-
-			if (AutoReBalance.log.isDebugEnabled()) {
-				AutoReBalance.log
-						.debug("checkpoint => " + choice[i] + ", statistics = " + Arrays.asList(r, l, f, r2, l2, f2));
-			}
+			// avoid precise problem
+			rank[i] = Double.valueOf(valid[i] * Math.pow(error[i], brate[i])).floatValue();
+			// decay for lost nodes
+			rank[i] *= decay[i];
+			choice[i] = rank[i];
+			// higher energy => smaller probability
+			choice[i] = 1 / choice[i];
+			rank[i] = choice[i];
 			total += choice[i];
 		}
+
 		for (int i = 0; i < choice.length; i++) {
-			choice[i] = choice[i] / total;
+			// notice: least to average
+			choice[i] = (least + choice[i] / total) / 1.1f;
 			if (i > 0) {
 				choice[i] += choice[i - 1];
+			}
+			if (AutoReBalance.log.isDebugEnabled()) {
+				AutoReBalance.log.debug("checkpoint => " + Math.round(100 * choice[i]) + ", statistics = "
+						+ Arrays.asList(r[i], l[i], f[i], r2[i], l2[i], f2[i], brate[i], rank[i]));
 			}
 		}
 

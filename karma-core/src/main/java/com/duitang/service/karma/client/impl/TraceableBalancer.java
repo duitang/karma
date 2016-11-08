@@ -6,12 +6,9 @@
 package com.duitang.service.karma.client.impl;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.duitang.service.karma.KarmaException;
@@ -123,7 +120,6 @@ public abstract class TraceableBalancer implements IOBalance {
 	protected void checkpoint(NodesAndPolicy n) {
 		// just wrapper method
 		TraceBlock ts = new TraceBlock(myName, KEY);
-		n.policy.updateLoad(n.fetchLoads());
 		// try syncReload first
 		if (!syncReload()) {
 			n.policy.checkpoint();
@@ -145,14 +141,12 @@ public abstract class TraceableBalancer implements IOBalance {
 		}
 
 		BalancePolicy policy = null;
-		Map<String, AtomicInteger> load = new HashMap<>();
 
 		RPCNode n = null;
 		float[] samples = new float[stage.getURLs().size()];
 		for (int ii = 0; ii < stage.getURLs().size(); ii++) {
 			n = stage.getNodes().get(ii);
 			samples[ii] = n.getSafeLoad(1.0f);
-			load.put(n.url, new AtomicInteger(0));
 		}
 
 		if (stage.isFreezeMode()) {
@@ -162,8 +156,7 @@ public abstract class TraceableBalancer implements IOBalance {
 			List<Double> dc = stage.getHashing().getDecays();
 			pl.cdd.decay = new float[dc.size()];
 			for (int i = 0; i < pl.cdd.decay.length; i++) {
-				pl.cdd.decay[i] = dc.get(i) == null ? Float.MAX_VALUE
-						: Double.valueOf(Math.pow(Math.E, dc.get(i))).floatValue();
+				pl.cdd.decay[i] = dc.get(i) == null ? Float.MAX_VALUE : Double.valueOf(dc.get(i)).floatValue();
 			}
 			policy = pl;
 		}
@@ -171,7 +164,6 @@ public abstract class TraceableBalancer implements IOBalance {
 		NodesAndPolicy ret = new NodesAndPolicy();
 		ret.hashing = stage.getHashing();
 		ret.policy = policy;
-		ret.load = load;
 		nap = ret; // only point for overwrite nap
 		reloadVer.incrementAndGet();
 		this.staging = null;
@@ -210,7 +202,7 @@ public abstract class TraceableBalancer implements IOBalance {
 			ret.setAttr("node[" + i + "]", d[i]);
 		}
 		ret.setAttr("urls", n.hashing.getURLs());
-		ret.setAttr("rpcload", n.load);
+		ret.setAttr("rpcload", n.policy.getLoads());
 		ret.setAttr("checkpoint_version", checkpointVer.get());
 		ret.setAttr("reload_version", reloadVer.get());
 		ret.setAttr("decays", nap.hashing.getDecays());
@@ -223,22 +215,10 @@ class NodesAndPolicy {
 
 	BalancePolicy policy;
 	RPCNodeHashing hashing;
-	Map<String, AtomicInteger> load;
 
 	void updateLoad(String token, int val) {
-		AtomicInteger lock = load.get(token);
-		if (lock != null) {
-			lock.addAndGet(val);
-		}
-	}
-
-	float[] fetchLoads() {
-		float[] ret = new float[load.size()];
-		for (int i = 0; i < hashing.getURLs().size(); i++) {
-			ret[i] = load.get(hashing.getURLs().get(i)).getAndSet(0);
-			ret[i] = ret[i] > 0 ? ret[i] : 1;
-		}
-		return ret;
+		int idx = hashing.getURLs().indexOf(token);
+		policy.updateLoad(idx, val);
 	}
 
 	boolean diffNodes(RPCNodeHashing all) {
