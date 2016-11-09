@@ -327,8 +327,6 @@ class Candidates {
 			total += choice[i];
 		}
 
-		System.out.println(Arrays.toString(error));
-
 		for (int i = 0; i < choice.length; i++) {
 			// notice: least to average
 			choice[i] = choice[i] / total;
