@@ -47,7 +47,7 @@ public class FinderTest {
 
 	@Test
 	public void test1() throws KarmaException, Exception {
-		Finder.enableZKRegistry(zk, Arrays.asList("localhost:8899"));
+		Finder.enableZKRegistry(zk, Arrays.asList("localhost:8899"), 5000, 0, false);
 		// Finder.enableZKRegistry("192.168.10.216:2181");
 		RPCRegistry rg = Finder.getRegistry();
 

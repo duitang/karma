@@ -32,11 +32,11 @@ public class Finder implements KarmaFinder {
 	 * @param host
 	 * @param port
 	 */
-	public static void enableZKRegistry(String conn, List<String> urls) {
+	public static void enableZKRegistry(String conn, List<String> urls, long period, int count, boolean and) {
 		ZKClusterWorker ret = ZKClusterWorker.createInstance(conn);
 		Finder.registry.addWriters(Arrays.asList((AsyncRegistryWriter) ret.zkSR));
 		Finder.registry.addReaders(Arrays.asList((AsyncRegistryReader) ret.lsnr));
-		ClusterAwareBalancerFactory fac = new ClusterAwareBalancerFactory();
+		ClusterAwareBalancerFactory fac = new ClusterAwareBalancerFactory(period, count, and);
 		fac.setBootstrapURLs(urls);
 		Finder.registry.setFactory(fac);
 		// no disable support because of already alive service

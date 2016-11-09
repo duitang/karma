@@ -66,8 +66,8 @@ public class TestZKBasedLoadBalance {
 	public static void main(String[] args) throws Exception {
 		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 		root.setLevel(Level.INFO);
-		// root = (Logger) LoggerFactory.getLogger(KarmaServerConfig.class);
-		// root.setLevel(Level.INFO);
+		root = (Logger) LoggerFactory.getLogger(com.duitang.service.karma.client.impl.AutoReBalance.class);
+		root.setLevel(Level.DEBUG);
 
 		TestArgs cfg = initArgs(args);
 
@@ -95,7 +95,7 @@ public class TestZKBasedLoadBalance {
 			com.duitang.service.karma.trace.Finder.enableConsole(true);
 		}
 
-		Finder.enableZKRegistry(zk, urls);
+		Finder.enableZKRegistry(zk, urls, 30000, 0, false);
 
 		// register writer
 		for (NamedMockRPCNode n : nodes) {

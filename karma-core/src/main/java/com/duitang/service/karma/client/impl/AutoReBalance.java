@@ -161,7 +161,12 @@ public class AutoReBalance implements BalancePolicy {
 class Candidates {
 
 	final static float TRIFLE = 0.00001f;
-	final static float TRIFLE2 = 0.001f;
+
+	final static float BASE1 = 0.1f;
+	final static float BASE2 = 0.3f;
+	final static float BASE3 = 0.6f;
+
+	final static float BALANCE_RATE = 0.1f;
 
 	float[] failSnap;
 	float[] loadSnap;
@@ -240,7 +245,6 @@ class Candidates {
 
 	public void checkpoint() {
 		float total = 0f;
-
 		float l[] = new float[choice.length]; // latest load
 		float l2[] = new float[choice.length]; // average load
 		float r[] = new float[choice.length]; // latest response
@@ -251,9 +255,18 @@ class Candidates {
 		float error[] = new float[choice.length]; // error energy
 		float brate[] = new float[choice.length]; // latest bad rate
 
-		float rank[] = new float[choice.length];
+		// load energy
+		float rank1[] = new float[choice.length];
+		// error energy
+		float rank2[] = new float[choice.length];
+		// error density energy
+		float rank3[] = new float[choice.length];
 
-		float least = 0.1f / choice.length;
+		float least = BALANCE_RATE / choice.length;
+
+		float r1_total = 0f;
+		float r2_total = 0f;
+		float r3_total = 0f;
 
 		// calculate all total values
 		for (int i = 0; i < choice.length; i++) {
@@ -268,42 +281,64 @@ class Candidates {
 			failSnap[i] = f[i];
 
 			// min(valid[i]) = 1
-			valid[i] = Math.max(1, l[i] - f[i] + TRIFLE);
-			valid[i] = Double.valueOf(Math.log10(valid[i])).floatValue();
+			valid[i] = Math.max(1, l[i] * r[i] * 1000) + 1;
+			// valid[i] = Double.valueOf(Math.log10(valid[i])).floatValue() + 1;
+
 			// min(error[i]) = 1
-			error[i] = Math.max(1, f[i] + TRIFLE);
-			error[i] = Double.valueOf(Math.log(error[i])).floatValue();
+			error[i] = Math.max(0, f[i]);
+			error[i] = Double.valueOf(Math.log10(error[i] + 1)).floatValue() + 1;
+
 			// min(brate[i]) = 1
-			brate[i] = 1000 * f[i] / (l[i] + TRIFLE);
+			brate[i] = 100f * f[i] / (l[i] + TRIFLE);
 			// max(brate[i]) = 1000
-			brate[i] = Math.min(1000, brate[i]);
+			brate[i] = Math.min(100, brate[i]);
 			// min(brate[i]) = 1
 			brate[i] = Math.max(1, brate[i]);
+			// brate[i] = Double.valueOf(Math.log(brate[i] + 1)).floatValue() +
+			// 1;
 
-			valid[i] = valid[i] < 1 ? 1 : valid[i];
-			error[i] = error[i] < 1 ? 1 : error[i];
-			brate[i] = Double.valueOf(Math.log(brate[i])).floatValue();
+			// error density layer
+			rank3[i] = brate[i];
 
-			// avoid precise problem
-			rank[i] = Double.valueOf(valid[i] * Math.pow(error[i], brate[i])).floatValue();
+			// error layer
+			rank2[i] = Double.valueOf(error[i]).floatValue() + 1;
+
+			// load layer
+			rank1[i] = Double.valueOf(Math.log10(valid[i])).floatValue() + 1;
 			// decay for lost nodes
-			rank[i] *= decay[i];
-			choice[i] = rank[i];
+			rank1[i] *= decay[i];
+
 			// higher energy => smaller probability
-			choice[i] = 1 / choice[i];
-			rank[i] = choice[i];
+			rank1[i] = 1 / (1 + rank1[i]);
+			rank2[i] = 1 / (1 + rank2[i]);
+			rank3[i] = 1 / (1 + rank3[i]);
+
+			r1_total += rank1[i];
+			r2_total += rank2[i];
+			r3_total += rank3[i];
+
+		}
+
+		// imbuto model
+		for (int i = 0; i < choice.length; i++) {
+			// choice[i] = (1 / TRIFLE) * (rank1[i] / r1_total) * (rank2[i] /
+			// r2_total) * (rank3[i] / r3_total);
+			choice[i] = BASE1 * (rank1[i] / r1_total) + BASE2 * (rank2[i] / r2_total) + BASE3 * (rank3[i] / r3_total);
 			total += choice[i];
 		}
 
+		System.out.println(Arrays.toString(error));
+
 		for (int i = 0; i < choice.length; i++) {
 			// notice: least to average
-			choice[i] = (least + choice[i] / total) / 1.1f;
+			choice[i] = choice[i] / total;
+			choice[i] = (least + choice[i]) / (1f + BALANCE_RATE);
 			if (i > 0) {
 				choice[i] += choice[i - 1];
 			}
 			if (AutoReBalance.log.isDebugEnabled()) {
-				AutoReBalance.log.debug("checkpoint => " + Math.round(100 * choice[i]) + ", statistics = "
-						+ Arrays.asList(r[i], l[i], f[i], r2[i], l2[i], f2[i], brate[i], rank[i]));
+				AutoReBalance.log.debug("entropy => " + Math.round(100 * choice[i]) + ", statistics = "
+						+ Arrays.asList(r[i], l[i], f[i], valid[i], error[i], brate[i], rank1[i], rank2[i], rank3[i]));
 			}
 		}
 

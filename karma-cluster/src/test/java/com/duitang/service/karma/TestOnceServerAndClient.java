@@ -28,7 +28,7 @@ public class TestOnceServerAndClient {
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
-		Finder.enableZKRegistry(zk, Arrays.asList("localhost:9999"));
+		Finder.enableZKRegistry(zk, Arrays.asList("localhost:9999"), 5000, 0, false);
 		// Finder.enableZKRegistry("192.168.10.216",
 		// Arrays.asList("localhost:9999"));
 		Thread.sleep(1200);// waiting for embed ZK
