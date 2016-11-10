@@ -16,19 +16,9 @@ import com.duitang.service.karma.support.NodeDD;
  * <pre>
  * 
  * 使用三个维度的指标去猜测该路由的结点
- * 1. 响应时间resp：以500ms为100%做归一化
- * 2. 失败率fail：成功为0.1，失败为1
- * 3. 负载load：以50个连接为100%做归一化
- * 
- * 以负ln求和作为activation函数：
- * E = (-1) * ( wResp * ln(resp) + wRespAvg * ln(respAvg) 
- *            + wLoad * ln(load) + wLoadAvg * ln(loadAvg)
- *            + wFail * ln(fail) + wFailAvg * ln(failAvg)
- *            )
- * 
- * 以activation函数作为各结点被路由的选择概率：
- * P_N1 = E_N1 / (E_N1 + E_N2 + ... + E_Nn)
- * 
+ * 1. 响应时间resp：以毫秒计
+ * 2. 失败率fail：计数
+ * 3. 负载load：计数
  * 
  * 这三个维度的采样，分为两个统计窗口：
  * 1. 小窗：代表最近的微观审计
@@ -166,7 +156,7 @@ class Candidates {
 	final static float BASE2 = 0.3f;
 	final static float BASE3 = 0.6f;
 
-	final static float BALANCE_RATE = 0.1f;
+	final static float BALANCE_RATE = 0.01f;
 
 	float[] failSnap;
 	float[] loadSnap;
