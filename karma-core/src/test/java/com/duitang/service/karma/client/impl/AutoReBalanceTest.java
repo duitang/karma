@@ -35,7 +35,8 @@ public class AutoReBalanceTest {
 		auto.updateResponse(3, 0.4f, false);
 		auto.updateResponse(4, 0.5f, true);
 		for (int i = 0; i < sz; i++) {
-			double a = Double.valueOf(auto.cdd.resp[i].getElement(0)) - Double.valueOf(((i + 1) * 0.1));
+			// resp[i].getElement(0) == 0
+			double a = Double.valueOf(auto.cdd.resp[i].getElement(1)) - Double.valueOf(((i + 1) * 0.1));
 			Assert.assertTrue(Math.abs(a) < 0.0001);
 			a = Double.valueOf(auto.cdd.fail[i].get()) - Double.valueOf(((i % 2 == 0) ? 0 : 1));
 			Assert.assertTrue(Math.abs(a) < 0.0001);
