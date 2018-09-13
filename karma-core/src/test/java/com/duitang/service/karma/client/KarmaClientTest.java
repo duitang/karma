@@ -1,6 +1,7 @@
 package com.duitang.service.karma.client;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -48,6 +49,7 @@ public class KarmaClientTest {
 		KarmaClientConfig.bindBalance(group, urls);
 		KarmaClient<IDemoService> cli = KarmaClient.createKarmaClient(IDemoService.class, group);
 		IDemoService client = cli.getService();
+		System.out.println(client.memory_setString("aaaa", "fuck u", 10000));
 		System.out.println(client.memory_getString("aaaa"));
 		System.out.println(client.trace_msg("laurence", 200));
 		System.out.println(client.noparam());
@@ -64,11 +66,14 @@ public class KarmaClientTest {
 		}
 		System.out.println(client.memory_setBytes("aaa", "fuck".getBytes(), 5000));
 		System.out.println(new String(client.memory_getBytes("aaa")));
+		
+		Method m = IDemoService.class.getMethod("memory_getString", new Class[] {String.class});
+		System.out.println("memory_getString: " + cli.invoke(null, m, new Object[] {"aaaa"}));
 
 		// Thread.sleep(100000);
 	}
 
-	@Test
+//	@Test
 	public void test1() throws Exception {
 		try {
 			KarmaClient.createKarmaClient(MemoryCacheService.class, Arrays.asList("localhost:9999"));

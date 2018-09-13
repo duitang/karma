@@ -117,6 +117,18 @@ public class KarmaClient<T> implements MethodInterceptor {
 	public void setTimeout(long timeout) {
 		this.timeout = timeout + 1; // a bit more than
 	}
+	
+	public Object invoke(Object obj, Method method, Object[] args) {
+		if (!cutoffNames.containsKey(method.getName())) {
+			throw new NoSuchMethodError(method.getName());
+		}
+		obj = obj == null ? dummy : obj;
+		try {
+			return intercept(obj, method, args, null);
+		} catch (Throwable e) {
+			throw new KarmaRuntimeException(e);
+		}
+	}
 
 	@Override
 	public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {

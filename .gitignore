@@ -26,6 +26,7 @@ local.properties
 .idea/
 .project
 pom.xml
+karma-*/pom.xml
 
 # External tool builders
 .externalToolBuilders/
