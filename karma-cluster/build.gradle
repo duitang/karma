@@ -1,7 +1,7 @@
 
 dependencies {
     compile project(':karma-core')
-    compile ("org.apache.zookeeper:zookeeper:3.4.8") {
+    compile ("org.apache.zookeeper:zookeeper:3.4.13") {
         exclude group: "org.slf4j", module: "slf4j-log4j12"
         exclude group: "log4j", module: "log4j"
         exclude group: "io.netty", module: "netty"

@@ -18,6 +18,7 @@ allprojects {
     apply plugin: 'java'
     apply plugin: 'idea'
     apply plugin: 'maven'
+    apply plugin: 'maven-publish'    
     apply plugin: 'findbugs'
     apply plugin: 'jacoco'
     apply plugin: 'com.github.kt3k.coveralls'
@@ -35,6 +36,7 @@ allprojects {
     }
         
     repositories {
+        mavenLocal()
         jcenter()
     }
 }
@@ -80,6 +82,7 @@ subprojects {
     }
     
     repositories {
+        mavenLocal()
         mavenCentral()
     }
     
@@ -90,6 +93,19 @@ subprojects {
         pom {
             project {
                 inceptionYear '2016'
+                properties {
+         			  project {
+                			build {
+                    			sourceEncoding 'UTF-8'
+                			}
+            		  }
+            		  maven {
+                			compiler {
+                    			source '1.7'
+                    			target '1.7'
+                			}
+            		  }
+        		}
             }
         }.writeTo("pom.xml")
     }
