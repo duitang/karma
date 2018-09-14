@@ -41,42 +41,44 @@ public interface BalancePolicy {
 	/**
 	 * update response statistics
 	 * 
-	 * @param i
-	 * @param resp1
-	 * @param ok1
+	 * @param i which one
+	 * @param resp1 performance
+	 * @param ok1 well done
 	 */
 	void updateResponse(int i, float resp1, boolean ok1);
 
 	/**
 	 * update load information
 	 * 
-	 * @param active
+	 * @param i which one
+	 * @param load performance
 	 */
 	void updateLoad(int i, float load);
 
 	/**
 	 * reload with candidates
+	 * @param samples initial weights
 	 */
 	void reload(float[] samples);
 
 	/**
 	 * get current weights for sampling
 	 * 
-	 * @return
+	 * @return weights
 	 */
 	float[] getWeights();
 
 	/**
 	 * get statistics
 	 * 
-	 * @return
+	 * @return debug information
 	 */
 	String[] getDebugInfo();
 
 	/**
 	 * get all nodes' load info
 	 * 
-	 * @return
+	 * @return performance
 	 */
 	float[] getLoads();
 

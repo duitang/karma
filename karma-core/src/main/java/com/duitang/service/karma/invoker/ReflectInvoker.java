@@ -21,15 +21,18 @@ public class ReflectInvoker implements Invoker {
 
 	/**
 	 * <pre>
+	 * 
 	 * generic parameterized types caution:
 	 *
+	 * {@literal 
 	 * void aaa(Map<String, Float>, Map<Double, Boolean>)
-	 *
-	 * will =>
-	 *
+	 * }
+	 * will generate
+	 * 
 	 * Class[][] = { [String, Float], [Double, Boolean] }
+	 * 
 	 *
-	 * <pre>
+	 * </pre>
 	 */
 	protected Map<String, Class[][]> paramTypes;
 

@@ -1,6 +1,6 @@
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '3.1'
+    gradleVersion = '4.1'
 }
 
 buildscript {
@@ -68,7 +68,7 @@ subprojects {
     }
     
     version =  '1.0'
-    group = 'com.duitang.service'
+    group = 'com.github.laurencecao'
     
     sourceSets {
        main {
@@ -87,7 +87,7 @@ subprojects {
     }
     
     version =  '1.0'
-    group = 'com.duitang.service'
+    group = 'com.github.laurencecao'
     
     task pom << {
         pom {
@@ -185,3 +185,87 @@ task jacocoRootReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
     }
 }
 
+group 'com.github.laurencecao'
+version '1.0'
+
+apply plugin: 'java'
+apply plugin: 'maven-publish'
+
+ext {
+	// the password needs to be specified via command line with -P
+	snapshotRepoPass = project.hasProperty('snapshotRepoPass') ? project.getProperty('snapshotRepoPass') : ''
+}
+
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			from components.java
+
+			artifact sourceJar
+			artifact javadocJar
+
+			pom.withXml {
+				asNode().with {
+					appendNode('packaging', 'jar')
+					appendNode('name', 'PROJECT_NAME')
+					appendNode('description', 'PROJECT_DESCRIPTION')
+					appendNode('url', 'PROJECT_URL')
+					appendNode('scm').with {
+						appendNode('url', 'SCM_URL_FOR_PEOPLE')
+						appendNode('connection', 'SCM_URL_FOR_SCM')
+					}
+					appendNode('issueManagement').with {
+						appendNode('url', 'ISSUE_TRACKER_URL')
+						appendNode('system', 'ISSUE_TRACKER_NAME')
+					}
+					appendNode('licenses').with {
+						appendNode('license').with {
+							appendNode('name', 'LICENSE_NAME')
+							appendNode('url', 'LICENSE_URL')
+						}
+					}
+					appendNode('organization').with {
+						appendNode('name', 'ORG_NAME')
+						appendNode('url', 'ORG_URL')
+					}
+					appendNode('developers').with {
+						appendNode('developer').with {
+							appendNode('id', 'DEV_HANDLE')
+							appendNode('name', 'DEV_NAME')
+							appendNode('email', 'DEV_MAIL')
+							appendNode('organization', 'ORG_NAME_AGAIN')
+							appendNode('organizationUrl', 'ORG_URL_AGAIN')
+							appendNode('timezone', 'UTC_OFFSET')
+						}
+					}
+				}
+			}
+
+			tasks.withType(Jar) {
+				from(project.projectDir) {
+					include 'LICENSE.md'
+					into 'META-INF'
+				}
+			}
+		}
+	}
+	repositories {
+		maven {
+			url 'https://oss.sonatype.org/content/repositories/snapshots/'
+			credentials {
+				username "laurencecao"
+				password project.snapshotRepoPass
+			}
+		}
+	}
+}
+
+task sourceJar(type: Jar, dependsOn: classes) {
+	classifier 'sources'
+	from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+	classifier = 'javadoc'
+	from javadoc.destinationDir
+}

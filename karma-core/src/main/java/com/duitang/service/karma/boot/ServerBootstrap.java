@@ -63,6 +63,8 @@ public class ServerBootstrap {
 	 * http = {$port}
 	 * netty = {$port+1}
 	 * </pre>
+	 * @param port listening port
+	 * @throws Exception default exception
 	 */
 	public void startUp(int port) throws Exception {
 		initRPCService(conf);
@@ -92,10 +94,10 @@ public class ServerBootstrap {
 
 	/**
 	 *
-	 * @param serviceType
-	 * @param service
-	 * @param port
-	 * @throws Exception
+	 * @param serviceType interface types of services
+	 * @param service implement with interface type
+	 * @param port listening port
+	 * @throws Exception errors
 	 */
 	public void startUp(Class[] serviceType, Object[] service, int port) throws Exception {
 		if (serviceType.length != service.length) {
