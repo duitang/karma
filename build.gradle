@@ -68,7 +68,7 @@ subprojects {
     }
     
     version =  '1.0'
-    group = 'com.duitang.service'
+    group = 'com.github.laurencecao'
     
     sourceSets {
        main {
@@ -87,7 +87,7 @@ subprojects {
     }
     
     version =  '1.0'
-    group = 'com.duitang.service'
+    group = 'com.github.laurencecao'
     
     task pom << {
         pom {
