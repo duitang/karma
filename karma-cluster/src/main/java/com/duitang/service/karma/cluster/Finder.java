@@ -29,8 +29,11 @@ public class Finder implements KarmaFinder {
 	/**
 	 * should be enabled very early, at least before server bootstrap
 	 * 
-	 * @param host
-	 * @param port
+	 * @param conn
+	 * @param urls
+	 * @param period
+	 * @param count
+	 * @param and
 	 */
 	public static void enableZKRegistry(String conn, List<String> urls, long period, int count, boolean and) {
 		ZKClusterWorker ret = ZKClusterWorker.createInstance(conn);
