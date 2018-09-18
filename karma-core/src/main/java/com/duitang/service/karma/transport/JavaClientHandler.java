@@ -18,9 +18,16 @@ public class JavaClientHandler extends SimpleChannelInboundHandler<BinaryPacketR
 
   @Override
   protected void channelRead0(ChannelHandlerContext ctx, BinaryPacketRaw msg) throws Exception {
-    BinaryPacketData data = BinaryPacketHelper.fromRawToData(msg);
     Attribute<KarmaRemoteLatch> att = ctx.channel().attr(KarmaRemoteLatch.LATCH_KEY);
     KarmaRemoteLatch latch = att.get();
+    BinaryPacketData data = null;
+    try {
+        data = BinaryPacketHelper.fromRawToData(msg);
+    } catch (KarmaException e) {
+        // catch the exception from BinaryPacketHelper.bufToObj
+        latch.offerError(e);
+        return;
+    }
     if (latch.getUuid() != data.uuid) {
       // mismatch uuid is likely due to timeout request. duplicate with timeout error,
       // so just warn it.
